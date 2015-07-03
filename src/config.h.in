@@ -24,12 +24,6 @@
 /* Define to 1 if you have the <libavutil/avutil.h> header file. */
 #undef HAVE_LIBAVUTIL_AVUTIL_H
 
-/* Define to 1 if you have the `faac' library (-lfaac). */
-#undef HAVE_LIBFAAC
-
-/* Define to 1 if you have the `mp3lame' library (-lmp3lame). */
-#undef HAVE_LIBMP3LAME
-
 /* Define to 1 if you have the <libswscale/swscale.h> header file. */
 #undef HAVE_LIBSWSCALE_SWSCALE_H
 
@@ -68,6 +62,9 @@
 
 /* Define to the one symbol short name of this package. */
 #undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION

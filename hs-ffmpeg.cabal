@@ -1,5 +1,5 @@
 name:           hs-ffmpeg
-version:        0.3.4
+version:        0.4.0.0
 cabal-version:  >= 1.6
 license:        BSD3
 author:         Vasyl Pasternak
@@ -22,7 +22,7 @@ extra-source-files: src/macros.hsc2hs.h
                     hs-ffmpeg.buildinfo.in
 
 library
-        build-depends:   base < 4, haskell98, bytestring
+        build-depends:   base >= 4.7 && < 4.8, haskell2010, bytestring
         hs-source-dirs:  src
         include-dirs:    src
         exposed-modules: Media.FFMpeg
@@ -35,3 +35,4 @@ library
                          Media.FFMpeg.SWScaleEnums_
                          Media.FFMpeg.Common
         c-sources:       src/Media/FFMpeg/_c_utils.c
+

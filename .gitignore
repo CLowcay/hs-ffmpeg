@@ -1,0 +1,7 @@
+cabal.sandbox.config
+.cabal-sandbox
+config.log
+config.status
+hs-ffmpeg.buildinfo
+src/config.h
+dist

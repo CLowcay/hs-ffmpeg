@@ -70,8 +70,8 @@ dnl z
 AC_CHECK_LIB(z, zlibVersion, [LDFLAGS="${LDFLAGS} -lz"])
 
 dnl dc1394_control
-PKG_CHECK_MODULES(libdc1394, [libdc1394], 
-                  [LDFLAGS="${LDFLAGS} ${libdc1394_LIBS}"])
+PKG_CHECK_MODULES(libdc1394_2, [libdc1394-2], 
+                  [LDFLAGS="${LDFLAGS} ${libdc1394_2_LIBS}"])
 
 AC_SUBST([CFLAGS])
 AC_SUBST([LDFLAGS])
