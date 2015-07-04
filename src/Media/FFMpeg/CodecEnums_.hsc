@@ -443,20 +443,17 @@ module Media.FFMpeg.CodecEnums_ (
 #include "ffmpeg.h"
 
 import Foreign.C.Types
+import Media.FFMpeg.Common
 
 --
 -- | AVMediaType
 --
--- #{begin_enum AVMediaType, AVMEDIA_TYPE_UNKNOWN}
--- #{add_enum AVMEDIA_TYPE_VIDEO}
--- #{add_enum AVMEDIA_TYPE_AUDIO}
--- #{add_enum AVMEDIA_TYPE_DATA}
--- #{add_enum AVMEDIA_TYPE_SUBTITLE}
--- #{add_enum AVMEDIA_TYPE_ATTACHMENT}
--- #{add_enum AVMEDIA_TYPE_NB}
--- #{end_enum "Eq,Ord,Show"}
 
 newtype AVMediaType = AVMediaType {unAVMediaType :: CInt} deriving (Eq, Show)
+instance CEnum AVMediaType where
+	fromCEnum = unAVMediaType
+	toCEnum = AVMediaType
+
 #{enum AVMediaType, AVMediaType,
 	avmedia_type_unknown = AVMEDIA_TYPE_UNKNOWN,
 	avmedia_type_video = AVMEDIA_TYPE_VIDEO,
@@ -471,6 +468,10 @@ newtype AVMediaType = AVMediaType {unAVMediaType :: CInt} deriving (Eq, Show)
 -- | AVSampleFormat
 --
 newtype AVSampleFormat = AVSampleFormat {unAVSampleFormat :: CInt} deriving (Eq, Show)
+instance CEnum AVSampleFormat where
+	fromCEnum = unAVSampleFormat
+	toCEnum = AVSampleFormat
+
 #{enum AVSampleFormat, AVSampleFormat,
 	av_sample_fmt_none = AV_SAMPLE_FMT_NONE,
 	av_sample_fmt_u8 = AV_SAMPLE_FMT_U8,
@@ -490,6 +491,10 @@ newtype AVSampleFormat = AVSampleFormat {unAVSampleFormat :: CInt} deriving (Eq,
 -- | AVCodecId
 --
 newtype AVCodecId = AVCodecId {unAVCodecId :: CInt} deriving (Eq, Show)
+instance CEnum AVCodecId where
+	fromCEnum = unAVCodecId
+	toCEnum = AVCodecId
+
 #{enum AVCodecId, AVCodecId,
 	av_codec_id_none = AV_CODEC_ID_NONE,
 	av_codec_id_mpeg1video = AV_CODEC_ID_MPEG1VIDEO,
