@@ -22,7 +22,7 @@ extra-source-files: src/macros.hsc2hs.h
                     hs-ffmpeg.buildinfo.in
 
 library
-        build-depends:   base >= 4.7 && < 4.8, haskell2010, bytestring
+        build-depends:   base >= 4.7 && < 4.8, bytestring
         hs-source-dirs:  src
         include-dirs:    src
         exposed-modules: Media.FFMpeg
@@ -35,4 +35,5 @@ library
                          Media.FFMpeg.SWScaleEnums_
                          Media.FFMpeg.Common
         c-sources:       src/Media/FFMpeg/_c_utils.c
+        default-language:    Haskell2010
 
