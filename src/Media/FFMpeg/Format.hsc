@@ -26,11 +26,17 @@ module Media.FFMpeg.Format
 
 #include "ffmpeg.h"
 
-import Foreign
-import Foreign.C.Types
-import Foreign.C.String
+import Control.Applicative
 import Data.Version
-import Control.Monad (liftM)
+import Foreign.C.String
+import Foreign.C.Types
+import Foreign.ForeignPtr
+import Foreign.Marshal.Alloc
+import Foreign.Marshal.Array
+import Foreign.Marshal.Error
+import Foreign.Ptr
+import Foreign.Storable
+import System.IO.Unsafe
 import Text.Printf (printf)
 
 import Media.FFMpeg.Common
@@ -97,7 +103,7 @@ newContext = do
   p <- throwIf (== nullPtr) 
                (\_ -> "allocContext: failed to allocate context") 
                _alloc_context
-  liftM (FormatContext . castForeignPtr) $ newAvForeignPtr p
+  (FormatContext . castForeignPtr) <$> newAvForeignPtr p
 
 --
 -- |openInputFile -- opens media file
@@ -116,7 +122,7 @@ openInputFile name =
                        (printf "openInputFile: fail to open %s - errorcode %d\n" name . cToInt) $
                        _open_file pp s nullPtr 0 nullPtr
           ptr <- peek pp
-          liftM (FormatContext . castForeignPtr) $ newFinForeignPtr _close_file ptr
+          (FormatContext . castForeignPtr) <$> newFinForeignPtr _close_file ptr
 
 
 --
@@ -133,10 +139,10 @@ instance ExternalPointer Stream where
 getStreams :: FormatContext -> [Stream]
 getStreams fmt = unsafePerformIO $
                  withThis fmt $ \fmt' -> do
-                   count <- liftM fromIntegral $ 
+                   count <- fromIntegral <$>
                             (#{peek AVFormatContext, nb_streams} fmt' :: IO CUInt)
                    let streamsPtr = fmt' `plusPtr` #{offset AVFormatContext, streams}
-                   liftM (map Stream) $ peekArray count streamsPtr
+                   (map Stream) <$> peekArray count streamsPtr
 
 --
 -- |getCodecContext - reads codec context from the stream structure
@@ -144,8 +150,8 @@ getStreams fmt = unsafePerformIO $
 getCodecContext :: Stream -> Maybe CodecContext
 getCodecContext s = unsafePerformIO $ 
                     withThis s $ \s' -> do
-                      p <- liftM justPtr $ (#{peek AVStream, codec} s' :: IO (Ptr ()))
-                      maybe (return Nothing) (liftM Just . toCodecContext) p
+                      p <- justPtr <$> (#{peek AVStream, codec} s' :: IO (Ptr ()))
+                      maybe (return Nothing) (fmap Just . toCodecContext) p
                            
 
 --
@@ -158,4 +164,4 @@ readFrame :: FormatContext -> Packet -> IO Bool
 readFrame fmt pkt = 
     withThis fmt $ \fmt' ->
         withThis pkt $ \pkt' ->
-            liftM (>= 0) $ _read_frame fmt' pkt'
+            (>= 0) <$> _read_frame fmt' pkt'

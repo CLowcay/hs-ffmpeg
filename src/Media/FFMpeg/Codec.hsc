@@ -27,7 +27,7 @@ module Media.FFMpeg.Codec
     ,decodeAudio
     ,decodeAudioPacket
     --,maxAudioFrameSize
-    ,decodeAudioPacket'
+    --,decodeAudioPacket'
 
     ,CommonPicture (..)
     ,pictureGetSize
@@ -48,13 +48,21 @@ module Media.FFMpeg.Codec
 
 #include "ffmpeg.h"
 
-import Foreign
-import Foreign.C.Types
-import Foreign.C.String
-import Control.Monad (liftM)
-import Text.Printf
-import Data.Version
+import Control.Applicative
 import Data.ByteString (ByteString, append, packCStringLen)
+import Data.Int
+import Data.Version
+import Data.Word
+import Foreign.C.String
+import Foreign.C.Types
+import Foreign.ForeignPtr
+import Foreign.Marshal.Alloc
+import Foreign.Marshal.Error
+import Foreign.Marshal.Utils
+import Foreign.Ptr
+import Foreign.Storable
+import System.IO.Unsafe
+import Text.Printf
 
 import Media.FFMpeg.Common
 import Media.FFMpeg.Util
@@ -67,10 +75,10 @@ libAVCodecVersion = fromVersionNum #{const LIBAVCODEC_VERSION_INT}
 -- | properties classes
 --
 class WithCodecId a where
-    getCodecId :: a -> CodecId
+    getCodecId :: a -> AVCodecId
 
 class WithCodecType a where
-    getCodecType :: a -> CodecType
+    getCodecType :: a -> AVMediaType
 
 class WithVideoProps a where
     getVideoWidth :: a -> Int
@@ -80,7 +88,7 @@ class WithVideoProps a where
 class WithAudioProps a where
     getAudioSampleRate :: a -> Int
     getAudioChannels :: a -> Int
-    getAudioSampleFormat :: a -> SampleFormat
+    getAudioSampleFormat :: a -> AVSampleFormat
 
 -- 
 -- | CodecContext -- wrapper to AVCodecContext
@@ -93,45 +101,45 @@ instance ExternalPointer CodecContext where
 --
 -- | convert poiner to CodecContext
 toCodecContext :: Ptr a -> IO CodecContext
-toCodecContext =  liftM CodecContext . newForeignPtr_ . castPtr
+toCodecContext =  fmap CodecContext . newForeignPtr_ . castPtr
 
 _unsafeGetValue :: ExternalPointer p => p -> (Ptr a -> IO b) -> b
 _unsafeGetValue extp io = unsafePerformIO $ withThis extp io
 
 instance WithCodecId CodecContext where
     getCodecId ctx = _unsafeGetValue ctx $ \ctx' ->
-                     liftM cToEnum 
-                     (#{peek AVCodecContext, codec_id} ctx' :: IO #{type enum AVCodecID})
+                     toCEnum <$>
+                     (#{peek AVCodecContext, codec_id} ctx' :: IO CInt)
 
 instance WithCodecType CodecContext where
     getCodecType ctx = _unsafeGetValue ctx $ \ctx' ->
-                       liftM cToEnum 
-                       (#{peek AVCodecContext, codec_type} ctx' :: IO #{type enum AVMediaType})
+                       toCEnum <$>
+                       (#{peek AVCodecContext, codec_type} ctx' :: IO CInt)
 
 instance WithVideoProps CodecContext where
     getVideoWidth ctx = _unsafeGetValue ctx $ \ctx' ->
-                        liftM cToInt 
+                        cToInt <$>
                                   (#{peek AVCodecContext, width} ctx' :: IO CInt)
                         
 
     getVideoHeight ctx = _unsafeGetValue ctx $ \ctx' -> 
-                         liftM cToInt 
+                         cToInt <$>
                                    (#{peek AVCodecContext, height} ctx' :: IO CInt)
 
     getPixelFormat ctx = _unsafeGetValue ctx $ \ctx' -> 
-                         liftM cToEnum
-                               (#{peek AVCodecContext, pix_fmt} ctx' :: IO #{type enum PixelFormat})
+                         toCEnum <$>
+                               (#{peek AVCodecContext, pix_fmt} ctx' :: IO CInt)
 
 instance WithAudioProps CodecContext where
     getAudioSampleRate ctx = _unsafeGetValue ctx $ \ctx' ->
-                             liftM cToInt (#{peek AVCodecContext, sample_rate} ctx' :: IO CInt)
+                             cToInt <$> (#{peek AVCodecContext, sample_rate} ctx' :: IO CInt)
 
     getAudioChannels ctx = _unsafeGetValue ctx $ \ctx' ->
-                           liftM cToInt (#{peek AVCodecContext, channels} ctx' :: IO CInt)
+                           cToInt <$> (#{peek AVCodecContext, channels} ctx' :: IO CInt)
 
     getAudioSampleFormat ctx = _unsafeGetValue ctx $ \ctx' ->
-                               liftM cToEnum 
-                                         (#{peek AVCodecContext, sample_fmt} ctx' :: IO #{type enum AVSampleFormat})
+                               toCEnum <$>
+                                         (#{peek AVCodecContext, sample_fmt} ctx' :: IO CInt)
 
 --
 -- | Codec - implementation of AVCodec
@@ -143,13 +151,13 @@ instance ExternalPointer Codec where
 
 instance WithCodecId Codec where
     getCodecId c = _unsafeGetValue c $ \c' ->
-                   liftM cToEnum 
-                   (#{peek AVCodec, id} c' :: IO #{type enum AVCodecID})
+                   toCEnum <$>
+                   (#{peek AVCodec, id} c' :: IO CInt)
 
 instance WithCodecType Codec where
     getCodecType c = _unsafeGetValue c $ \c' ->
-                     liftM cToEnum
-                     (#{peek AVCodec, type} c' :: IO #{type enum AVMediaType})
+                     toCEnum <$>
+                     (#{peek AVCodec, type} c' :: IO CInt)
 
 --
 -- | openCodec - opens codec due to CodecContext
@@ -171,12 +179,12 @@ openCodec ctx @ (CodecContext ct) codec =
 -- |findDecoder - finds decoder by CodecId
 --
 foreign import ccall "avcodec_find_decoder" _avcodec_find_decoder :: 
-    #{type enum AVCodecID} -> IO (Ptr ())
+    CInt -> IO (Ptr ())
 
-findDecoder :: CodecId -> IO (Maybe Codec)
+findDecoder :: AVCodecId -> IO (Maybe Codec)
 findDecoder cid = do
-  liftM (maybe Nothing (Just . Codec . castPtr) . justPtr)
-        (_avcodec_find_decoder (cFromEnum cid))
+  (maybe Nothing (Just . Codec . castPtr) . justPtr) <$>
+        (_avcodec_find_decoder (fromCEnum cid))
 
 
 --
@@ -198,7 +206,7 @@ decodeVideo ctx frm pkt =
               (printf "decodeVideo: failed to decode video packet: %d" . cToInt)
               (_avcodec_decode_video ctx' frm' gotPic' obuf' 
                (cFromInt (bufferSize obuf)))
-      liftM (>0) (peek gotPic')
+      fmap (>0) (peek gotPic')
 #else
 foreign import ccall "avcodec_decode_video2" _avcodec_decode_video :: 
     Ptr () -> Ptr () -> (Ptr CInt) -> Ptr () -> IO CInt
@@ -212,7 +220,7 @@ decodeVideo ctx frm pkt =
       throwIf (<0)
               (printf "decodeVideo: failed to decode video packet: %d" . cToInt)
               (_avcodec_decode_video ctx' frm' gotPic' pkt')
-      liftM (>0) (peek gotPic')
+      fmap (>0) (peek gotPic')
 #endif
 
 --
@@ -247,8 +255,8 @@ decodeAudio ctx buf pkt =
     with bufSize $ \frm_size -> do
       result <- throwIf (<0)
                 (printf "decodeAudio: decode packet failed. Return value is %d" . cToInt)
-                (liftM cToInt $ _avcodec_decode_audio ctx' buf' frm_size pkt')
-      liftM ((,) result . cToInt) $ peek frm_size
+                (cToInt <$> _avcodec_decode_audio ctx' buf' frm_size pkt')
+      ((,) result . cToInt) <$> peek frm_size
     where bufSize = cFromInt $ bufferSize buf :: CInt
 #endif
 
@@ -301,7 +309,7 @@ class ExternalPointer pic => CommonPicture pic where
         withThis buf $ \buf' ->
         _avpicture_fill (castPtr pic') 
              (castPtr buf')
-             (cFromEnum pf)
+             (fromCEnum pf)
              (cFromInt w) (cFromInt h) >> 
         return ()
 
@@ -319,11 +327,11 @@ class ExternalPointer pic => CommonPicture pic where
 -- |pictureGetSize -- calculate the size of the picture in bytes
 --
 foreign import ccall "avpicture_get_size" _avpicture_get_size :: 
-    #{type enum PixelFormat} -> CInt -> CInt -> IO CInt
+    CInt -> CInt -> CInt -> IO CInt
 
 pictureGetSize :: PixelFormat -> Int -> Int -> Int
 pictureGetSize pf w h = cToInt $ unsafePerformIO 
-                        (_avpicture_get_size (cFromEnum pf) (cFromInt w) (cFromInt h))
+                        (_avpicture_get_size (fromCEnum pf) (cFromInt w) (cFromInt h))
 
 --
 -- |Frame - implementation of AVFrame
@@ -346,7 +354,7 @@ allocFrame = do
   p <- throwIf (== nullPtr)
                (\_ -> "allocFrame: failed to allocate frame")
                _avcodec_alloc_frame
-  liftM (Frame . castForeignPtr) $ newAvForeignPtr p
+  (Frame . castForeignPtr) <$> newAvForeignPtr p
 
 --
 -- | Packet -- binding to AVPacket
@@ -414,11 +422,11 @@ dupPacket pkt =
 
 packetGetStreamIndex :: Packet -> Int
 packetGetStreamIndex pkt = _unsafeGetValue pkt $ \pkt' ->
-                           liftM cToInt (#{peek AVPacket, stream_index} pkt' :: IO CInt)
+                           cToInt <$> (#{peek AVPacket, stream_index} pkt' :: IO CInt)
 
 packetGetSize :: Packet -> Int
 packetGetSize pkt = _unsafeGetValue pkt $ \pkt' ->
-                    liftM cToInt (#{peek AVPacket, size} pkt' :: IO CInt)
+                    cToInt <$> (#{peek AVPacket, size} pkt' :: IO CInt)
 
 packetGetBuffer :: Packet -> Buffer
 packetGetBuffer pkt = 
