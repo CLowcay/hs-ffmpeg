@@ -26,7 +26,7 @@ module Media.FFMpeg.Codec
     ,decodeVideo
     ,decodeAudio
     ,decodeAudioPacket
-    ,maxAudioFrameSize
+    --,maxAudioFrameSize
     ,decodeAudioPacket'
 
     ,CommonPicture (..)
@@ -101,12 +101,12 @@ _unsafeGetValue extp io = unsafePerformIO $ withThis extp io
 instance WithCodecId CodecContext where
     getCodecId ctx = _unsafeGetValue ctx $ \ctx' ->
                      liftM cToEnum 
-                     (#{peek AVCodecContext, codec_id} ctx' :: IO #{type enum CodecID})
+                     (#{peek AVCodecContext, codec_id} ctx' :: IO #{type enum AVCodecID})
 
 instance WithCodecType CodecContext where
     getCodecType ctx = _unsafeGetValue ctx $ \ctx' ->
                        liftM cToEnum 
-                       (#{peek AVCodecContext, codec_type} ctx' :: IO #{type enum CodecType})
+                       (#{peek AVCodecContext, codec_type} ctx' :: IO #{type enum AVMediaType})
 
 instance WithVideoProps CodecContext where
     getVideoWidth ctx = _unsafeGetValue ctx $ \ctx' ->
@@ -131,7 +131,7 @@ instance WithAudioProps CodecContext where
 
     getAudioSampleFormat ctx = _unsafeGetValue ctx $ \ctx' ->
                                liftM cToEnum 
-                                         (#{peek AVCodecContext, sample_fmt} ctx' :: IO #{type enum SampleFormat})
+                                         (#{peek AVCodecContext, sample_fmt} ctx' :: IO #{type enum AVSampleFormat})
 
 --
 -- | Codec - implementation of AVCodec
@@ -144,12 +144,12 @@ instance ExternalPointer Codec where
 instance WithCodecId Codec where
     getCodecId c = _unsafeGetValue c $ \c' ->
                    liftM cToEnum 
-                   (#{peek AVCodec, id} c' :: IO #{type enum CodecID})
+                   (#{peek AVCodec, id} c' :: IO #{type enum AVCodecID})
 
 instance WithCodecType Codec where
     getCodecType c = _unsafeGetValue c $ \c' ->
                      liftM cToEnum
-                     (#{peek AVCodec, type} c' :: IO #{type enum CodecType})
+                     (#{peek AVCodec, type} c' :: IO #{type enum AVMediaType})
 
 --
 -- | openCodec - opens codec due to CodecContext
@@ -171,7 +171,7 @@ openCodec ctx @ (CodecContext ct) codec =
 -- |findDecoder - finds decoder by CodecId
 --
 foreign import ccall "avcodec_find_decoder" _avcodec_find_decoder :: 
-    #{type enum CodecID} -> IO (Ptr ())
+    #{type enum AVCodecID} -> IO (Ptr ())
 
 findDecoder :: CodecId -> IO (Maybe Codec)
 findDecoder cid = do
@@ -278,14 +278,14 @@ decodeAudioPacket buffSize ctx pkt = dupPacket pkt >> fillBuffer
                   else return $ result
       
 
-maxAudioFrameSize :: Int
-maxAudioFrameSize = #{const AVCODEC_MAX_AUDIO_FRAME_SIZE}
+--maxAudioFrameSize :: Int
+--maxAudioFrameSize = #{const AVCODEC_MAX_AUDIO_FRAME_SIZE}
 
 --
 -- | decodeAudioPacket' - defaults the buffer size to 2048
 --
-decodeAudioPacket' :: CodecContext -> Packet -> IO ByteString
-decodeAudioPacket' = decodeAudioPacket maxAudioFrameSize
+--decodeAudioPacket' :: CodecContext -> Packet -> IO ByteString
+--decodeAudioPacket' = decodeAudioPacket maxAudioFrameSize
 
 --
 -- |AVPicture
