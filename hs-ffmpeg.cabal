@@ -12,10 +12,8 @@ bug-reports:    http://code.google.com/p/hs-ffmpeg/issues/list
 stability:      alpha
 category:       Media
 
-
 build-type:     Configure
-extra-source-files: src/macros.hsc2hs.h
-                    src/config.h.in
+extra-source-files: src/config.h.in
                     src/ffmpeg.h
                     configure
                     configure.ac

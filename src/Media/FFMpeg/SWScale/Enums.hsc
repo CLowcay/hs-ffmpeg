@@ -28,7 +28,6 @@ import Foreign.C.Types
 import Media.FFMpeg.Common
 
 #include "ffmpeg.h"
-#include "macros.hsc2hs.h"
 
 -- |ScaleAlgorithm Enumeration
 newtype ScaleAlgorithm = ScaleAlgorithm {unScaleAlgorithm :: CInt}
