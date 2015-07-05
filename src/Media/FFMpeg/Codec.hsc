@@ -11,7 +11,7 @@
 module Media.FFMpeg.Codec (
 	libAVCodecVersion,
 
-	module Media.FFMpeg.CodecEnums_,
+	module Media.FFMpeg.Codec.Enums,
 
 	WithCodecId (..),
 	WithCodecType (..),
@@ -65,9 +65,9 @@ import Foreign.Storable
 import System.IO.Unsafe
 import Text.Printf
 
+import Media.FFMpeg.Codec.Enums
 import Media.FFMpeg.Common
 import Media.FFMpeg.Util
-import Media.FFMpeg.CodecEnums_
 
 -- | Which version of libavcodec are we using?
 libAVCodecVersion :: Version

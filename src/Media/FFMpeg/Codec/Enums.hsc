@@ -8,7 +8,7 @@
 	(c) 2009 Vasyl Pasternak
 -}
 
-module Media.FFMpeg.CodecEnums_ (
+module Media.FFMpeg.Codec.Enums (
 	AVMediaType,
 	AVSampleFormat,
 	AVCodecId,

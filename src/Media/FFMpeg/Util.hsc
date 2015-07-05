@@ -8,7 +8,7 @@
 -}
 
 module Media.FFMpeg.Util (
-	module Media.FFMpeg.UtilEnums_,
+	module Media.FFMpeg.Util.Enums,
 	avMalloc,
 	avFree,
 	newAvForeignPtr,
@@ -30,7 +30,7 @@ import Foreign.Ptr
 import Text.Printf
 
 import Media.FFMpeg.Common
-import Media.FFMpeg.UtilEnums_
+import Media.FFMpeg.Util.Enums
 
 #include "ffmpeg.h"
 

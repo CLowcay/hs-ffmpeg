@@ -8,8 +8,7 @@
 	(c) 2009 Vasyl Pasternak
 -}
 
-
-module Media.FFMpeg.UtilEnums_ (
+module Media.FFMpeg.Util.Enums (
 	PixelFormat,
 	pix_fmt_none,
 	pix_fmt_yuv420p,

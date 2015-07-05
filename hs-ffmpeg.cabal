@@ -26,14 +26,14 @@ library
         hs-source-dirs:  src
         include-dirs:    src
         exposed-modules: Media.FFMpeg
+                         Media.FFMpeg.Codec
+                         Media.FFMpeg.Codec.Enums
                          Media.FFMpeg.Format
                          Media.FFMpeg.SWScale
+                         Media.FFMpeg.SWScale.Enums
                          Media.FFMpeg.Util
-                         Media.FFMpeg.Codec
-        other-modules:   Media.FFMpeg.UtilEnums_
-                         Media.FFMpeg.CodecEnums_
-                         Media.FFMpeg.SWScaleEnums_
-                         Media.FFMpeg.Common
+                         Media.FFMpeg.Util.Enums
+        other-modules:   Media.FFMpeg.Common
         c-sources:       src/Media/FFMpeg/_c_utils.c
         default-language:    Haskell2010
 

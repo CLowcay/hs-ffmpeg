@@ -9,7 +9,7 @@
 
 module Media.FFMpeg.SWScale (
 	libSWScaleVersion,
-	module Media.FFMpeg.SWScaleEnums_,
+	module Media.FFMpeg.SWScale.Enums,
 	SwsContext,
 	getContext,
 	scale
@@ -27,7 +27,7 @@ import Foreign.Marshal.Error
 import Foreign.Ptr
 
 import Media.FFMpeg.Common
-import Media.FFMpeg.SWScaleEnums_
+import Media.FFMpeg.SWScale.Enums
 import Media.FFMpeg.Util
 
 -- | Which version of libswscale are we using?

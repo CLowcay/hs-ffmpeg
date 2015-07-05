@@ -8,8 +8,7 @@
 	(c) 2009 Vasyl Pasternak
 -}
 
-
-module Media.FFMpeg.SWScaleEnums_ (
+module Media.FFMpeg.SWScale.Enums (
 	ScaleAlgorithm,
 	sws_fast_bilinear,
 	sws_bicubic,
