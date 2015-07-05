@@ -4,11 +4,11 @@ cabal-version:  >= 1.6
 license:        BSD3
 author:         Vasyl Pasternak
 synopsis:       Bindings to FFMPEG library
-maintainer:     vasylpasternak@gmail.com
+maintainer:     
 description:    Bindings to FFMPEG library
 copyright:      (c) 2009 Vasyl Pasternak
-homepage:       http://patch-tag.com/r/VasylPasternak/hs-ffmpeg
-bug-reports:    http://code.google.com/p/hs-ffmpeg/issues/list
+homepage:       https://github.com/CLowcay/hs-ffmpeg
+bug-reports:    https://github.com/CLowcay/hs-ffmpeg/issues
 stability:      alpha
 category:       Media
 
