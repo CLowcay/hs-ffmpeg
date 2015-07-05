@@ -2,10 +2,16 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
 {- |
-	Module 'Media.FFMpeg.UtilEnums_' implements 
-	enumerations from libavutil
 
-	(c) 2009 Vasyl Pasternak
+Module      : 
+Description : Enumerations for libavutil
+Copyright   : (c) Vasyl Pasternak, 2009
+                  Callum Lowcay, 2015
+License     : BSD3
+Stability   : experimental
+
+Enumerations for libavutil.
+
 -}
 
 module Media.FFMpeg.Util.Enums (

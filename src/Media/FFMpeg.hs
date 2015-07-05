@@ -1,8 +1,13 @@
 -- -*- haskell -*-
 {- |
-	Module 'Media.FFMpeg' - an interface to 'ffmpeg' library
 
-	(c) 2009 Vasyl Pasternak
+Description : Bindings to the ffmpeg libraries
+Copyright   : (c) Vasyl Pasternak, 2009
+License     : BSD3
+Stability   : experimental
+
+Bindings to the ffmpeg libraries
+
 -}
 
 module Media.FFMpeg (

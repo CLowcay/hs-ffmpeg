@@ -3,9 +3,14 @@
 {-# LANGUAGE TupleSections #-}
 
 {- |
-	Module 'Media.FFMpeg.Codec' implements bindings to AVCodec library
+ 
+Description : Bindings to libavcodec
+Copyright   : (c) Vasyl Pasternak, 2009
+License     : BSD3
+Stability   : experimental
 
-	(c) 2009 Vasyl Pasternak
+Bindings to libavcodec.
+
 -}
 
 module Media.FFMpeg.Codec (

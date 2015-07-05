@@ -2,9 +2,14 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
 {- |
-	Module 'Media.FFMpeg.Format' implements bindings to AVFormat library
 
-	(c) 2009 Vasyl Pasternak
+Description : Bindings to libavformat
+Copyright   : (c) Vasyl Pasternak, 2009
+License     : BSD3
+Stability   : experimental
+
+Bindings to libavformat.
+
 -}
 
 module Media.FFMpeg.Format (

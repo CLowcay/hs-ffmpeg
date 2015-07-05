@@ -2,10 +2,15 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
 {- |
-	Module 'Media.FFMpeg.SWScaleEnums_' implements 
-	enumeration from libswscale
-		 
-	(c) 2009 Vasyl Pasternak
+
+Description : Enumerations for libswscale
+Copyright   : (c) Vasyl Pasternak, 2009
+                  Callum Lowcay, 2015
+License     : BSD3
+Stability   : experimental
+
+Enumerations for libswscale.
+
 -}
 
 module Media.FFMpeg.SWScale.Enums (

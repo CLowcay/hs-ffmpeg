@@ -2,9 +2,14 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
 {- |
-	Module 'Media.FFMpeg.Common' common definitions and helpers
 
-	(c) 2009 Vasyl Pasternak
+Description : Internal utility module for the ffmpeg bindings
+Copyright   : (c) Vasyl Pasternak, 2009
+License     : BSD3
+Stability   : experimental
+
+Internal utility module for the ffmpeg bindings
+
 -}
 
 module Media.FFMpeg.Common (

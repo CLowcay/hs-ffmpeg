@@ -2,9 +2,14 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
 {- |
-	Module 'Media.FFMpeg.SWScale' implements bindings to SWScale library
 
-	(c) 2009 Vasyl Pasternak
+Description : Bindings to libswscale
+Copyright   : (c) Vasyl Pasternak, 2009
+License     : BSD3
+Stability   : experimental
+
+Bindings to libswscale.
+
 -}
 
 module Media.FFMpeg.SWScale (

@@ -2,10 +2,15 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
 {- |
-	Module 'Media.FFMpeg.CodecEnums_' implements 
-	enumerations from libavcodec
-		 
-	(c) 2009 Vasyl Pasternak
+
+Description : Enumerations for libavcodec
+Copyright   : (c) Vasyl Pasternak, 2009
+                  Callum Lowcay, 2015
+License     : BSD3
+Stability   : experimental
+
+Enumerations for libavcodec.
+
 -}
 
 module Media.FFMpeg.Codec.Enums (
