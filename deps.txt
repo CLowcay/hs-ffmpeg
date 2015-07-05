@@ -1,0 +1,11 @@
+libavformat
+libavcodec
+libavutil
+libswscale
+libvorbisfile
+libvorbis
+libvorbisenc
+libtheora
+libogg
+zlib
+libdc1394-2

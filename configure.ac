@@ -4,7 +4,7 @@ AC_CONFIG_SRCDIR([hs-ffmpeg.cabal])
 
 AC_CONFIG_HEADERS([src/config.h])
 
-PKG_CHECK_MODULES(avformat, [libavformat],
+PKG_CHECK_MODULES(avformat, [libavformat >= 56 libavformat < 57],
  [
         CFLAGS="${CFLAGS} ${avformat_CFLAGS}"
         LDFLAGS="${LDFLAGS} ${avformat_LIBS}"
@@ -14,7 +14,7 @@ PKG_CHECK_MODULES(avformat, [libavformat],
         AC_MSG_ERROR([Could not find AVFormat library])
  ])
 
-PKG_CHECK_MODULES(avcodec, [libavcodec],
+PKG_CHECK_MODULES(avcodec, [libavcodec >= 56 libavcodec < 57],
  [
         CFLAGS="${CFLAGS} ${avcodec_CFLAGS}"
         LDFLAGS="${LDFLAGS} ${avcodec_LIBS}"
@@ -24,7 +24,7 @@ PKG_CHECK_MODULES(avcodec, [libavcodec],
         AC_MSG_ERROR([Could not find AVCodec library])
  ])
 
-PKG_CHECK_MODULES(avutil, [libavutil],
+PKG_CHECK_MODULES(avutil, [libavutil >= 54 libavutil < 55],
  [
         CFLAGS="${CFLAGS} ${avutil_CFLAGS}"
         LDFLAGS="${LDFLAGS} ${avutil_LIBS}"
@@ -34,7 +34,7 @@ PKG_CHECK_MODULES(avutil, [libavutil],
         AC_MSG_ERROR([Could not find AVUtil library])
  ])
 
-PKG_CHECK_MODULES(swscale, [libswscale],
+PKG_CHECK_MODULES(swscale, [libswscale >= 3 libswscale < 4],
  [
         CFLAGS="${CFLAGS} ${swscale_CFLAGS}"
         LDFLAGS="${LDFLAGS} ${swscale_LIBS}"

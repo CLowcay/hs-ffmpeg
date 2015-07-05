@@ -3412,12 +3412,12 @@ if test -n "$avformat_CFLAGS"; then
     pkg_cv_avformat_CFLAGS="$avformat_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavformat\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libavformat") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavformat >= 56 libavformat < 57\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libavformat >= 56 libavformat < 57") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_avformat_CFLAGS=`$PKG_CONFIG --cflags "libavformat" 2>/dev/null`
+  pkg_cv_avformat_CFLAGS=`$PKG_CONFIG --cflags "libavformat >= 56 libavformat < 57" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -3429,12 +3429,12 @@ if test -n "$avformat_LIBS"; then
     pkg_cv_avformat_LIBS="$avformat_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavformat\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libavformat") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavformat >= 56 libavformat < 57\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libavformat >= 56 libavformat < 57") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_avformat_LIBS=`$PKG_CONFIG --libs "libavformat" 2>/dev/null`
+  pkg_cv_avformat_LIBS=`$PKG_CONFIG --libs "libavformat >= 56 libavformat < 57" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -3455,9 +3455,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        avformat_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libavformat" 2>&1`
+	        avformat_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libavformat >= 56 libavformat < 57" 2>&1`
         else
-	        avformat_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libavformat" 2>&1`
+	        avformat_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libavformat >= 56 libavformat < 57" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$avformat_PKG_ERRORS" >&5
@@ -3504,12 +3504,12 @@ if test -n "$avcodec_CFLAGS"; then
     pkg_cv_avcodec_CFLAGS="$avcodec_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavcodec\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libavcodec") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavcodec >= 56 libavcodec < 57\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libavcodec >= 56 libavcodec < 57") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_avcodec_CFLAGS=`$PKG_CONFIG --cflags "libavcodec" 2>/dev/null`
+  pkg_cv_avcodec_CFLAGS=`$PKG_CONFIG --cflags "libavcodec >= 56 libavcodec < 57" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -3521,12 +3521,12 @@ if test -n "$avcodec_LIBS"; then
     pkg_cv_avcodec_LIBS="$avcodec_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavcodec\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libavcodec") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavcodec >= 56 libavcodec < 57\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libavcodec >= 56 libavcodec < 57") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_avcodec_LIBS=`$PKG_CONFIG --libs "libavcodec" 2>/dev/null`
+  pkg_cv_avcodec_LIBS=`$PKG_CONFIG --libs "libavcodec >= 56 libavcodec < 57" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -3547,9 +3547,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        avcodec_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libavcodec" 2>&1`
+	        avcodec_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libavcodec >= 56 libavcodec < 57" 2>&1`
         else
-	        avcodec_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libavcodec" 2>&1`
+	        avcodec_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libavcodec >= 56 libavcodec < 57" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$avcodec_PKG_ERRORS" >&5
@@ -3596,12 +3596,12 @@ if test -n "$avutil_CFLAGS"; then
     pkg_cv_avutil_CFLAGS="$avutil_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavutil\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libavutil") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavutil >= 54 libavutil < 55\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libavutil >= 54 libavutil < 55") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_avutil_CFLAGS=`$PKG_CONFIG --cflags "libavutil" 2>/dev/null`
+  pkg_cv_avutil_CFLAGS=`$PKG_CONFIG --cflags "libavutil >= 54 libavutil < 55" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -3613,12 +3613,12 @@ if test -n "$avutil_LIBS"; then
     pkg_cv_avutil_LIBS="$avutil_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavutil\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libavutil") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavutil >= 54 libavutil < 55\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libavutil >= 54 libavutil < 55") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_avutil_LIBS=`$PKG_CONFIG --libs "libavutil" 2>/dev/null`
+  pkg_cv_avutil_LIBS=`$PKG_CONFIG --libs "libavutil >= 54 libavutil < 55" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -3639,9 +3639,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        avutil_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libavutil" 2>&1`
+	        avutil_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libavutil >= 54 libavutil < 55" 2>&1`
         else
-	        avutil_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libavutil" 2>&1`
+	        avutil_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libavutil >= 54 libavutil < 55" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$avutil_PKG_ERRORS" >&5
@@ -3688,12 +3688,12 @@ if test -n "$swscale_CFLAGS"; then
     pkg_cv_swscale_CFLAGS="$swscale_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libswscale\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libswscale") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libswscale >= 3 libswscale < 4\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libswscale >= 3 libswscale < 4") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_swscale_CFLAGS=`$PKG_CONFIG --cflags "libswscale" 2>/dev/null`
+  pkg_cv_swscale_CFLAGS=`$PKG_CONFIG --cflags "libswscale >= 3 libswscale < 4" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -3705,12 +3705,12 @@ if test -n "$swscale_LIBS"; then
     pkg_cv_swscale_LIBS="$swscale_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libswscale\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libswscale") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libswscale >= 3 libswscale < 4\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libswscale >= 3 libswscale < 4") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_swscale_LIBS=`$PKG_CONFIG --libs "libswscale" 2>/dev/null`
+  pkg_cv_swscale_LIBS=`$PKG_CONFIG --libs "libswscale >= 3 libswscale < 4" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -3731,9 +3731,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        swscale_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libswscale" 2>&1`
+	        swscale_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libswscale >= 3 libswscale < 4" 2>&1`
         else
-	        swscale_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libswscale" 2>&1`
+	        swscale_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libswscale >= 3 libswscale < 4" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$swscale_PKG_ERRORS" >&5
