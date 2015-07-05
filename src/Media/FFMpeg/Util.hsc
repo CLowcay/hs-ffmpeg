@@ -1,36 +1,32 @@
 -- -*- haskell -*-
 {-# LANGUAGE ForeignFunctionInterface, ScopedTypeVariables #-}
 
-{- |Module 'Media.FFMpeg.Util' implements bindings to AVUtil library
+{- |
+	Module 'Media.FFMpeg.Util' implements bindings to AVUtil library
 
-   (c) 2009 Vasyl Pasternak
- -}
+	(c) 2009 Vasyl Pasternak
+-}
 
-module Media.FFMpeg.Util 
-    (
-     module Media.FFMpeg.UtilEnums_
+module Media.FFMpeg.Util (
+	module Media.FFMpeg.UtilEnums_,
+	avMalloc,
+	avFree,
+	newAvForeignPtr,
+	Buffer,
+	withBuffer,
+	bufferSize,
+	allocBuffer,
+	shiftBuffer,
+	--castBuffer,
+	castBufferSize  -- used internally
+	--unsafeBufferSetSize
+) where
 
-    ,avMalloc
-    ,avFree
-
-    ,mkFinalizerPtr
-    ,avFinalizer
-    ,newAvForeignPtr
-    ,newFinForeignPtr
-
-    ,Buffer
-    ,bufferSize
-    ,allocBuffer
-    ,shiftBuffer
-    ,castBuffer
-    ,castBufferSize
-    ,withBuffer
-    ,unsafeBufferSetSize
-    )where
-
-import Foreign
+import Control.Applicative
 import Foreign.C.Types
-import Control.Monad (liftM)
+import Foreign.ForeignPtr
+import Foreign.Marshal.Error
+import Foreign.Ptr
 import Text.Printf
 
 import Media.FFMpeg.Common
@@ -38,86 +34,62 @@ import Media.FFMpeg.UtilEnums_
 
 #include "ffmpeg.h"
 
-
---
--- |avFree
--- 
+-- | av_free
 foreign import ccall "av_free" avFree :: Ptr a -> IO ()
 
-
---
--- |avMalloc 
--- 
-foreign import ccall "av_malloc" _malloc :: CUInt -> IO (Ptr())
-
-avMalloc :: Integral a => a -> IO (Maybe (Ptr()))
+-- | avMalloc 
+avMalloc :: Integral a => a -> IO (Maybe (Ptr ()))
 avMalloc a = do 
-  ptr <- _malloc (fromIntegral a)
-  return $ if ptr == nullPtr then Nothing else Just ptr 
+	ptr <- _malloc (fromIntegral a)
+	return $ if ptr == nullPtr then Nothing else Just ptr 
 
---
--- |mkFinalizerPtr
---
-foreign import ccall "wrapper" mkFinalizerPtr :: 
-    (Ptr a -> IO ()) -> IO (FunPtr (Ptr a -> IO ()))
+foreign import ccall "av_malloc" _malloc :: CUInt -> IO (Ptr ())
 
---
--- |avFinalizer -- finalizer function pointer to avFree
---
-avFinalizer :: IO (FunPtr (Ptr a -> IO ()))
-avFinalizer = mkFinalizerPtr avFree
-
---
--- |newAvForeignPtr create new foreign ptr with avFinalizer
--- 
+-- | create new foreign ptr using av_free for finalization
 newAvForeignPtr :: Ptr a -> IO (ForeignPtr a)
-newAvForeignPtr p = avFinalizer >>= \f -> newForeignPtr f p
+newAvForeignPtr p = newFinForeignPtr avFree p
 
-newFinForeignPtr :: (Ptr a -> IO ()) -> Ptr a -> IO (ForeignPtr a)
-newFinForeignPtr f p = mkFinalizerPtr f >>= \f' -> newForeignPtr f' p
-
---
--- |Buffer type
---
+-- | Buffer type
 data Buffer = Buffer Int (ForeignPtr Buffer) 
 
 instance ExternalPointer Buffer where
-    withThis (Buffer _ b) io = withForeignPtr b (io . castPtr)
+	withThis (Buffer _ b) io = withForeignPtr b (io . castPtr)
 
+-- | operations with buffer
+withBuffer :: Buffer -> (Ptr a -> IO b) -> IO b
+withBuffer = withThis
+
+-- | Get the size of a buffer
 bufferSize :: Buffer -> Int
 bufferSize (Buffer s _) = s
 
+-- | Advance the buffer pointer.  The memory backing this Buffer will be freed
+-- after the original Buffer object has been garbage collected, which could be
+-- problematic.  This function should be revisited
 shiftBuffer :: Int -> Buffer -> IO Buffer
-shiftBuffer l buf 
-    | l > bsize = error $
-                    printf "shiftBuffer: buffer is to narrow, size is %d, shift %d\n" 
-                           bsize l
-    | otherwise = withThis buf $ castBufferSize (bsize - l) . (`plusPtr` l) 
-    where bsize = bufferSize buf
-        
+shiftBuffer l buf
+		| l > bsize = error $
+			printf "shiftBuffer: buffer is too narrow, size is %d, shift %d\n"
+				bsize l
+		| otherwise = withThis buf $ castBufferSize (bsize - l) . (`plusPtr` l)
+	where bsize = bufferSize buf
 
---
--- Allocate buffer with specified size
---
+-- | Allocate buffer with specified size
 allocBuffer :: Int -> IO Buffer
 allocBuffer size = do
-  p <- throwIf 
-       (== nullPtr)
-       (\_ -> "allocBuffer: failed to allocate memory block")
-       (_malloc (fromIntegral size))
-  liftM (Buffer size . castForeignPtr) $ newAvForeignPtr p
+	p <- throwIf 
+		(== nullPtr)
+		(\_ -> "allocBuffer: failed to allocate memory block")
+		(_malloc (fromIntegral size))
+	(Buffer size . castForeignPtr) <$> newAvForeignPtr p
 
--- |Cast pointer to buffer with size (unsafe op)
+-- | Cast pointer to buffer with size (unsafe op)
 castBufferSize :: Int -> Ptr a -> IO Buffer
-castBufferSize s = liftM (Buffer s . castForeignPtr) . newForeignPtr_
+castBufferSize s = fmap (Buffer s . castForeignPtr) . newForeignPtr_
 
--- |Cast pointer to buffer (unsafe operation)
+-- | Cast pointer to buffer (unsafe operation)
 castBuffer :: Ptr a -> IO Buffer
 castBuffer = castBufferSize (-1)
-
--- |operations with buffer
-withBuffer :: ExternalPointer p => p -> (Ptr a -> IO b) -> IO b
-withBuffer = withThis
 
 -- | Very unsafe operation, allows to set size to the 
 -- existing buffer. Use very carefully

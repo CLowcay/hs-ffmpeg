@@ -1,11 +1,12 @@
 -- -*- haskell -*- 
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-{- | Module 'Media.FFMpeg.UtilEnums_' implements 
-    enumerations from libavutil
-   
-   (c) 2009 Vasyl Pasternak
- -}
+{- |
+	Module 'Media.FFMpeg.UtilEnums_' implements 
+	enumerations from libavutil
+
+	(c) 2009 Vasyl Pasternak
+-}
 
 
 module Media.FFMpeg.UtilEnums_ (

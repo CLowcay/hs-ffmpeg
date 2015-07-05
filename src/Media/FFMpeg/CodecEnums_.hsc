@@ -1,11 +1,12 @@
 ---- -*- haskell -*- 
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-{- | Module 'Media.FFMpeg.CodecEnums_' implements 
-    enumerations from libavcodec
-   
-   (c) 2009 Vasyl Pasternak
- -}
+{- |
+	Module 'Media.FFMpeg.CodecEnums_' implements 
+	enumerations from libavcodec
+		 
+	(c) 2009 Vasyl Pasternak
+-}
 
 module Media.FFMpeg.CodecEnums_ (
 	AVMediaType,
@@ -445,10 +446,7 @@ module Media.FFMpeg.CodecEnums_ (
 import Foreign.C.Types
 import Media.FFMpeg.Common
 
---
 -- | AVMediaType
---
-
 newtype AVMediaType = AVMediaType {unAVMediaType :: CInt} deriving (Eq, Show)
 instance CEnum AVMediaType where
 	fromCEnum = unAVMediaType
@@ -464,9 +462,7 @@ instance CEnum AVMediaType where
 	avmedia_type_nb = AVMEDIA_TYPE_NB
 }
 
--- 
 -- | AVSampleFormat
---
 newtype AVSampleFormat = AVSampleFormat {unAVSampleFormat :: CInt} deriving (Eq, Show)
 instance CEnum AVSampleFormat where
 	fromCEnum = unAVSampleFormat
@@ -487,9 +483,7 @@ instance CEnum AVSampleFormat where
 	av_sample_fmt_nb = AV_SAMPLE_FMT_NB
 }
 
---
 -- | AVCodecId
---
 newtype AVCodecId = AVCodecId {unAVCodecId :: CInt} deriving (Eq, Show)
 instance CEnum AVCodecId where
 	fromCEnum = unAVCodecId

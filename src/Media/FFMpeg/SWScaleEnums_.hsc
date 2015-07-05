@@ -1,11 +1,12 @@
 -- -*- haskell -*- 
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-{- | Module 'Media.FFMpeg.SWScaleEnums_' implements 
-   enumeration from libswscale
-   
-   (c) 2009 Vasyl Pasternak
- -}
+{- |
+	Module 'Media.FFMpeg.SWScaleEnums_' implements 
+	enumeration from libswscale
+		 
+	(c) 2009 Vasyl Pasternak
+-}
 
 
 module Media.FFMpeg.SWScaleEnums_ (

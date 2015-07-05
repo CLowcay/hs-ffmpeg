@@ -1,50 +1,51 @@
 -- -*- haskell -*-
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE TupleSections #-}
 
-{- |Module 'Media.FFMpeg.Codec' implements bindings to AVCodec library
+{- |
+	Module 'Media.FFMpeg.Codec' implements bindings to AVCodec library
 
-   (c) 2009 Vasyl Pasternak
- -}
+	(c) 2009 Vasyl Pasternak
+-}
 
-module Media.FFMpeg.Codec 
-    (
-     libAVCodecVersion
+module Media.FFMpeg.Codec (
+	libAVCodecVersion,
 
-    ,module Media.FFMpeg.CodecEnums_
+	module Media.FFMpeg.CodecEnums_,
 
-    ,WithCodecId (..)
-    ,WithCodecType (..)
-    ,WithVideoProps (..)
-    ,WithAudioProps (..)
+	WithCodecId (..),
+	WithCodecType (..),
+	WithVideoProps (..),
+	WithAudioProps (..),
 
-    ,CodecContext
-    ,toCodecContext
+	AVCodecContext,
+	toCodecContext,
 
-    ,Codec
-    ,openCodec
-    ,findDecoder
-    ,decodeVideo
-    ,decodeAudio
-    ,decodeAudioPacket
-    --,maxAudioFrameSize
-    --,decodeAudioPacket'
+	AVCodec,
+	openCodec,
+	findDecoder,
+	decodeVideo2,
+	decodeAudio3,
+	decodeAudioPacket,
+	--maxAudioFrameSize,
+	--decodeAudioPacket',
 
-    ,CommonPicture (..)
-    ,pictureGetSize
+	CommonPicture (..),
+	pictureGetSize,
 
-    ,Frame
-    ,allocFrame
+	AVFrame,
+	allocFrame,
 
-    ,Packet
-    ,allocPacket
-    ,newPacket
-    ,cleanPacket
-    ,dupPacket
-    ,packetGetStreamIndex
-    ,packetGetSize
-    ,packetGetBuffer
-    ,packetSetBuffer
-    )where
+	AVPacket,
+	allocPacket,
+	newPacket,
+	cleanPacket,
+	dupPacket,
+	packetGetStreamIndex,
+	packetGetSize,
+	packetGetBuffer,
+	packetSetBuffer
+) where
 
 #include "ffmpeg.h"
 
@@ -68,197 +69,146 @@ import Media.FFMpeg.Common
 import Media.FFMpeg.Util
 import Media.FFMpeg.CodecEnums_
 
+-- | Which version of libavcodec are we using?
 libAVCodecVersion :: Version
 libAVCodecVersion = fromVersionNum #{const LIBAVCODEC_VERSION_INT}
 
---
--- | properties classes
---
+-- TODO: review these classes, are they really safe?
+
+-- | For structs that have a codecID field
 class WithCodecId a where
-    getCodecId :: a -> AVCodecId
+	getCodecId :: a -> AVCodecId
 
+-- | For structs that have a codecType field
 class WithCodecType a where
-    getCodecType :: a -> AVMediaType
+	getCodecType :: a -> AVMediaType
 
+-- | For structs that have video properties
 class WithVideoProps a where
-    getVideoWidth :: a -> Int
-    getVideoHeight :: a -> Int
-    getPixelFormat :: a -> PixelFormat
+	getVideoWidth :: a -> Int
+	getVideoHeight :: a -> Int
+	getPixelFormat :: a -> PixelFormat
 
+-- | For structs that have audio properties
 class WithAudioProps a where
-    getAudioSampleRate :: a -> Int
-    getAudioChannels :: a -> Int
-    getAudioSampleFormat :: a -> AVSampleFormat
+	getAudioSampleRate :: a -> Int
+	getAudioChannels :: a -> Int
+	getAudioSampleFormat :: a -> AVSampleFormat
 
--- 
--- | CodecContext -- wrapper to AVCodecContext
---
-newtype CodecContext = CodecContext (ForeignPtr CodecContext)
+-- | AVCodecContext struct
+newtype AVCodecContext = AVCodecContext (ForeignPtr AVCodecContext)
 
-instance ExternalPointer CodecContext where
-    withThis (CodecContext ctx) io = withForeignPtr ctx (io . castPtr)
+instance ExternalPointer AVCodecContext where
+	withThis (AVCodecContext ctx) io = withForeignPtr ctx (io . castPtr)
 
---
--- | convert poiner to CodecContext
-toCodecContext :: Ptr a -> IO CodecContext
-toCodecContext =  fmap CodecContext . newForeignPtr_ . castPtr
+-- | convert pointer to AVCodecContext
+toCodecContext :: Ptr a -> IO AVCodecContext
+toCodecContext =  fmap AVCodecContext . newForeignPtr_ . castPtr
 
 _unsafeGetValue :: ExternalPointer p => p -> (Ptr a -> IO b) -> b
 _unsafeGetValue extp io = unsafePerformIO $ withThis extp io
 
-instance WithCodecId CodecContext where
-    getCodecId ctx = _unsafeGetValue ctx $ \ctx' ->
-                     toCEnum <$>
-                     (#{peek AVCodecContext, codec_id} ctx' :: IO CInt)
+instance WithCodecId AVCodecContext where
+	getCodecId ctx = _unsafeGetValue ctx $ \ctx' ->
+		toCEnum <$> (#{peek AVCodecContext, codec_id} ctx' :: IO CInt)
 
-instance WithCodecType CodecContext where
-    getCodecType ctx = _unsafeGetValue ctx $ \ctx' ->
-                       toCEnum <$>
-                       (#{peek AVCodecContext, codec_type} ctx' :: IO CInt)
+instance WithCodecType AVCodecContext where
+	getCodecType ctx = _unsafeGetValue ctx $ \ctx' ->
+		toCEnum <$> (#{peek AVCodecContext, codec_type} ctx' :: IO CInt)
 
-instance WithVideoProps CodecContext where
-    getVideoWidth ctx = _unsafeGetValue ctx $ \ctx' ->
-                        cToInt <$>
-                                  (#{peek AVCodecContext, width} ctx' :: IO CInt)
-                        
+instance WithVideoProps AVCodecContext where
+	getVideoWidth ctx = _unsafeGetValue ctx $ \ctx' ->
+		cToInt <$> (#{peek AVCodecContext, width} ctx' :: IO CInt)
 
-    getVideoHeight ctx = _unsafeGetValue ctx $ \ctx' -> 
-                         cToInt <$>
-                                   (#{peek AVCodecContext, height} ctx' :: IO CInt)
+	getVideoHeight ctx = _unsafeGetValue ctx $ \ctx' -> 
+		cToInt <$> (#{peek AVCodecContext, height} ctx' :: IO CInt)
 
-    getPixelFormat ctx = _unsafeGetValue ctx $ \ctx' -> 
-                         toCEnum <$>
-                               (#{peek AVCodecContext, pix_fmt} ctx' :: IO CInt)
+	getPixelFormat ctx = _unsafeGetValue ctx $ \ctx' -> 
+		toCEnum <$> (#{peek AVCodecContext, pix_fmt} ctx' :: IO CInt)
 
-instance WithAudioProps CodecContext where
-    getAudioSampleRate ctx = _unsafeGetValue ctx $ \ctx' ->
-                             cToInt <$> (#{peek AVCodecContext, sample_rate} ctx' :: IO CInt)
+instance WithAudioProps AVCodecContext where
+	getAudioSampleRate ctx = _unsafeGetValue ctx $ \ctx' ->
+		cToInt <$> (#{peek AVCodecContext, sample_rate} ctx' :: IO CInt)
 
-    getAudioChannels ctx = _unsafeGetValue ctx $ \ctx' ->
-                           cToInt <$> (#{peek AVCodecContext, channels} ctx' :: IO CInt)
+	getAudioChannels ctx = _unsafeGetValue ctx $ \ctx' ->
+		cToInt <$> (#{peek AVCodecContext, channels} ctx' :: IO CInt)
 
-    getAudioSampleFormat ctx = _unsafeGetValue ctx $ \ctx' ->
-                               toCEnum <$>
-                                         (#{peek AVCodecContext, sample_fmt} ctx' :: IO CInt)
+	getAudioSampleFormat ctx = _unsafeGetValue ctx $ \ctx' ->
+		toCEnum <$> (#{peek AVCodecContext, sample_fmt} ctx' :: IO CInt)
 
---
--- | Codec - implementation of AVCodec
---
-newtype Codec = Codec (Ptr Codec)
+-- | AVCodec struct
+newtype AVCodec = AVCodec (Ptr AVCodec)
 
-instance ExternalPointer Codec where
-    withThis (Codec c) io = io (castPtr c)
+instance ExternalPointer AVCodec where
+	withThis (AVCodec c) io = io (castPtr c)
 
-instance WithCodecId Codec where
-    getCodecId c = _unsafeGetValue c $ \c' ->
-                   toCEnum <$>
-                   (#{peek AVCodec, id} c' :: IO CInt)
+instance WithCodecId AVCodec where
+	getCodecId c = _unsafeGetValue c $ \c' ->
+		toCEnum <$> (#{peek AVCodec, id} c' :: IO CInt)
 
-instance WithCodecType Codec where
-    getCodecType c = _unsafeGetValue c $ \c' ->
-                     toCEnum <$>
-                     (#{peek AVCodec, type} c' :: IO CInt)
+instance WithCodecType AVCodec where
+	getCodecType c = _unsafeGetValue c $ \c' ->
+		toCEnum <$> (#{peek AVCodec, type} c' :: IO CInt)
 
---
--- | openCodec - opens codec due to CodecContext
---
+-- | Initialize an AVCodecContext to use the given AVCodec
+openCodec :: AVCodecContext -> AVCodec -> IO ()
+openCodec ctx@(AVCodecContext ct) codec =
+	withThis ctx $ \ctx' ->
+	withThis codec $ \codec' -> do
+		throwIf_ (<0)
+			(printf "openCodec: fails to open codec '%s' - errocode %d\n" (show (getCodecId codec)) . cToInt)  
+			(_avcodec_open ctx' codec')
+		finalizer <- mkFinalizerPtr _avcodec_close
+		addForeignPtrFinalizer finalizer (castForeignPtr ct)
+
+-- TODO: upgrade to avcodec_open2
 foreign import ccall "avcodec_open" _avcodec_open :: Ptr () -> Ptr () -> IO CInt
 foreign import ccall "avcodec_close" _avcodec_close :: Ptr () -> IO ()
 
-openCodec :: CodecContext -> Codec -> IO ()
-openCodec ctx @ (CodecContext ct) codec =
-    withThis ctx $ \ctx' ->
-        withThis codec $ \codec' -> do
-          throwIf_ (<0)
-                   (printf "openCodec: fails to open codec '%s' - errocode %d\n" (show (getCodecId codec)) . cToInt)  
-                   (_avcodec_open ctx' codec')
-          finalizer <- mkFinalizerPtr _avcodec_close
-          addForeignPtrFinalizer finalizer (castForeignPtr ct)
-
---
--- |findDecoder - finds decoder by CodecId
---
-foreign import ccall "avcodec_find_decoder" _avcodec_find_decoder :: 
-    CInt -> IO (Ptr ())
-
-findDecoder :: AVCodecId -> IO (Maybe Codec)
+-- | Find a registered decoder with a matching codec ID
+findDecoder :: AVCodecId -> IO (Maybe AVCodec)
 findDecoder cid = do
-  (maybe Nothing (Just . Codec . castPtr) . justPtr) <$>
-        (_avcodec_find_decoder (fromCEnum cid))
+	(maybe Nothing (Just . AVCodec . castPtr) . justPtr) <$>
+		(_avcodec_find_decoder (fromCEnum cid))
 
+foreign import ccall "avcodec_find_decoder" _avcodec_find_decoder :: 
+	CInt -> IO (Ptr ())
 
---
--- |decodeVideo -- decodes video frame, returns True if
--- complete picture is decompressed
---
-#if LIBAVCODEC_VERSION_MAJOR < 53
-foreign import ccall "avcodec_decode_video" _avcodec_decode_video :: 
-    Ptr () -> Ptr () -> (Ptr CInt) -> Ptr () -> CInt -> IO CInt
+-- | Decode a video frame into a picture
+-- Returns False if no frame could be decoded, otherwise True
+decodeVideo2 :: AVCodecContext -> AVFrame -> AVPacket -> IO Bool
+decodeVideo2 ctx frm pkt =
+	withThis ctx $ \ctx' -> 
+	withThis frm $ \frm' -> 
+	withThis pkt $ \pkt' ->
+	alloca $ \gotPic' -> do
+		throwIf (< 0)
+			(printf "decodeVideo: failed to decode video packet: %d" . cToInt)
+			(_avcodec_decode_video ctx' frm' gotPic' pkt')
+		fmap (/= 0) (peek gotPic')
 
-decodeVideo :: CodecContext -> Frame -> Packet -> IO Bool
-decodeVideo ctx frm pkt =
-    withThis ctx $ \ctx' -> 
-    withThis frm $ \frm' -> 
-    let obuf = packetGetBuffer pkt
-    in withThis obuf $ \obuf' ->
-    alloca $ \gotPic' -> do
-      throwIf (<0)
-              (printf "decodeVideo: failed to decode video packet: %d" . cToInt)
-              (_avcodec_decode_video ctx' frm' gotPic' obuf' 
-               (cFromInt (bufferSize obuf)))
-      fmap (>0) (peek gotPic')
-#else
 foreign import ccall "avcodec_decode_video2" _avcodec_decode_video :: 
     Ptr () -> Ptr () -> (Ptr CInt) -> Ptr () -> IO CInt
 
-decodeVideo :: CodecContext -> Frame -> Packet -> IO Bool
-decodeVideo ctx frm pkt =
-    withThis ctx $ \ctx' -> 
-    withThis frm $ \frm' -> 
-    withThis pkt $ \pkt' ->
-    alloca $ \gotPic' -> do
-      throwIf (<0)
-              (printf "decodeVideo: failed to decode video packet: %d" . cToInt)
-              (_avcodec_decode_video ctx' frm' gotPic' pkt')
-      fmap (>0) (peek gotPic')
-#endif
+decodeAudio3 ::     -- ^ Decode an audio frame into samples
+	AVCodecContext    -- ^ The codec context
+	-> Buffer         -- ^ The output buffer
+	-> AVPacket       -- ^ The input packet containing the input buffer
+	-> IO (Int, Int)  -- ^ (number of bytes used, output buffer size)
+decodeAudio3 ctx buf pkt = 
+	withThis ctx $ \ctx' -> 
+	withThis buf $ \buf' ->
+	withThis pkt $ \pkt' -> 
+	with bufSize $ \frm_size -> do
+		result <- throwIf (< 0)
+			(printf "decodeAudio: decode packet failed. Return value is %d" . cToInt)
+			(cToInt <$> _avcodec_decode_audio ctx' buf' frm_size pkt')
+		((result, ) . cToInt) <$> peek frm_size
+	where bufSize = cFromInt $ bufferSize buf :: CInt
 
---
--- |decodeAudio - decodes audio frame to the existing buffer
--- return (ReadBytes, DecodedBytes)
---
-#if LIBAVCODEC_VERSION_MAJOR < 53      
-foreign import ccall "avcodec_decode_audio2" _avcodec_decode_audio :: 
-    Ptr () -> Ptr () -> (Ptr CInt) -> Ptr () -> CInt -> IO CInt
-
-decodeAudio :: CodecContext -> Buffer -> Packet -> IO (Int, Int)
-decodeAudio ctx buf pkt = 
-    withThis ctx $ \ctx' -> 
-    withThis buf $ \buf' -> 
-    let obuf = packetGetBuffer pkt 
-    in withThis obuf $ \obuf' -> 
-    with bufSize $ \frm_size -> do
-      result <- throwIf (<0)
-                (printf "decodeAudio: decode packet failed. Return value is %d" . cToInt)
-                (liftM cToInt $ _avcodec_decode_audio ctx' buf' frm_size obuf' (cFromInt (bufferSize obuf)))
-      liftM ((,) result . cToInt) $ peek frm_size
-    where bufSize = cFromInt $ bufferSize buf :: CInt
-#else
+-- TODO: upgrade to avcodec_decode_audio4
 foreign import ccall "avcodec_decode_audio3" _avcodec_decode_audio :: 
     Ptr () -> Ptr () -> (Ptr CInt) -> Ptr () -> IO CInt
-
-decodeAudio :: CodecContext -> Buffer -> Packet -> IO (Int, Int)
-decodeAudio ctx buf pkt = 
-    withThis ctx $ \ctx' -> 
-    withThis buf $ \buf' ->
-    withThis pkt $ \pkt' -> 
-    with bufSize $ \frm_size -> do
-      result <- throwIf (<0)
-                (printf "decodeAudio: decode packet failed. Return value is %d" . cToInt)
-                (cToInt <$> _avcodec_decode_audio ctx' buf' frm_size pkt')
-      ((,) result . cToInt) <$> peek frm_size
-    where bufSize = cFromInt $ bufferSize buf :: CInt
-#endif
 
 --
 -- | decodeAudio is very complex to use, the another version of the 
@@ -266,7 +216,7 @@ decodeAudio ctx buf pkt =
 -- buffers with max size is set to 'size'. 
 --
 
-decodeAudioPacket :: Int -> CodecContext -> Packet -> IO ByteString
+decodeAudioPacket :: Int -> AVCodecContext -> AVPacket -> IO ByteString
 decodeAudioPacket buffSize ctx pkt = dupPacket pkt >> fillBuffer 
     where 
       shiftPacket size = packetSetBuffer pkt =<< 
@@ -277,15 +227,16 @@ decodeAudioPacket buffSize ctx pkt = dupPacket pkt >> fillBuffer
 
       fillBuffer = do
         buf <- allocBuffer buffSize
-        (r, w) <- decodeAudio ctx buf pkt
+        (r, w) <- decodeAudio3 ctx buf pkt
         result <- copyToByteString buf w
         if r < (packetGetSize pkt) then do
                     shiftPacket r
                     rest <- fillBuffer
                     return $  result `append` rest
                   else return $ result
-      
 
+-- TODO: review these functions
+      
 --maxAudioFrameSize :: Int
 --maxAudioFrameSize = #{const AVCODEC_MAX_AUDIO_FRAME_SIZE}
 
@@ -295,13 +246,7 @@ decodeAudioPacket buffSize ctx pkt = dupPacket pkt >> fillBuffer
 --decodeAudioPacket' :: CodecContext -> Packet -> IO ByteString
 --decodeAudioPacket' = decodeAudioPacket maxAudioFrameSize
 
---
--- |AVPicture
---
-
-foreign import ccall "avpicture_fill" _avpicture_fill ::
-    Ptr () -> Ptr () -> CInt -> CInt -> CInt -> IO CInt
-
+-- TODO: review this class
 class ExternalPointer pic => CommonPicture pic where
     pictureFill :: pic -> Buffer -> PixelFormat -> Int -> Int -> IO ()
     pictureFill pic buf pf w h =
@@ -323,121 +268,109 @@ class ExternalPointer pic => CommonPicture pic where
         castPtr (_unsafeGetValue pic $
                  return . (`plusPtr` #{offset AVPicture, linesize}))
 
---
--- |pictureGetSize -- calculate the size of the picture in bytes
---
+foreign import ccall "avpicture_fill" _avpicture_fill ::
+    Ptr () -> Ptr () -> CInt -> CInt -> CInt -> IO CInt
+
+-- | Calculate the size of the picture in bytes
+pictureGetSize :: PixelFormat -> Int -> Int -> Int
+pictureGetSize pf w h = cToInt $ unsafePerformIO -- TODO: is this really safe?
+	(_avpicture_get_size (fromCEnum pf) (cFromInt w) (cFromInt h))
+
 foreign import ccall "avpicture_get_size" _avpicture_get_size :: 
     CInt -> CInt -> CInt -> IO CInt
 
-pictureGetSize :: PixelFormat -> Int -> Int -> Int
-pictureGetSize pf w h = cToInt $ unsafePerformIO 
-                        (_avpicture_get_size (fromCEnum pf) (cFromInt w) (cFromInt h))
+-- | AVFrame struct
+newtype AVFrame = AVFrame (ForeignPtr AVFrame)
 
---
--- |Frame - implementation of AVFrame
---
+instance ExternalPointer AVFrame where
+    withThis (AVFrame f) io = withForeignPtr f (io . castPtr)
 
-newtype Frame = Frame (ForeignPtr Frame)
+instance CommonPicture AVFrame
 
-instance ExternalPointer Frame where
-    withThis (Frame f) io = withForeignPtr f (io . castPtr)
+-- | Allocate an AVFrame
+allocFrame :: IO AVFrame
+allocFrame = do
+	p <- throwIf (== nullPtr)
+		(\_ -> "allocFrame: failed to allocate AVFrame")
+		(_avcodec_alloc_frame)
+	(AVFrame . castForeignPtr) <$> newAvForeignPtr p
 
-instance CommonPicture Frame
-
---
--- |allocFrame - allocate frame structure
---
 foreign import ccall "avcodec_alloc_frame" _avcodec_alloc_frame :: IO (Ptr ())
 
-allocFrame :: IO Frame
-allocFrame = do
-  p <- throwIf (== nullPtr)
-               (\_ -> "allocFrame: failed to allocate frame")
-               _avcodec_alloc_frame
-  (Frame . castForeignPtr) <$> newAvForeignPtr p
+-- | AVPacket struct
+newtype AVPacket = AVPacket (ForeignPtr AVPacket)
 
---
--- | Packet -- binding to AVPacket
---
+instance ExternalPointer AVPacket where
+	withThis (AVPacket pkt) io = withForeignPtr pkt (io . castPtr)
 
-newtype Packet = Packet (ForeignPtr Packet)
-
-instance ExternalPointer Packet where
-    withThis (Packet pkt) io = withForeignPtr pkt (io . castPtr)
-
---
--- |allocPacket -- allocates packet structure, but don't allocates the
--- packet.data
---
+-- | Allocate packet structure. Does not allocate packet.data
+allocPacket :: IO AVPacket
+allocPacket = do
+	p <- mallocBytes #{size AVPacket}
+	_av_init_packet p
+	pkt <- newAvForeignPtr p
+	deinit <- mkFinalizerPtr _av_free_packet 
+	addForeignPtrFinalizer deinit pkt
+	return (AVPacket $ castForeignPtr pkt)
 
 -- The 0.51.0 version of ffmpeg defines av_init_packet as inline
+-- TODO: review these functions
 foreign import ccall "b_init_packet" _av_init_packet :: Ptr () -> IO ()
-foreign import ccall "b_free_packet" _b_free_packet :: Ptr () -> IO ()
+foreign import ccall "b_free_packet" _av_free_packet :: Ptr () -> IO ()
 
+-- | Allocate packet with data
+newPacket :: Int -> IO AVPacket
+newPacket s = do
+	p <- mallocBytes #{size AVPacket}
+	throwIf (/= 0)
+		(printf "newPacket: error allocating new packet with size %d - %d" s . cToInt)
+		(_av_new_packet p (cFromInt s))
+	pkt <- newAvForeignPtr p
+	deinit <- mkFinalizerPtr _av_free_packet
+	addForeignPtrFinalizer deinit pkt
+	return (AVPacket $ castForeignPtr pkt)
 
-allocPacket :: IO Packet
-allocPacket = do
-  p <- mallocBytes #{size AVPacket}
-  _av_init_packet p
-  pkt <- newAvForeignPtr p
-  deinit <- mkFinalizerPtr _b_free_packet 
-  addForeignPtrFinalizer deinit pkt
-  return (Packet $ castForeignPtr pkt)
-
---
--- |newPacket -- allocates packet with data
--- 
 foreign import ccall "av_new_packet" _av_new_packet :: Ptr () -> CInt -> IO CInt
 
-newPacket :: Int -> IO Packet
-newPacket s = do
-  p <- mallocBytes #{size AVPacket}
-  throwIf (/= 0)
-          (printf "newPacket: error allocating new packet with size %d - %d" s . cToInt)
-          (_av_new_packet p (cFromInt s))
-  pkt <- newAvForeignPtr p
-  deinit <- mkFinalizerPtr _b_free_packet
-  addForeignPtrFinalizer deinit pkt
-  return (Packet $ castForeignPtr pkt)
+-- | Free the packet manually
+cleanPacket :: AVPacket -> IO ()
+cleanPacket pkt = withThis pkt _av_free_packet
 
---
--- | cleanPacket - cleans the packet manually
---
-cleanPacket :: Packet -> IO ()
-cleanPacket pkt = withThis pkt _b_free_packet
+-- | If packet doesn't own the buffer, then it creates new buffer, and copies
+-- data there
+dupPacket :: AVPacket -> IO ()
+dupPacket pkt = 
+	withThis pkt $ \pkt' -> do
+		throwIf (< 0)
+			(printf "dupPacket: failed to dup packet: %d" . cToInt)
+			(_av_dup_packet pkt')
+		return ()
 
-
---
--- | dupPacket -- if packet doesn't own the buffer, than it 
--- creates new buffer, and copies data there
---
 foreign import ccall "av_dup_packet" _av_dup_packet :: Ptr ()-> IO CInt
 
-dupPacket :: Packet -> IO ()
-dupPacket pkt = 
-    withThis pkt $ \pkt' -> 
-        throwIf (< 0)
-                (printf "dupPacket: failed to dup packet: %d" . cToInt)
-                (_av_dup_packet pkt') >> return ()
-
-packetGetStreamIndex :: Packet -> Int
+-- |  get the stream_index field from an AVPacket
+packetGetStreamIndex :: AVPacket -> Int
 packetGetStreamIndex pkt = _unsafeGetValue pkt $ \pkt' ->
-                           cToInt <$> (#{peek AVPacket, stream_index} pkt' :: IO CInt)
+	cToInt <$> (#{peek AVPacket, stream_index} pkt' :: IO CInt)
 
-packetGetSize :: Packet -> Int
+-- | get the size field from an AVPacket
+packetGetSize :: AVPacket -> Int
 packetGetSize pkt = _unsafeGetValue pkt $ \pkt' ->
-                    cToInt <$> (#{peek AVPacket, size} pkt' :: IO CInt)
+	cToInt <$> (#{peek AVPacket, size} pkt' :: IO CInt)
 
-packetGetBuffer :: Packet -> Buffer
+-- | get the data field from an AVPacket
+packetGetBuffer :: AVPacket -> Buffer
 packetGetBuffer pkt = 
-    _unsafeGetValue pkt $ \pkt' -> 
-        (#{peek AVPacket, data} pkt' :: IO (Ptr ())) >>= 
-        castBufferSize (packetGetSize pkt)
+	_unsafeGetValue pkt $ \pkt' -> 
+		(#{peek AVPacket, data} pkt' :: IO (Ptr ())) >>= 
+		castBufferSize (packetGetSize pkt)
 
-packetSetBuffer :: Packet -> Buffer -> IO ()
+-- | use a Buffer to set the size and data fields of an AVPacket
+packetSetBuffer :: AVPacket -> Buffer -> IO ()
 packetSetBuffer pkt buf = 
-    withBuffer buf $ \buf' ->
-    withThis pkt $ \pkt' -> do
-                            let bufSize = bufferSize buf
-                            #{poke AVPacket, size} pkt' ((cFromInt bufSize) :: CInt)
-                            #{poke AVPacket, data} pkt' (castPtr buf')
+	withBuffer buf $ \buf' ->
+	withThis pkt $ \pkt' -> do
+		let bufSize = bufferSize buf
+		#{poke AVPacket, size} pkt' ((cFromInt bufSize) :: CInt)
+		#{poke AVPacket, data} pkt' (castPtr buf')
+
