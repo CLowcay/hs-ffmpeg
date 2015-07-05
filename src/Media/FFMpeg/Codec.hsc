@@ -190,7 +190,8 @@ decodeVideo2 ctx frm pkt =
 foreign import ccall "avcodec_decode_video2" _avcodec_decode_video :: 
     Ptr () -> Ptr () -> (Ptr CInt) -> Ptr () -> IO CInt
 
-decodeAudio3 ::     -- ^ Decode an audio frame into samples
+-- | Decode an audio frame into samples
+decodeAudio3 ::     
 	AVCodecContext    -- ^ The codec context
 	-> Buffer         -- ^ The output buffer
 	-> AVPacket       -- ^ The input packet containing the input buffer
