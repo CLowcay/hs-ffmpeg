@@ -104,13 +104,13 @@ openInputFile name =
 				(printf "openInputFile: fail to open %s - errorcode %d\n" name . cToInt)
 				(_open_file pp s nullPtr 0 nullPtr)
 			ptr <- peek pp
-			(AVFormatContext . castForeignPtr) <$> newFinForeignPtr _close_file ptr
+			(AVFormatContext . castForeignPtr) <$> newForeignPtr pclose_file ptr
 
 foreign import ccall "av_open_input_file" _open_file :: 
 	Ptr (Ptr ()) -> CString -> Ptr () -> CInt -> Ptr () -> IO CInt
 
-foreign import ccall "av_close_input_file" _close_file ::
-	Ptr a -> IO ()
+foreign import ccall "&av_close_input_file" pclose_file ::
+	FunPtr (Ptr a -> IO ())
 
 -- | AVStream struct
 newtype AVStream = AVStream (Ptr AVStream)

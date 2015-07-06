@@ -163,12 +163,11 @@ openCodec ctx@(AVCodecContext ct) codec =
 		throwIf_ (<0)
 			(printf "openCodec: fails to open codec '%s' - errocode %d\n" (show (getCodecId codec)) . cToInt)  
 			(_avcodec_open ctx' codec')
-		finalizer <- mkFinalizerPtr _avcodec_close
-		addForeignPtrFinalizer finalizer (castForeignPtr ct)
+		addForeignPtrFinalizer pavcodec_close (castForeignPtr ct)
 
 -- TODO: upgrade to avcodec_open2
 foreign import ccall "avcodec_open" _avcodec_open :: Ptr () -> Ptr () -> IO CInt
-foreign import ccall "avcodec_close" _avcodec_close :: Ptr () -> IO ()
+foreign import ccall "&avcodec_close" pavcodec_close :: FunPtr (Ptr () -> IO ())
 
 -- | Find a registered decoder with a matching codec ID
 findDecoder :: AVCodecId -> IO (Maybe AVCodec)
@@ -315,14 +314,15 @@ allocPacket = do
 	p <- mallocBytes #{size AVPacket}
 	_av_init_packet p
 	pkt <- newAvForeignPtr p
-	deinit <- mkFinalizerPtr _av_free_packet 
-	addForeignPtrFinalizer deinit pkt
+	addForeignPtrFinalizer pav_free_packet pkt
 	return (AVPacket $ castForeignPtr pkt)
 
 -- The 0.51.0 version of ffmpeg defines av_init_packet as inline
 -- TODO: review these functions
 foreign import ccall "b_init_packet" _av_init_packet :: Ptr () -> IO ()
 foreign import ccall "b_free_packet" _av_free_packet :: Ptr () -> IO ()
+foreign import ccall "&b_free_packet" pav_free_packet ::
+	FunPtr (Ptr () -> IO ())
 
 -- | Allocate packet with data
 newPacket :: Int -> IO AVPacket
@@ -332,8 +332,7 @@ newPacket s = do
 		(printf "newPacket: error allocating new packet with size %d - %d" s . cToInt)
 		(_av_new_packet p (cFromInt s))
 	pkt <- newAvForeignPtr p
-	deinit <- mkFinalizerPtr _av_free_packet
-	addForeignPtrFinalizer deinit pkt
+	addForeignPtrFinalizer pav_free_packet pkt
 	return (AVPacket $ castForeignPtr pkt)
 
 foreign import ccall "av_new_packet" _av_new_packet :: Ptr () -> CInt -> IO CInt

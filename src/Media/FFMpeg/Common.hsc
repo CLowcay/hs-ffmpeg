@@ -14,8 +14,6 @@ Internal utility module for the ffmpeg bindings
 
 module Media.FFMpeg.Common (
 	ExternalPointer (..),
-	mkFinalizerPtr,
-	newFinForeignPtr,
 	CEnum (..),
 	fromVersionNum,
 	cToInt,
@@ -33,13 +31,6 @@ import Foreign.Ptr
 -- similar to 'Foreign.Marshal.Utils.with' but without need Storable specifier
 class ExternalPointer a where
     withThis :: a -> (Ptr b -> IO c) -> IO c
-
--- | create a new foreign ptr using a particular finalizer
-newFinForeignPtr :: (Ptr a -> IO ()) -> Ptr a -> IO (ForeignPtr a)
-newFinForeignPtr f p = mkFinalizerPtr f >>= \f' -> newForeignPtr f' p
-
-foreign import ccall "wrapper" mkFinalizerPtr :: 
-	(Ptr a -> IO ()) -> IO (FunPtr (Ptr a -> IO ()))
 
 -- |Used for marshalling enumerations and flags
 -- For internal use only

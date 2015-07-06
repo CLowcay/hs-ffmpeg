@@ -56,14 +56,15 @@ getContext  (srcW, srcH, srcPf) (dstW, dstH, dstPf) flags = do
 		(_sws_getContext (cFromInt srcW) (cFromInt srcH) (fromCEnum srcPf)
 			(cFromInt dstW) (cFromInt dstH) (fromCEnum dstPf)
 			(fromCEnum.mconcat$ flags) nullPtr nullPtr nullPtr)
-	(SwsContext . castForeignPtr) <$> newFinForeignPtr _sws_freeContext ret
+	(SwsContext . castForeignPtr) <$> newForeignPtr psws_freeContext ret
 
 foreign import ccall "sws_getContext" _sws_getContext :: 
 	CInt -> CInt -> CInt -> 
 	CInt -> CInt -> CInt ->
 	CInt -> Ptr () -> Ptr () -> Ptr () -> IO (Ptr ())
 
-foreign import ccall "sws_freeContext" _sws_freeContext :: Ptr () -> IO ()
+foreign import ccall "&sws_freeContext" psws_freeContext ::
+	FunPtr (Ptr () -> IO ())
 
 -- | scale - a scale function
 scale :: SwsContext -> Ptr () -> Ptr () -> Int -> Int -> Ptr () -> Ptr () -> IO ()

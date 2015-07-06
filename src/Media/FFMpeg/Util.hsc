@@ -15,7 +15,6 @@ Bindings to libavutil.
 module Media.FFMpeg.Util (
 	module Media.FFMpeg.Util.Enums,
 	avMalloc,
-	avFree,
 	newAvForeignPtr,
 	Buffer,
 	withBuffer,
@@ -39,20 +38,21 @@ import Media.FFMpeg.Util.Enums
 
 #include "ffmpeg.h"
 
--- | av_free
+-- | avFree
 foreign import ccall "av_free" avFree :: Ptr a -> IO ()
+foreign import ccall "&av_free" pav_free :: FunPtr (Ptr a -> IO ())
 
 -- | avMalloc 
 avMalloc :: Integral a => a -> IO (Maybe (Ptr ()))
 avMalloc a = do 
-	ptr <- _malloc (fromIntegral a)
+	ptr <- av_malloc (fromIntegral a)
 	return $ if ptr == nullPtr then Nothing else Just ptr 
 
-foreign import ccall "av_malloc" _malloc :: CUInt -> IO (Ptr ())
+foreign import ccall "av_malloc" av_malloc :: CUInt -> IO (Ptr ())
 
 -- | create new foreign ptr using av_free for finalization
 newAvForeignPtr :: Ptr a -> IO (ForeignPtr a)
-newAvForeignPtr p = newFinForeignPtr avFree p
+newAvForeignPtr = newForeignPtr pav_free
 
 -- | Buffer type
 data Buffer = Buffer Int (ForeignPtr Buffer) 
@@ -85,7 +85,7 @@ allocBuffer size = do
 	p <- throwIf 
 		(== nullPtr)
 		(\_ -> "allocBuffer: failed to allocate memory block")
-		(_malloc (fromIntegral size))
+		(av_malloc (fromIntegral size))
 	(Buffer size . castForeignPtr) <$> newAvForeignPtr p
 
 -- | Cast pointer to buffer with size (unsafe op)
