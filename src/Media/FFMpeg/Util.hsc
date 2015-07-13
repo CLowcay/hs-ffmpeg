@@ -1,5 +1,5 @@
 -- -*- haskell -*-
-{-# LANGUAGE ForeignFunctionInterface, ScopedTypeVariables #-}
+{-# LANGUAGE ForeignFunctionInterface, ScopedTypeVariables, FlexibleContexts #-}
 
 {- |
 
@@ -14,90 +14,72 @@ Bindings to libavutil.
 
 module Media.FFMpeg.Util (
 	module Media.FFMpeg.Util.Enums,
+	module Media.FFMpeg.Util.Dict,
+
+	-- * Raw bindings
+	av_free,
+	av_freep,
+	pav_free,
+	av_malloc,
+
+	-- * Haskell interface to libavutil
 	avMalloc,
-	newAvForeignPtr,
+
+	-- * Buffer management
 	Buffer,
-	withBuffer,
-	bufferSize,
 	allocBuffer,
-	shiftBuffer,
-	--castBuffer,
-	castBufferSize  -- used internally
-	--unsafeBufferSetSize
+	bufferSize
 ) where
 
 import Control.Applicative
+import Control.Monad.Except
+import Data.Word
 import Foreign.C.Types
 import Foreign.ForeignPtr
+import Foreign.ForeignPtr.Unsafe
 import Foreign.Marshal.Error
 import Foreign.Ptr
 import Text.Printf
 
 import Media.FFMpeg.Common
+import Media.FFMpeg.Util.Dict
 import Media.FFMpeg.Util.Enums
 
 #include "ffmpeg.h"
 
--- | avFree
-foreign import ccall "av_free" avFree :: Ptr a -> IO ()
+foreign import ccall "av_free" av_free :: Ptr a -> IO ()
+foreign import ccall "av_freep" av_freep :: Ptr a -> IO ()
+-- | Pointer to av_free
 foreign import ccall "&av_free" pav_free :: FunPtr (Ptr a -> IO ())
-
--- | avMalloc 
-avMalloc :: Integral a => a -> IO (Maybe (Ptr ()))
-avMalloc a = do 
-	ptr <- av_malloc (fromIntegral a)
-	return $ if ptr == nullPtr then Nothing else Just ptr 
-
 foreign import ccall "av_malloc" av_malloc :: CUInt -> IO (Ptr ())
 
--- | create new foreign ptr using av_free for finalization
-newAvForeignPtr :: Ptr a -> IO (ForeignPtr a)
-newAvForeignPtr = newForeignPtr pav_free
+-- | Safely allocate a ForeignPtr with av_malloc
+avMalloc :: (MonadIO m, MonadError String m) => Word -> m (ForeignPtr ())
+avMalloc size = do
+	ptr <- liftIO$ av_malloc (fromIntegral size)
+	if (ptr == nullPtr)
+		then throwError "avMalloc: allocated a null pointer"
+		else liftIO$ newForeignPtr pav_free ptr
 
--- | Buffer type
-data Buffer = Buffer Int (ForeignPtr Buffer) 
+-- | A convenient Buffer object
+data Buffer = Buffer !Int !(ForeignPtr ()) !(Ptr ())
 
 instance ExternalPointer Buffer where
-	withThis (Buffer _ b) io = withForeignPtr b (io . castPtr)
-
--- | operations with buffer
-withBuffer :: Buffer -> (Ptr a -> IO b) -> IO b
-withBuffer = withThis
-
--- | Get the size of a buffer
-bufferSize :: Buffer -> Int
-bufferSize (Buffer s _) = s
-
--- | Advance the buffer pointer.  The memory backing this Buffer will be freed
--- after the original Buffer object has been garbage collected, which could be
--- problematic.  This function should be revisited
-shiftBuffer :: Int -> Buffer -> IO Buffer
-shiftBuffer l buf
-		| l > bsize = error $
-			printf "shiftBuffer: buffer is too narrow, size is %d, shift %d\n"
-				bsize l
-		| otherwise = withThis buf $ castBufferSize (bsize - l) . (`plusPtr` l)
-	where bsize = bufferSize buf
-
--- | Allocate buffer with specified size
-allocBuffer :: Int -> IO Buffer
+	withThis (Buffer _ fp ptr) io = do
+		r <- io$ castPtr ptr
+		touchForeignPtr fp
+		return r
+	
+-- | Allocate a buffer
+allocBuffer :: MonadIO m =>
+	Int                -- ^ the size of the buffer
+	-> m Buffer
 allocBuffer size = do
-	p <- throwIf 
-		(== nullPtr)
-		(\_ -> "allocBuffer: failed to allocate memory block")
-		(av_malloc (fromIntegral size))
-	(Buffer size . castForeignPtr) <$> newAvForeignPtr p
+	fp <- liftIO$ mallocForeignPtrBytes size
+	return$ Buffer size fp (unsafeForeignPtrToPtr fp)
+		-- safe because the Ptr is always paired with a reference to the ForeignPtr
 
--- | Cast pointer to buffer with size (unsafe op)
-castBufferSize :: Int -> Ptr a -> IO Buffer
-castBufferSize s = fmap (Buffer s . castForeignPtr) . newForeignPtr_
-
--- | Cast pointer to buffer (unsafe operation)
-castBuffer :: Ptr a -> IO Buffer
-castBuffer = castBufferSize (-1)
-
--- | Very unsafe operation, allows to set size to the 
--- existing buffer. Use very carefully
-unsafeBufferSetSize :: Buffer -> Int -> Buffer
-unsafeBufferSetSize (Buffer s b) ns = Buffer ns b
+-- | The size of a Buffer in bytes
+bufferSize :: Buffer -> Int
+bufferSize (Buffer size _ _) = size
 
