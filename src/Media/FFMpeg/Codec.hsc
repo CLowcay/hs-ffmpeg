@@ -59,7 +59,7 @@ import System.IO.Unsafe
 import Text.Printf
 
 import Media.FFMpeg.Codec.Enums
-import Media.FFMpeg.Common
+import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util
 
 foreign import ccall "avcodec_open" avcodec_open :: Ptr () -> Ptr () -> IO CInt

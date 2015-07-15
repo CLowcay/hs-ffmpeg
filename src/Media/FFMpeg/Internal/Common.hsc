@@ -12,7 +12,7 @@ Internal utility module for the ffmpeg bindings
 
 -}
 
-module Media.FFMpeg.Common (
+module Media.FFMpeg.Internal.Common (
 	ExternalPointer (..),
 	CEnum (..),
 	fromVersionNum,

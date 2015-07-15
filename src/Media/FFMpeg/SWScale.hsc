@@ -38,7 +38,7 @@ import Foreign.ForeignPtr
 import Foreign.Marshal.Error
 import Foreign.Ptr
 
-import Media.FFMpeg.Common
+import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.SWScale.Enums
 import Media.FFMpeg.Util
 

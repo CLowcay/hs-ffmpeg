@@ -30,7 +30,8 @@ module Media.FFMpeg.SWScale.Enums (
 import Data.Bits
 import Data.Monoid
 import Foreign.C.Types
-import Media.FFMpeg.Common
+
+import Media.FFMpeg.Internal.Common
 
 #include "ffmpeg.h"
 

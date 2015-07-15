@@ -449,7 +449,8 @@ module Media.FFMpeg.Codec.Enums (
 #include "ffmpeg.h"
 
 import Foreign.C.Types
-import Media.FFMpeg.Common
+
+import Media.FFMpeg.Internal.Common
 
 -- | AVMediaType
 newtype AVMediaType = AVMediaType {unAVMediaType :: CInt} deriving (Eq, Show)

@@ -43,7 +43,7 @@ import Foreign.Marshal.Alloc
 import Foreign.Ptr
 import Foreign.Storable
 
-import Media.FFMpeg.Common
+import Media.FFMpeg.Internal.Common
 
 foreign import ccall "&b_free_dictionary" pb_free_dictionary :: FunPtr (Ptr (Ptr ()) -> IO ())
 

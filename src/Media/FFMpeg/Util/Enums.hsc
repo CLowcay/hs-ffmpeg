@@ -63,7 +63,7 @@ module Media.FFMpeg.Util.Enums (
 ) where
 
 import Foreign.C.Types
-import Media.FFMpeg.Common
+import Media.FFMpeg.Internal.Common
 
 #include "ffmpeg.h"
 

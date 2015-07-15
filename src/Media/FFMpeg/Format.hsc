@@ -44,7 +44,7 @@ import System.IO.Unsafe
 import Text.Printf (printf)
 
 import Media.FFMpeg.Codec
-import Media.FFMpeg.Common
+import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util
 import Media.FFMpeg.Util.Dict
 

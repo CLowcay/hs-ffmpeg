@@ -41,7 +41,7 @@ import Foreign.Marshal.Error
 import Foreign.Ptr
 import Text.Printf
 
-import Media.FFMpeg.Common
+import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util.Dict
 import Media.FFMpeg.Util.Enums
 
