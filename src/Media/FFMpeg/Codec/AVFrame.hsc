@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 
 {- |
@@ -35,18 +36,23 @@ module Media.FFMpeg.Codec.AVFrame (
 	frameGetColorspace,
 	frameSetColorspace,
 	frameGetColorRange,
-	frameSetColorRange
+	frameSetColorRange,
+
+	getColorspaceName,
+	frameAlloc
 ) where
 
 #include "ffmpeg.h"
 
 import Control.Applicative
-import Control.Monad.IO.Class
+import Control.Monad.Except
 import Data.Int
+import Foreign.C.String
 import Foreign.C.Types
 import Foreign.ForeignPtr
 import Foreign.Ptr
 import Foreign.Storable
+import System.IO.Unsafe
 
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util.Dict
@@ -86,85 +92,117 @@ foreign import ccall "av_frame_set_colorspace" av_frame_set_colorspace :: Ptr ()
 foreign import ccall "av_frame_get_color_range" av_frame_get_color_range :: Ptr () -> IO CInt
 foreign import ccall "av_frame_set_color_range" av_frame_set_color_range :: Ptr () -> CInt -> IO ()
 
+foreign import ccall "av_get_colorspace_name" av_get_colorspace_name :: CInt -> CString
+foreign import ccall "avcodec_frame_alloc" avcodec_frame_alloc :: IO (Ptr ())
+foreign import ccall "&avcodec_frame_free" pavcodec_frame_free :: FunPtr (Ptr () -> IO ())
+
 frameGetBestEffortTimestamp :: MonadIO m => AVFrame -> m Int64
-frameGetBestEffortTimestamp frame = liftIO.withThis frame$ \ptr -> av_frame_get_best_effort_timestamp ptr
+frameGetBestEffortTimestamp frame =
+	liftIO.withThis frame$ \ptr -> av_frame_get_best_effort_timestamp ptr
+
 frameSetBestEffortTimestamp :: MonadIO m => AVFrame -> Int64 -> m ()
-frameSetBestEffortTimestamp frame val = liftIO.withThis frame$ \ptr -> av_frame_set_best_effort_timestamp ptr val
+frameSetBestEffortTimestamp frame val =
+	liftIO.withThis frame$ \ptr -> av_frame_set_best_effort_timestamp ptr val
+
 frameGetPktDuration :: MonadIO m => AVFrame -> m Int64
-frameGetPktDuration frame = liftIO.withThis frame$ \ptr -> av_frame_get_pkt_duration ptr
+frameGetPktDuration frame =
+	liftIO.withThis frame$ \ptr -> av_frame_get_pkt_duration ptr
+
 frameSetPktDuration :: MonadIO m => AVFrame -> Int64 -> m ()
-frameSetPktDuration frame val = liftIO.withThis frame$ \ptr -> av_frame_set_pkt_duration ptr val
+frameSetPktDuration frame val =
+	liftIO.withThis frame$ \ptr -> av_frame_set_pkt_duration ptr val
+
 frameGetPktPos :: MonadIO m => AVFrame -> m Int64
-frameGetPktPos frame = liftIO.withThis frame$ \ptr -> av_frame_get_pkt_pos ptr
+frameGetPktPos frame =
+	liftIO.withThis frame$ \ptr -> av_frame_get_pkt_pos ptr
+
 frameSetPktPos :: MonadIO m => AVFrame -> Int64 -> m ()
-frameSetPktPos frame val = liftIO.withThis frame$ \ptr -> av_frame_set_pkt_pos ptr val
+frameSetPktPos frame val =
+	liftIO.withThis frame$ \ptr -> av_frame_set_pkt_pos ptr val
+
 frameGetChannelLayout :: MonadIO m => AVFrame -> m Int64
-frameGetChannelLayout frame = liftIO.withThis frame$ \ptr -> av_frame_get_channel_layout ptr
+frameGetChannelLayout frame =
+	liftIO.withThis frame$ \ptr -> av_frame_get_channel_layout ptr
+
 frameSetChannelLayout :: MonadIO m => AVFrame -> Int64 -> m ()
-frameSetChannelLayout frame val = liftIO.withThis frame$ \ptr -> av_frame_set_channel_layout ptr val
+frameSetChannelLayout frame val =
+	liftIO.withThis frame$ \ptr -> av_frame_set_channel_layout ptr val
+
 frameGetChannels :: MonadIO m => AVFrame -> m Int
-frameGetChannels frame = liftIO.withThis frame$ \ptr -> fromIntegral <$> av_frame_get_channels ptr
+frameGetChannels frame =
+	liftIO.withThis frame$ \ptr -> fromIntegral <$> av_frame_get_channels ptr
+
 frameSetChannels :: MonadIO m => AVFrame -> Int -> m ()
-frameSetChannels frame val = liftIO.withThis frame$ \ptr -> av_frame_set_channels ptr (fromIntegral val)
+frameSetChannels frame val =
+	liftIO.withThis frame$ \ptr -> av_frame_set_channels ptr (fromIntegral val)
+
 frameGetSampleRate :: MonadIO m => AVFrame -> m Int
-frameGetSampleRate frame = liftIO.withThis frame$ \ptr -> fromIntegral <$> av_frame_get_sample_rate ptr
+frameGetSampleRate frame =
+	liftIO.withThis frame$ \ptr -> fromIntegral <$> av_frame_get_sample_rate ptr
+
 frameSetSampleRate :: MonadIO m => AVFrame -> Int -> m ()
-frameSetSampleRate frame val = liftIO.withThis frame$ \ptr -> av_frame_set_sample_rate ptr (fromIntegral val)
+frameSetSampleRate frame val =
+	liftIO.withThis frame$ \ptr -> av_frame_set_sample_rate ptr (fromIntegral val)
+
+-- | Get a /copy/ of the metadata associated with an AVFrame.  This differs
+-- from the raw function which does not copy the data.
 frameGetMetadata :: MonadIO m => AVFrame -> m AVDictionary
 frameGetMetadata frame = do
 	rptr <- liftIO.withThis frame$ \ptr -> av_frame_get_metadata ptr
 	unsafeDictCopyFromPtr rptr []
+
 frameSetMetadata :: MonadIO m => AVFrame -> AVDictionary -> m ()
 frameSetMetadata frame dict = liftIO$
 	withThis frame$ \ptr ->
 	withThis dict$ \ppd -> do
 		pd <- peek ppd
 		av_frame_set_metadata ptr pd
+
 frameGetDecodeErrorFlags :: MonadIO m => AVFrame -> m Int
-frameGetDecodeErrorFlags frame = liftIO.withThis frame$ \ptr -> fromIntegral <$> av_frame_get_decode_error_flags ptr
+frameGetDecodeErrorFlags frame =
+	liftIO.withThis frame$ \ptr -> fromIntegral <$> av_frame_get_decode_error_flags ptr
+
 frameSetDecodeErrorFlags :: MonadIO m => AVFrame -> Int -> m ()
-frameSetDecodeErrorFlags frame val = liftIO.withThis frame$ \ptr -> av_frame_set_decode_error_flags ptr (fromIntegral val)
+frameSetDecodeErrorFlags frame val =
+	liftIO.withThis frame$ \ptr -> av_frame_set_decode_error_flags ptr (fromIntegral val)
+
 frameGetPktSize :: MonadIO m => AVFrame -> m Int
-frameGetPktSize frame = liftIO.withThis frame$ \ptr -> fromIntegral <$> av_frame_get_pkt_size ptr
+frameGetPktSize frame =
+	liftIO.withThis frame$ \ptr -> fromIntegral <$> av_frame_get_pkt_size ptr
+
 frameSetPktSize :: MonadIO m => AVFrame -> Int -> m ()
-frameSetPktSize frame val = liftIO.withThis frame$ \ptr -> av_frame_set_pkt_size ptr (fromIntegral val)
+frameSetPktSize frame val =
+	liftIO.withThis frame$ \ptr -> av_frame_set_pkt_size ptr (fromIntegral val)
+
 --frameGetQpTable :: AVFrame -> Ptr CInt -> Ptr CInt -> IO (Ptr Int8)
 --frameSetQpTable :: AVFrame -> Ptr () -> CInt -> CInt -> IO CInt
-frameGetColorspace :: MonadIO m => AVFrame -> m AVColorSpace
-frameGetColorspace frame = liftIO.withThis frame$ \ptr -> toCEnum <$> av_frame_get_colorspace ptr
-frameSetColorspace :: MonadIO m => AVFrame -> AVColorSpace -> m ()
-frameSetColorspace frame val = liftIO.withThis frame$ \ptr -> av_frame_set_colorspace ptr (fromCEnum val)
-frameGetColorRange :: MonadIO m => AVFrame -> m AVColorRange
-frameGetColorRange frame = liftIO.withThis frame$ \ptr -> toCEnum <$> av_frame_get_color_range ptr
-frameSetColorRange :: MonadIO m => AVFrame -> AVColorRange -> m ()
-frameSetColorRange frame val = liftIO.withThis frame$ \ptr -> av_frame_set_color_range ptr (fromCEnum val)
 
--- | Allocate an AVFrame
-{-
-allocAVFrame :: (MonadIO m, MonadError String m) =>
-		PixelFormat      -- ^ pixel format of the image
-		-> Int           -- ^ width
-		-> Int           -- ^ height
-		-> m AVFrame
-allocAVFrame pf w h = do
+frameGetColorspace :: MonadIO m => AVFrame -> m AVColorSpace
+frameGetColorspace frame =
+	liftIO.withThis frame$ \ptr -> toCEnum <$> av_frame_get_colorspace ptr
+
+frameSetColorspace :: MonadIO m => AVFrame -> AVColorSpace -> m ()
+frameSetColorspace frame val =
+	liftIO.withThis frame$ \ptr -> av_frame_set_colorspace ptr (fromCEnum val)
+
+frameGetColorRange :: MonadIO m => AVFrame -> m AVColorRange
+frameGetColorRange frame =
+	liftIO.withThis frame$ \ptr -> toCEnum <$> av_frame_get_color_range ptr
+
+frameSetColorRange :: MonadIO m => AVFrame -> AVColorRange -> m ()
+frameSetColorRange frame val =
+	liftIO.withThis frame$ \ptr -> av_frame_set_color_range ptr (fromCEnum val)
+
+getColorspaceName :: AVColorSpace -> String
+getColorspaceName space =
+	-- safe because av_get_colorspace_name returns a pointer to a static string
+	unsafePerformIO.peekCString.av_get_colorspace_name$ fromCEnum space
+
+frameAlloc :: (MonadIO m, MonadError String m) => m AVFrame
+frameAlloc = do
 	pFrame <- liftIO$ avcodec_frame_alloc
 	if (pFrame == nullPtr) then do
 		throwError "allocAVFrame: failed to allocate AVFrame"
-	else do
-		r <- liftIO$ avpicture_fill
-				(castPtr pFrame)
-				nullPtr
-				(fromCEnum pf)
-				(fromIntegral w) (fromIntegral h)
-		if r < 0 then
-			throwError$ "allocAVFrame: failed to fill picture information, error code "
-				++ (show r)
-		else do
-			r <- liftIO$ av_frame_get_buffer (castPtr pFrame) 8  -- TODO: determine the correct alignment value
-			if r < 0 then
-				throwError$ "allocAVFrame: failed to allocate buffers, error code "
-					++ (show r)
-			else liftIO$
-				(AVFrame . castForeignPtr) <$> newForeignPtr pavcodec_frame_free pFrame
--}
+	else liftIO$
+		(AVFrame . castForeignPtr) <$> newForeignPtr pavcodec_frame_free pFrame
 

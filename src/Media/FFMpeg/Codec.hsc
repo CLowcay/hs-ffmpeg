@@ -76,8 +76,6 @@ foreign import ccall "avpicture_fill" avpicture_fill ::
 	Ptr () -> Ptr () -> CInt -> CInt -> CInt -> IO CInt
 foreign import ccall "avpicture_get_size" avpicture_get_size :: 
 	CInt -> CInt -> CInt -> CInt  -- C function is pure
-foreign import ccall "avcodec_frame_alloc" avcodec_frame_alloc :: IO (Ptr ())
-foreign import ccall "&avcodec_frame_free" pavcodec_frame_free :: FunPtr (Ptr () -> IO ())
 -- These functions go through a wrapper due to inlining
 foreign import ccall "b_init_packet" av_init_packet :: Ptr () -> IO ()
 foreign import ccall "&b_free_packet" pav_free_packet ::
