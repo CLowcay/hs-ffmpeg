@@ -285,7 +285,7 @@ pictureGetSize pf w h = fromIntegral$
 newtype AVFrame = AVFrame (ForeignPtr AVFrame)
 
 instance ExternalPointer AVFrame where
-    withThis (AVFrame f) io = withForeignPtr f (io . castPtr)
+	withThis (AVFrame f) io = withForeignPtr f (io . castPtr)
 
 -- | Allocate an AVFrame
 allocAVFrame :: (MonadIO m, MonadError String m) =>

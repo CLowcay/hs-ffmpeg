@@ -1,5 +1,5 @@
--- -*- haskell -*- 
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 {- |
 
@@ -68,11 +68,7 @@ import Media.FFMpeg.Internal.Common
 #include "ffmpeg.h"
 
 -- |PixelFormat enumeration
-newtype PixelFormat = PixelFormat {unPixelFormat :: CInt} deriving (Eq, Show)
-instance CEnum PixelFormat where
-	fromCEnum = unPixelFormat
-	toCEnum = PixelFormat
-
+newtype PixelFormat = PixelFormat CInt deriving (Eq, Show, CEnum)
 #{enum PixelFormat, PixelFormat,
 	pix_fmt_none = PIX_FMT_NONE,
 	pix_fmt_yuv420p = PIX_FMT_YUV420P,

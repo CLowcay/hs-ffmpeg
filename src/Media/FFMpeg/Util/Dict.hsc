@@ -1,5 +1,6 @@
--- -*- haskell -*-
-{-# LANGUAGE ForeignFunctionInterface, FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 {- |
 
@@ -58,21 +59,13 @@ foreign import ccall "av_dict_get_string" av_dict_get_string :: Ptr () -> Ptr CS
 foreign import ccall "av_freep" av_freep :: Ptr a -> IO ()
 
 -- | Flags
-newtype DictFlag = DictFlag {unDictFlag :: CInt}
+newtype DictFlag = DictFlag CInt deriving (Eq, Show, CEnum, CFlags)
 #{enum DictFlag, DictFlag,
 	av_dict_match_case = AV_DICT_MATCH_CASE,
 	av_dict_ignore_suffix = AV_DICT_IGNORE_SUFFIX,
 	av_dict_dont_overwrite = AV_DICT_DONT_OVERWRITE,
 	av_dict_append = AV_DICT_APPEND
 }
-
-instance Monoid DictFlag where
-	mempty = DictFlag 0
-	(DictFlag a) `mappend` (DictFlag b) = DictFlag$ a .|. b
-
-instance CEnum DictFlag where
-	fromCEnum = unDictFlag
-	toCEnum = DictFlag
 
 -- | AVDictionary type
 newtype AVDictionary = AVDictionary (ForeignPtr (Ptr ()))

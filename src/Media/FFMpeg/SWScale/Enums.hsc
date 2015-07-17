@@ -1,5 +1,5 @@
--- -*- haskell -*- 
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 {- |
 
@@ -27,8 +27,6 @@ module Media.FFMpeg.SWScale.Enums (
 	sws_spline
 ) where
 
-import Data.Bits
-import Data.Monoid
 import Foreign.C.Types
 
 import Media.FFMpeg.Internal.Common
@@ -36,14 +34,7 @@ import Media.FFMpeg.Internal.Common
 #include "ffmpeg.h"
 
 -- |ScaleAlgorithm Enumeration
-newtype ScaleAlgorithm = ScaleAlgorithm {unScaleAlgorithm :: CInt}
-	deriving (Eq, Show)
-instance CEnum ScaleAlgorithm where
-	fromCEnum = unScaleAlgorithm
-	toCEnum = ScaleAlgorithm
-instance Monoid ScaleAlgorithm where
-	mempty = ScaleAlgorithm 0
-	(ScaleAlgorithm a) `mappend` (ScaleAlgorithm b) = ScaleAlgorithm$ a .|. b
+newtype ScaleAlgorithm = ScaleAlgorithm CInt deriving (Eq, Show, CEnum, CFlags)
 
 #{enum ScaleAlgorithm, ScaleAlgorithm,
 	sws_fast_bilinear = SWS_FAST_BILINEAR,

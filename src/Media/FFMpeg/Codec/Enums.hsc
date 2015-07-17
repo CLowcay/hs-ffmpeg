@@ -1,5 +1,5 @@
----- -*- haskell -*- 
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 {- |
 
@@ -453,10 +453,7 @@ import Foreign.C.Types
 import Media.FFMpeg.Internal.Common
 
 -- | AVMediaType
-newtype AVMediaType = AVMediaType {unAVMediaType :: CInt} deriving (Eq, Show)
-instance CEnum AVMediaType where
-	fromCEnum = unAVMediaType
-	toCEnum = AVMediaType
+newtype AVMediaType = AVMediaType CInt deriving (Eq, Show, CEnum)
 
 #{enum AVMediaType, AVMediaType,
 	avmedia_type_unknown = AVMEDIA_TYPE_UNKNOWN,
@@ -469,10 +466,7 @@ instance CEnum AVMediaType where
 }
 
 -- | AVSampleFormat
-newtype AVSampleFormat = AVSampleFormat {unAVSampleFormat :: CInt} deriving (Eq, Show)
-instance CEnum AVSampleFormat where
-	fromCEnum = unAVSampleFormat
-	toCEnum = AVSampleFormat
+newtype AVSampleFormat = AVSampleFormat CInt deriving (Eq, Show, CEnum)
 
 #{enum AVSampleFormat, AVSampleFormat,
 	av_sample_fmt_none = AV_SAMPLE_FMT_NONE,
@@ -490,10 +484,7 @@ instance CEnum AVSampleFormat where
 }
 
 -- | AVCodecId
-newtype AVCodecId = AVCodecId {unAVCodecId :: CInt} deriving (Eq, Show)
-instance CEnum AVCodecId where
-	fromCEnum = unAVCodecId
-	toCEnum = AVCodecId
+newtype AVCodecId = AVCodecId CInt deriving (Eq, Show, CEnum)
 
 #{enum AVCodecId, AVCodecId,
 	av_codec_id_none = AV_CODEC_ID_NONE,
