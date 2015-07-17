@@ -39,12 +39,25 @@ module Media.FFMpeg.Codec.AVFrame (
 	frameSetColorRange,
 
 	getColorspaceName,
-	frameAlloc
+	frameAlloc,
+	frameRef,
+	frameClone,
+	frameUnref,
+	frameMoveRef,
+	frameGetBuffer,
+	frameIsWritable,
+	frameMakeWritable,
+	frameCopyProps,
+	frameNewSideData,
+	withFrameSideData,
+	frameRemoveSideData,
+	frameSideDataName
 ) where
 
 #include "ffmpeg.h"
 
 import Control.Applicative
+import Control.Monad
 import Control.Monad.Except
 import Data.Int
 import Foreign.C.String
@@ -54,18 +67,19 @@ import Foreign.Ptr
 import Foreign.Storable
 import System.IO.Unsafe
 
+import Media.FFMpeg.Codec.Enums
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util.Dict
 import Media.FFMpeg.Util.Enums
 
 newtype AVFrame = AVFrame (ForeignPtr AVFrame)
-newtype AVFrameSideData = AVFrameSideData (ForeignPtr AVFrameSideData)
+newtype AVFrameSideData = AVFrameSideData (Ptr AVFrameSideData)
 
 instance ExternalPointer AVFrame where
-	withThis (AVFrame f) io = withForeignPtr f (io . castPtr)
+	withThis (AVFrame f) io = withForeignPtr f (io.castPtr)
 
 instance ExternalPointer AVFrameSideData where
-	withThis (AVFrameSideData f) io = withForeignPtr f (io . castPtr)
+	withThis (AVFrameSideData f) io = io.castPtr$ f
 
 foreign import ccall "av_frame_get_best_effort_timestamp" av_frame_get_best_effort_timestamp :: Ptr () -> IO Int64
 foreign import ccall "av_frame_set_best_effort_timestamp" av_frame_set_best_effort_timestamp :: Ptr () -> Int64 -> IO ()
@@ -94,7 +108,23 @@ foreign import ccall "av_frame_set_color_range" av_frame_set_color_range :: Ptr 
 
 foreign import ccall "av_get_colorspace_name" av_get_colorspace_name :: CInt -> CString
 foreign import ccall "avcodec_frame_alloc" avcodec_frame_alloc :: IO (Ptr ())
+foreign import ccall "avcodec_frame_free" avcodec_frame_free :: Ptr () -> IO ()
 foreign import ccall "&avcodec_frame_free" pavcodec_frame_free :: FunPtr (Ptr () -> IO ())
+
+foreign import ccall "av_frame_ref" av_frame_ref :: Ptr () -> Ptr() -> IO CInt
+foreign import ccall "av_frame_clone" av_frame_clone :: Ptr () -> IO (Ptr())
+foreign import ccall "av_frame_unref" av_frame_unref :: Ptr () -> IO ()
+foreign import ccall "av_frame_move_ref" av_frame_move_ref :: Ptr () -> Ptr() -> IO ()
+foreign import ccall "av_frame_get_buffer" av_frame_get_buffer :: Ptr () -> CInt -> IO CInt
+foreign import ccall "av_frame_is_writable" av_frame_is_writable :: Ptr () -> IO CInt
+foreign import ccall "av_frame_make_writable" av_frame_make_writable :: Ptr () -> IO CInt
+foreign import ccall "av_frame_copy" av_frame_copy :: Ptr () -> Ptr() -> IO CInt
+foreign import ccall "av_frame_copy_props" av_frame_copy_props :: Ptr () -> Ptr () -> IO CInt
+foreign import ccall "av_frame_get_plane_buffer" av_frame_get_plane_buffer :: Ptr () -> CInt -> Ptr ()
+foreign import ccall "av_frame_new_side_data" av_frame_new_side_data :: Ptr () -> CInt -> CInt -> IO (Ptr ())
+foreign import ccall "av_frame_get_side_data" av_frame_get_side_data :: Ptr () -> CInt -> IO (Ptr ())
+foreign import ccall "av_frame_remove_side_data" av_frame_remove_side_data :: Ptr () -> CInt -> IO ()
+foreign import ccall "av_frame_side_data_name" av_frame_side_data_name :: CInt -> CString
 
 frameGetBestEffortTimestamp :: MonadIO m => AVFrame -> m Int64
 frameGetBestEffortTimestamp frame =
@@ -145,7 +175,7 @@ frameSetSampleRate frame val =
 	liftIO.withThis frame$ \ptr -> av_frame_set_sample_rate ptr (fromIntegral val)
 
 -- | Get a /copy/ of the metadata associated with an AVFrame.  This differs
--- from the raw function which does not copy the data.
+-- from the raw function, which does not copy the data.
 frameGetMetadata :: MonadIO m => AVFrame -> m AVDictionary
 frameGetMetadata frame = do
 	rptr <- liftIO.withThis frame$ \ptr -> av_frame_get_metadata ptr
@@ -193,11 +223,14 @@ frameSetColorRange :: MonadIO m => AVFrame -> AVColorRange -> m ()
 frameSetColorRange frame val =
 	liftIO.withThis frame$ \ptr -> av_frame_set_color_range ptr (fromCEnum val)
 
+-- | Get a String representation of an AVColorSpace
 getColorspaceName :: AVColorSpace -> String
 getColorspaceName space =
-	-- safe because av_get_colorspace_name returns a pointer to a static string
+	-- safe because the c string is immutable
 	unsafePerformIO.peekCString.av_get_colorspace_name$ fromCEnum space
 
+-- | Allocate a new AVFrame.  The AVFrame is uninitialised and no buffers are
+-- allocated.
 frameAlloc :: (MonadIO m, MonadError String m) => m AVFrame
 frameAlloc = do
 	pFrame <- liftIO$ avcodec_frame_alloc
@@ -205,4 +238,114 @@ frameAlloc = do
 		throwError "allocAVFrame: failed to allocate AVFrame"
 	else liftIO$
 		(AVFrame . castForeignPtr) <$> newForeignPtr pavcodec_frame_free pFrame
+
+-- | Copy the data from one AVFrame to another.  If the frame is reference
+-- counted, then a new reference is created, otherwise the data is actually
+-- copied
+frameRef :: (MonadIO m, MonadError String m) =>
+	AVFrame          -- ^ destination frame
+	-> AVFrame       -- ^ source frame
+	-> m ()
+frameRef dst src = do
+	r <- liftIO$
+		withThis dst$ \pd ->
+		withThis src$ \ps -> av_frame_ref pd ps
+	when (r /= 0)$
+		throwError$ "frameRef: failed with error code " ++ (show r)
+
+-- | Create a new copy of an AVFrame .  If the frame is reference counted, then
+-- the new frame references the same data as the old one, otherwise the buffers
+-- are copied into the new frame.
+frameClone :: (MonadIO m, MonadError String m) => AVFrame -> m AVFrame
+frameClone src = do
+	r <- liftIO.withThis src$ \ptr -> av_frame_clone ptr
+	if r == nullPtr then
+		throwError$ "frameClone: av_frame_clone returned a null pointer"
+	else liftIO$
+		(AVFrame . castForeignPtr) <$> newForeignPtr pavcodec_frame_free r
+
+-- | Reset a frame to its default uninitialised state, unreferencing any
+-- reference counted buffers.
+frameUnref :: MonadIO m => AVFrame -> m ()
+frameUnref frame = liftIO.withThis frame$ \ptr -> av_frame_unref ptr
+
+-- | Shortcut for @frameRef dst src >> frameUnref src@
+frameMoveRef :: MonadIO m =>
+	AVFrame          -- ^ destination frame
+	-> AVFrame       -- ^ source frame
+	-> m ()
+frameMoveRef dst src = liftIO$
+	withThis dst$ \pd ->
+	withThis src$ \ps -> av_frame_move_ref pd ps
+
+-- | Allocate a buffer for an AVFrame
+frameGetBuffer :: (MonadIO m, MonadError String m) =>
+	AVFrame          -- ^ the AVFrame
+	-> Int           -- ^ alignment for the buffer
+	-> m ()
+frameGetBuffer frame align = do
+	r <- liftIO.withThis frame$ \ptr -> av_frame_get_buffer ptr (fromIntegral align)
+	when (r /= 0)$
+		throwError$ "frameGetBuffer: failed with error code " ++ (show r)
+
+-- | Determine if a frame is writeable
+frameIsWritable :: MonadIO m => AVFrame -> m Bool
+frameIsWritable frame = liftIO.withThis frame$ \ptr -> (> 0) <$> av_frame_is_writable ptr
+
+-- | Ensure that the frame is writeable by copying the buffers if necessary.
+frameMakeWritable :: (MonadIO m, MonadError String m) => AVFrame -> m ()
+frameMakeWritable frame = do
+	r <- liftIO.withThis frame$ \ptr -> av_frame_make_writable ptr
+	when (r /= 0)$
+		throwError$ "frameMakeWritable: failed with error code " ++ (show r)
+
+-- | Copy the metadata from one AVFrame to another.  Does not copy or reference
+-- the buffers or the buffer layout fields.
+frameCopyProps :: MonadIO m =>
+	AVFrame          -- ^ destination frame
+	-> AVFrame       -- ^ source frame
+	-> m ()
+frameCopyProps dst src = liftIO$
+	withThis dst$ \pd ->
+	withThis src$ \ps -> do
+		av_frame_copy_props pd ps
+		return ()
+
+-- | Allocate new side side data in an AVFrame.  The AVFrameSideData is managed
+-- by libav, so we need to be careful how we use it.  Hence, this function does
+-- not return the newly allocated AVFrameSideData.  Use 'withFrameSideData' to
+-- access the AVFrameSideData.
+frameNewSideData :: (MonadIO m, MonadError String m) =>
+	AVFrame                  -- ^ the frame to allocate side data in
+	-> AVFrameSideDataType   -- ^ the type of the side data
+	-> Int                   -- ^ the size of the side data in bytes
+	-> m ()
+frameNewSideData frame sdtype size = do
+	r <- liftIO.withThis frame$ \ptr ->
+		av_frame_new_side_data ptr (fromCEnum sdtype) (fromIntegral size)
+	when (r == nullPtr)$
+		throwError$ "frameNewSizeData: av_frame_new_side_data returned a null pointer"
+
+-- | Execute a monadic action that depends on the AVFrameSideData of an
+-- AVFrame.  The monadic action should not invoke 'frameRemoveSideData' or
+-- 'frameUnref'
+withFrameSideData :: (MonadIO m, MonadError String m) =>
+	AVFrame -> AVFrameSideDataType -> (AVFrameSideData -> m a) -> m a
+withFrameSideData frame sdtype action = do
+	sd <- liftIO.withThis frame$ \ptr ->
+		av_frame_get_side_data ptr (fromCEnum sdtype)
+	if sd == nullPtr then
+		throwError$ "withFrameSideData: av_frame_get_side_data returned a null pointer"
+	else
+		action.(AVFrameSideData).castPtr$ sd
+
+-- | Free side data
+frameRemoveSideData :: MonadIO m => AVFrame -> AVFrameSideDataType -> m ()
+frameRemoveSideData frame sdtype = liftIO.withThis frame$ \ptr -> av_frame_remove_side_data ptr (fromCEnum sdtype)
+
+-- | Get a String representation of an AVFrameSideDataType
+frameSideDataName :: AVFrameSideDataType -> String
+frameSideDataName sdType =
+	-- safe because the c string is immutable
+	unsafePerformIO.peekCString.av_frame_side_data_name$ fromCEnum sdType
 

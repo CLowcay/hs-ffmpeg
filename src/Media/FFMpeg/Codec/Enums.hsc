@@ -15,14 +15,14 @@ Enumerations for libavcodec.
 
 module Media.FFMpeg.Codec.Enums (
 	AVMediaType,
-	AVSampleFormat,
-	AVCodecId,
 	avmedia_type_unknown,
 	avmedia_type_video,
 	avmedia_type_audio,
 	avmedia_type_data,
 	avmedia_type_subtitle,
 	avmedia_type_attachment,
+
+	AVSampleFormat,
 	av_sample_fmt_none,
 	av_sample_fmt_u8,
 	av_sample_fmt_s16,
@@ -34,6 +34,20 @@ module Media.FFMpeg.Codec.Enums (
 	av_sample_fmt_s32p,
 	av_sample_fmt_fltp,
 	av_sample_fmt_dblp,
+
+	AVFrameSideDataType, 
+	av_frame_data_panscan,
+	av_frame_data_a53_cc,
+	av_frame_data_stereo3d,
+	av_frame_data_matrixencoding,
+	av_frame_data_downmix_info,
+	av_frame_data_replaygain,
+	av_frame_data_displaymatrix,
+	av_frame_data_afd,
+	av_frame_data_motion_vectors,
+	av_frame_data_skip_samples,
+
+	AVCodecId,
 	av_codec_id_none,
 	av_codec_id_mpeg1video,
 	av_codec_id_mpeg2video,
@@ -477,6 +491,21 @@ newtype AVSampleFormat = AVSampleFormat CInt deriving (Eq, Show, CEnum)
 	av_sample_fmt_s32p = AV_SAMPLE_FMT_S32P,
 	av_sample_fmt_fltp = AV_SAMPLE_FMT_FLTP,
 	av_sample_fmt_dblp = AV_SAMPLE_FMT_DBLP
+}
+
+newtype AVFrameSideDataType = AVFrameSideDataType CInt deriving (Eq, Show, CEnum)
+
+#{enum AVFrameSideDataType, AVFrameSideDataType,
+	av_frame_data_panscan = AV_FRAME_DATA_PANSCAN,
+	av_frame_data_a53_cc = AV_FRAME_DATA_A53_CC,
+	av_frame_data_stereo3d = AV_FRAME_DATA_STEREO3D,
+	av_frame_data_matrixencoding = AV_FRAME_DATA_MATRIXENCODING,
+	av_frame_data_downmix_info = AV_FRAME_DATA_DOWNMIX_INFO,
+	av_frame_data_replaygain = AV_FRAME_DATA_REPLAYGAIN,
+	av_frame_data_displaymatrix = AV_FRAME_DATA_DISPLAYMATRIX,
+	av_frame_data_afd = AV_FRAME_DATA_AFD,
+	av_frame_data_motion_vectors = AV_FRAME_DATA_MOTION_VECTORS,
+	av_frame_data_skip_samples = AV_FRAME_DATA_SKIP_SAMPLES
 }
 
 -- | AVCodecId
