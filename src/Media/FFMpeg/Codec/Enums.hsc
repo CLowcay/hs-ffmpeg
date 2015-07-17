@@ -23,7 +23,6 @@ module Media.FFMpeg.Codec.Enums (
 	avmedia_type_data,
 	avmedia_type_subtitle,
 	avmedia_type_attachment,
-	avmedia_type_nb,
 	av_sample_fmt_none,
 	av_sample_fmt_u8,
 	av_sample_fmt_s16,
@@ -35,7 +34,6 @@ module Media.FFMpeg.Codec.Enums (
 	av_sample_fmt_s32p,
 	av_sample_fmt_fltp,
 	av_sample_fmt_dblp,
-	av_sample_fmt_nb,
 	av_codec_id_none,
 	av_codec_id_mpeg1video,
 	av_codec_id_mpeg2video,
@@ -461,8 +459,7 @@ newtype AVMediaType = AVMediaType CInt deriving (Eq, Show, CEnum)
 	avmedia_type_audio = AVMEDIA_TYPE_AUDIO,
 	avmedia_type_data = AVMEDIA_TYPE_DATA,
 	avmedia_type_subtitle = AVMEDIA_TYPE_SUBTITLE,
-	avmedia_type_attachment = AVMEDIA_TYPE_ATTACHMENT,
-	avmedia_type_nb = AVMEDIA_TYPE_NB
+	avmedia_type_attachment = AVMEDIA_TYPE_ATTACHMENT
 }
 
 -- | AVSampleFormat
@@ -479,8 +476,7 @@ newtype AVSampleFormat = AVSampleFormat CInt deriving (Eq, Show, CEnum)
 	av_sample_fmt_s16p = AV_SAMPLE_FMT_S16P,
 	av_sample_fmt_s32p = AV_SAMPLE_FMT_S32P,
 	av_sample_fmt_fltp = AV_SAMPLE_FMT_FLTP,
-	av_sample_fmt_dblp = AV_SAMPLE_FMT_DBLP,
-	av_sample_fmt_nb = AV_SAMPLE_FMT_NB
+	av_sample_fmt_dblp = AV_SAMPLE_FMT_DBLP
 }
 
 -- | AVCodecId

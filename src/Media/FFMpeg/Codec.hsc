@@ -15,6 +15,7 @@ Bindings to libavcodec.
 -}
 
 module Media.FFMpeg.Codec (
+	module Media.FFMpeg.Codec.AVFrame,
 	module Media.FFMpeg.Codec.Enums,
 
 	libAVCodecVersion,
@@ -28,8 +29,6 @@ module Media.FFMpeg.Codec (
 	decodeAudio3,
 
 	pictureGetSize,
-
-	AVFrame,
 
 	AVPacket,
 	allocPacket,
@@ -58,6 +57,7 @@ import Foreign.Storable
 import System.IO.Unsafe
 import Text.Printf
 
+import Media.FFMpeg.Codec.AVFrame
 import Media.FFMpeg.Codec.Enums
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util
@@ -280,39 +280,6 @@ decodeAudio3 ctx buf pkt = do
 pictureGetSize :: PixelFormat -> Int -> Int -> Int
 pictureGetSize pf w h = fromIntegral$
 	avpicture_get_size (fromCEnum pf) (fromIntegral w) (fromIntegral h)
-
--- | AVFrame struct
-newtype AVFrame = AVFrame (ForeignPtr AVFrame)
-
-instance ExternalPointer AVFrame where
-	withThis (AVFrame f) io = withForeignPtr f (io . castPtr)
-
--- | Allocate an AVFrame
-allocAVFrame :: (MonadIO m, MonadError String m) =>
-		PixelFormat      -- ^ pixel format of the image
-		-> Int           -- ^ width
-		-> Int           -- ^ height
-		-> m AVFrame
-allocAVFrame pf w h = do
-	pFrame <- liftIO$ avcodec_frame_alloc
-	if (pFrame == nullPtr) then do
-		throwError "allocAVFrame: failed to allocate AVFrame"
-	else do
-		r <- liftIO$ avpicture_fill
-				(castPtr pFrame)
-				nullPtr
-				(fromCEnum pf)
-				(fromIntegral w) (fromIntegral h)
-		if r < 0 then
-			throwError$ "allocAVFrame: failed to fill picture information, error code "
-				++ (show r)
-		else do
-			r <- liftIO$ av_frame_get_buffer (castPtr pFrame) 8  -- TODO: determine the correct alignment value
-			if r < 0 then
-				throwError$ "allocAVFrame: failed to allocate buffers, error code "
-					++ (show r)
-			else liftIO$
-				(AVFrame . castForeignPtr) <$> newForeignPtr pavcodec_frame_free pFrame
 
 -- | AVPacket struct
 newtype AVPacket = AVPacket (ForeignPtr AVPacket)

@@ -10,7 +10,7 @@ Copyright   : (c) Vasyl Pasternak, 2009
 License     : BSD3
 Stability   : experimental
 
-Enumerations for libavutil.
+Enumerations from libavutil.
 
 -}
 
@@ -50,7 +50,6 @@ module Media.FFMpeg.Util.Enums (
 	pix_fmt_bgra,
 	pix_fmt_gray16be,
 	pix_fmt_gray16le,
-	pix_fmt_nb,
 	pix_fmt_rgb32,
 	pix_fmt_rgb32_1,
 	pix_fmt_bgr32,
@@ -59,7 +58,65 @@ module Media.FFMpeg.Util.Enums (
 	pix_fmt_rgb565,
 	pix_fmt_rgb555,
 	pix_fmt_bgr565,
-	pix_fmt_bgr555
+	pix_fmt_bgr555,
+
+	AVColorPrimaries,
+	avcol_pri_reserved0,
+	avcol_pri_bt709,
+	avcol_pri_unspecified,
+	avcol_pri_reserved,
+	avcol_pri_bt470m,
+	avcol_pri_bt470bg,
+	avcol_pri_smpte170m,
+	avcol_pri_smpte240m,
+	avcol_pri_film,
+	avcol_pri_bt2020,
+
+	AVColorTransferCharacteristic,
+	avcol_trc_reserved0,
+	avcol_trc_bt709,
+	avcol_trc_unspecified,
+	avcol_trc_reserved,
+	avcol_trc_gamma22,
+	avcol_trc_gamma28,
+	avcol_trc_smpte170m,
+	avcol_trc_smpte240m,
+	avcol_trc_linear,
+	avcol_trc_log,
+	avcol_trc_log_sqrt,
+	avcol_trc_iec61966_2_4,
+	avcol_trc_bt1361_ecg,
+	avcol_trc_iec61966_2_1,
+	avcol_trc_bt2020_10,
+	avcol_trc_bt2020_12,
+
+	AVColorSpace,
+	avcol_spc_rgb,
+	avcol_spc_bt709,
+	avcol_spc_unspecified,
+	avcol_spc_reserved,
+	avcol_spc_fcc,
+	avcol_spc_bt470bg,
+	avcol_spc_smpte170m,
+	avcol_spc_smpte240m,
+	avcol_spc_ycocg,
+	avcol_spc_bt2020_ncl,
+	avcol_spc_bt2020_cl,
+	avcol_spc_ycgco,
+
+	AVColorRange,
+	avcol_range_unspecified,
+	avcol_range_mpeg,
+	avcol_range_jpeg,
+
+	AVChromaLocation,
+	avchroma_loc_unspecified,
+	avchroma_loc_left,
+	avchroma_loc_center,
+	avchroma_loc_topleft,
+	avchroma_loc_top,
+	avchroma_loc_bottomleft,
+	avchroma_loc_bottom
 ) where
 
 import Foreign.C.Types
@@ -67,7 +124,7 @@ import Media.FFMpeg.Internal.Common
 
 #include "ffmpeg.h"
 
--- |PixelFormat enumeration
+-- | PixelFormat enumeration
 newtype PixelFormat = PixelFormat CInt deriving (Eq, Show, CEnum)
 #{enum PixelFormat, PixelFormat,
 	pix_fmt_none = PIX_FMT_NONE,
@@ -104,7 +161,6 @@ newtype PixelFormat = PixelFormat CInt deriving (Eq, Show, CEnum)
 	pix_fmt_bgra = PIX_FMT_BGRA,
 	pix_fmt_gray16be = PIX_FMT_GRAY16BE,
 	pix_fmt_gray16le = PIX_FMT_GRAY16LE,
-	pix_fmt_nb = PIX_FMT_NB,
 	pix_fmt_rgb32 = PIX_FMT_RGB32,
 	pix_fmt_rgb32_1 = PIX_FMT_RGB32_1,
 	pix_fmt_bgr32 = PIX_FMT_BGR32,
@@ -138,4 +194,77 @@ newtype PixelFormat = PixelFormat CInt deriving (Eq, Show, CEnum)
 -- PIX_FMT_VAAPI_IDCT
 -- PIX_FMT_VAAPI_VLD
 -- PIX_FMT_RGB48
+
+-- | AVColorPrimaries enum
+newtype AVColorPrimaries = AVColorPrimaries CInt deriving (Eq, Show, CEnum)
+#{enum AVColorPrimaries, AVColorPrimaries,
+	avcol_pri_reserved0 = AVCOL_PRI_RESERVED0,
+	avcol_pri_bt709 = AVCOL_PRI_BT709,
+	avcol_pri_unspecified = AVCOL_PRI_UNSPECIFIED,
+	avcol_pri_reserved = AVCOL_PRI_RESERVED,
+	avcol_pri_bt470m = AVCOL_PRI_BT470M,
+	avcol_pri_bt470bg = AVCOL_PRI_BT470BG,
+	avcol_pri_smpte170m = AVCOL_PRI_SMPTE170M,
+	avcol_pri_smpte240m = AVCOL_PRI_SMPTE240M,
+	avcol_pri_film = AVCOL_PRI_FILM,
+	avcol_pri_bt2020 = AVCOL_PRI_BT2020
+}
+
+-- | AVColorTransferCharacteristic enum
+newtype AVColorTransferCharacteristic = AVColorTransferCharacteristic CInt deriving (Eq, Show, CEnum)
+#{enum AVColorTransferCharacteristic, AVColorTransferCharacteristic,
+	avcol_trc_reserved0 = AVCOL_TRC_RESERVED0,
+	avcol_trc_bt709 = AVCOL_TRC_BT709,
+	avcol_trc_unspecified = AVCOL_TRC_UNSPECIFIED,
+	avcol_trc_reserved = AVCOL_TRC_RESERVED,
+	avcol_trc_gamma22 = AVCOL_TRC_GAMMA22,
+	avcol_trc_gamma28 = AVCOL_TRC_GAMMA28,
+	avcol_trc_smpte170m = AVCOL_TRC_SMPTE170M,
+	avcol_trc_smpte240m = AVCOL_TRC_SMPTE240M,
+	avcol_trc_linear = AVCOL_TRC_LINEAR,
+	avcol_trc_log = AVCOL_TRC_LOG,
+	avcol_trc_log_sqrt = AVCOL_TRC_LOG_SQRT,
+	avcol_trc_iec61966_2_4 = AVCOL_TRC_IEC61966_2_4,
+	avcol_trc_bt1361_ecg = AVCOL_TRC_BT1361_ECG,
+	avcol_trc_iec61966_2_1 = AVCOL_TRC_IEC61966_2_1,
+	avcol_trc_bt2020_10 = AVCOL_TRC_BT2020_10,
+	avcol_trc_bt2020_12 = AVCOL_TRC_BT2020_12
+}
+
+-- | AVColorSpace enum
+newtype AVColorSpace = AVColorSpace CInt deriving (Eq, Show, CEnum)
+#{enum AVColorSpace, AVColorSpace,
+	avcol_spc_rgb = AVCOL_SPC_RGB,
+	avcol_spc_bt709 = AVCOL_SPC_BT709,
+	avcol_spc_unspecified = AVCOL_SPC_UNSPECIFIED,
+	avcol_spc_reserved = AVCOL_SPC_RESERVED,
+	avcol_spc_fcc = AVCOL_SPC_FCC,
+	avcol_spc_bt470bg = AVCOL_SPC_BT470BG,
+	avcol_spc_smpte170m = AVCOL_SPC_SMPTE170M,
+	avcol_spc_smpte240m = AVCOL_SPC_SMPTE240M,
+	avcol_spc_ycocg = AVCOL_SPC_YCOCG,
+	avcol_spc_bt2020_ncl = AVCOL_SPC_BT2020_NCL,
+	avcol_spc_bt2020_cl = AVCOL_SPC_BT2020_CL,
+	avcol_spc_ycgco = AVCOL_SPC_YCGCO
+}
+
+-- | AVColorRange enum
+newtype AVColorRange = AVColorRange CInt deriving (Eq, Show, CEnum)
+#{enum AVColorRange, AVColorRange,
+	avcol_range_unspecified = AVCOL_RANGE_UNSPECIFIED,
+	avcol_range_mpeg = AVCOL_RANGE_MPEG,
+	avcol_range_jpeg = AVCOL_RANGE_JPEG
+}
+
+-- | AVChromaLocation enum
+newtype AVChromaLocation = AVChromaLocation CInt deriving (Eq, Show, CEnum)
+#{enum AVChromaLocation, AVChromaLocation,
+	avchroma_loc_unspecified = AVCHROMA_LOC_UNSPECIFIED,
+	avchroma_loc_left = AVCHROMA_LOC_LEFT,
+	avchroma_loc_center = AVCHROMA_LOC_CENTER,
+	avchroma_loc_topleft = AVCHROMA_LOC_TOPLEFT,
+	avchroma_loc_top = AVCHROMA_LOC_TOP,
+	avchroma_loc_bottomleft = AVCHROMA_LOC_BOTTOMLEFT,
+	avchroma_loc_bottom = AVCHROMA_LOC_BOTTOM
+}
 

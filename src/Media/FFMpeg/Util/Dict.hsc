@@ -26,7 +26,8 @@ module Media.FFMpeg.Util.Dict (
 	dictSet,
 	dictSetInt,
 	dictCopy,
-	dictGetString
+	dictGetString,
+	unsafeDictCopyFromPtr
 ) where
 
 #include "ffmpeg.h"
@@ -185,4 +186,17 @@ dictGetString dict keyValSep pairsSep = do
 			av_freep pbuffer
 			free pbuffer
 		return s
+
+-- | Copy a dictionary from an arbitrary pointer
+unsafeDictCopyFromPtr :: MonadIO m =>
+	Ptr ()
+	-> [DictFlag]
+	-> m AVDictionary
+unsafeDictCopyFromPtr src flags = do
+	dst <- newAVDictionary
+	liftIO$
+		withThis dst$ \ppd ->
+			av_dict_copy ppd src cflags
+	return dst
+	where cflags = fromCEnum$ mconcat flags
 
