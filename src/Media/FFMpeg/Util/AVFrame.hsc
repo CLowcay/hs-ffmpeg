@@ -9,11 +9,11 @@ Copyright   : (c) Callum Lowcay, 2015
 License     : BSD3
 Stability   : experimental
 
-Bindings to libavcodec.
+Bindings to libavutil.
 
 -}
 
-module Media.FFMpeg.Codec.AVFrame (
+module Media.FFMpeg.Util.AVFrame (
 	AVFrame,
 	AVFrameSideData,
 	frameGetBestEffortTimestamp,

@@ -3,16 +3,16 @@
 
 {- |
  
-Description : Bindings to libavcodec
+Description : Bindings to libavutil
 Copyright   : (c) Callum Lowcay, 2015
 License     : BSD3
 Stability   : experimental
 
-Bindings to libavcodec.
+Bindings to libavutil.
 
 -}
 
-module Media.FFMpeg.Codec.AVPicture (
+module Media.FFMpeg.Util.AVPicture (
 	AVPicture (..),
 	PlanarColor,
 	makePlanarColor,
@@ -30,8 +30,8 @@ import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Foreign.Ptr
 
-import Media.FFMpeg.Codec.AVFrame
 import Media.FFMpeg.Internal.Common
+import Media.FFMpeg.Util.AVFrame
 import Media.FFMpeg.Util.Enums
 
 foreign import ccall "avpicture_alloc" avpicture_alloc :: Ptr () -> CInt -> CInt -> CInt -> IO CInt

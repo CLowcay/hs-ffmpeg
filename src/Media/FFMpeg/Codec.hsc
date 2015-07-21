@@ -15,8 +15,6 @@ Bindings to libavcodec.
 -}
 
 module Media.FFMpeg.Codec (
-	module Media.FFMpeg.Codec.AVFrame,
-	module Media.FFMpeg.Codec.AVPicture,
 	module Media.FFMpeg.Codec.Enums,
 
 	libAVCodecVersion,
@@ -56,11 +54,10 @@ import Foreign.Storable
 import System.IO.Unsafe
 import Text.Printf
 
-import Media.FFMpeg.Codec.AVFrame
-import Media.FFMpeg.Codec.AVPicture
 import Media.FFMpeg.Codec.Enums
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util
+import Media.FFMpeg.Util.AVFrame
 
 foreign import ccall "avcodec_open" avcodec_open :: Ptr () -> Ptr () -> IO CInt
 -- TODO: add avcodec_open2

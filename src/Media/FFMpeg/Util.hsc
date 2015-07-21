@@ -5,6 +5,7 @@
 
 Description : Bindings to libavutil
 Copyright   : (c) Vasyl Pasternak, 2009
+            :     Callum Lowcay, 2015
 License     : BSD3
 Stability   : experimental
 
@@ -13,8 +14,11 @@ Bindings to libavutil.
 -}
 
 module Media.FFMpeg.Util (
-	module Media.FFMpeg.Util.Enums,
+	module Media.FFMpeg.Util.AVFrame,
+	module Media.FFMpeg.Util.AVFrameSideData,
+	module Media.FFMpeg.Util.ChannelLayout,
 	module Media.FFMpeg.Util.Dict,
+	module Media.FFMpeg.Util.Enums,
 
 	-- * Raw bindings
 	av_free,
@@ -42,6 +46,9 @@ import Foreign.Ptr
 import Text.Printf
 
 import Media.FFMpeg.Internal.Common
+import Media.FFMpeg.Util.AVFrame
+import Media.FFMpeg.Util.AVFrameSideData
+import Media.FFMpeg.Util.ChannelLayout
 import Media.FFMpeg.Util.Dict
 import Media.FFMpeg.Util.Enums
 
