@@ -24,6 +24,7 @@ module Media.FFMpeg.Internal.Common (
 import Data.Bits
 import Data.Monoid
 import Data.Version
+import Data.Word
 import Foreign.C.Types
 import Foreign.ForeignPtr
 import Foreign.Ptr
@@ -49,6 +50,8 @@ class CFlags a where
 	fminus :: a -> a -> a
 	fhasAny :: a -> a -> Bool
 	fhasAll :: a -> a -> Bool
+	fhas :: a -> a -> Bool
+	fhas = fhasAll
 	flagsToInt :: a -> CInt
 	fempty :: a
 
@@ -58,7 +61,16 @@ instance CFlags CInt where
 	x `fminus` y = x .&. (complement y)
 	x `fhasAny` y = (x .&. y) /= 0
 	x `fhasAll` y = (x .&. y) == y
-	flagsToInt = id
+	flagsToInt = fromIntegral
+	fempty = 0
+
+instance CFlags Word64 where
+	funion = (.|.)
+	fintersection = (.&.)
+	x `fminus` y = x .&. (complement y)
+	x `fhasAny` y = (x .&. y) /= 0
+	x `fhasAll` y = (x .&. y) == y
+	flagsToInt = fromIntegral
 	fempty = 0
 
 instance CFlags a => Monoid a where

@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 {- |
 
@@ -8,7 +9,7 @@ Copyright   : (c) Callum Lowcay, 2015
 License     : BSD3
 Stability   : experimental
 
-Enumerations for libavcodec.
+Bindings to libavcodec.
 
 -}
 
@@ -38,6 +39,8 @@ module Media.FFMpeg.Codec.AVFrame (
 	frameGetColorRange,
 	frameSetColorRange,
 
+	AVFrameSideDataPayload,
+
 	getColorspaceName,
 	frameAlloc,
 	frameRef,
@@ -48,9 +51,8 @@ module Media.FFMpeg.Codec.AVFrame (
 	frameIsWritable,
 	frameMakeWritable,
 	frameCopyProps,
-	frameNewSideData,
-	withFrameSideData,
-	frameRemoveSideData,
+	frameSetSideData,
+	frameGetSideData,
 	frameSideDataName
 ) where
 
@@ -60,26 +62,21 @@ import Control.Applicative
 import Control.Monad
 import Control.Monad.Except
 import Data.Int
+import Data.Word
 import Foreign.C.String
 import Foreign.C.Types
 import Foreign.ForeignPtr
+import Foreign.Marshal.Array
 import Foreign.Ptr
 import Foreign.Storable
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Unsafe as B
 import System.IO.Unsafe
 
-import Media.FFMpeg.Codec.Enums
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util.Dict
 import Media.FFMpeg.Util.Enums
-
-newtype AVFrame = AVFrame (ForeignPtr AVFrame)
-newtype AVFrameSideData = AVFrameSideData (Ptr AVFrameSideData)
-
-instance ExternalPointer AVFrame where
-	withThis (AVFrame f) io = withForeignPtr f (io.castPtr)
-
-instance ExternalPointer AVFrameSideData where
-	withThis (AVFrameSideData f) io = io.castPtr$ f
+import Media.FFMpeg.Util.AVFrameSideData
 
 foreign import ccall "av_frame_get_best_effort_timestamp" av_frame_get_best_effort_timestamp :: Ptr () -> IO Int64
 foreign import ccall "av_frame_set_best_effort_timestamp" av_frame_set_best_effort_timestamp :: Ptr () -> Int64 -> IO ()
@@ -125,6 +122,11 @@ foreign import ccall "av_frame_new_side_data" av_frame_new_side_data :: Ptr () -
 foreign import ccall "av_frame_get_side_data" av_frame_get_side_data :: Ptr () -> CInt -> IO (Ptr ())
 foreign import ccall "av_frame_remove_side_data" av_frame_remove_side_data :: Ptr () -> CInt -> IO ()
 foreign import ccall "av_frame_side_data_name" av_frame_side_data_name :: CInt -> CString
+
+newtype AVFrame = AVFrame (ForeignPtr AVFrame)
+
+instance ExternalPointer AVFrame where
+	withThis (AVFrame f) io = withForeignPtr f (io.castPtr)
 
 frameGetBestEffortTimestamp :: MonadIO m => AVFrame -> m Int64
 frameGetBestEffortTimestamp frame =
@@ -311,37 +313,136 @@ frameCopyProps dst src = liftIO$
 		av_frame_copy_props pd ps
 		return ()
 
--- | Allocate new side side data in an AVFrame.  The AVFrameSideData is managed
--- by libav, so we need to be careful how we use it.  Hence, this function does
--- not return the newly allocated AVFrameSideData.  Use 'withFrameSideData' to
--- access the AVFrameSideData.
-frameNewSideData :: (MonadIO m, MonadError String m) =>
-	AVFrame                  -- ^ the frame to allocate side data in
-	-> AVFrameSideDataType   -- ^ the type of the side data
-	-> Int                   -- ^ the size of the side data in bytes
+-- | Class of valid AVFrameSideData types
+class AVFrameSideDataPayload a where
+	peekAVFrameSideDataPtr :: Ptr () -> IO (Ptr a)
+	getPayloadType :: a -> AVFrameSideDataType
+	getPayloadSize :: a -> CInt
+	peekPayload :: Ptr a -> Int -> IO a
+	pokePayload :: Ptr a -> a -> IO ()
+
+instance AVFrameSideDataPayload AVFrameDataPanScan where
+	peekAVFrameSideDataPtr ptr = castPtr <$>
+		av_frame_get_side_data ptr (fromCEnum av_frame_data_panscan)
+	getPayloadType _ = av_frame_data_panscan
+	getPayloadSize (AVFrameDataPanScan x) = fromIntegral$ sizeOf x
+	peekPayload ptr _ = peek ptr
+	pokePayload = poke
+instance AVFrameSideDataPayload AVFrameDataA53CC where
+	peekAVFrameSideDataPtr ptr = castPtr <$>
+		av_frame_get_side_data ptr (fromCEnum av_frame_data_a53_cc)
+	getPayloadType _ = av_frame_data_a53_cc
+	getPayloadSize (AVFrameDataA53CC s) = fromIntegral$ B.length s
+	peekPayload ptr size = AVFrameDataA53CC <$> B.packCStringLen (castPtr ptr, size)
+	pokePayload ptr (AVFrameDataA53CC s) = B.unsafeUseAsCString s$ \ps ->
+		copyArray (castPtr ptr) ps (B.length s)
+instance AVFrameSideDataPayload AVFrameDataStereo3d where
+	peekAVFrameSideDataPtr ptr = castPtr <$>
+		av_frame_get_side_data ptr (fromCEnum av_frame_data_stereo3d)
+	getPayloadType _ = av_frame_data_stereo3d
+	getPayloadSize (AVFrameDataStereo3d  x) = fromIntegral$ sizeOf x
+	peekPayload ptr _ = peek ptr
+	pokePayload = poke
+instance AVFrameSideDataPayload AVFrameDataMatrixEncoding where
+	peekAVFrameSideDataPtr ptr = castPtr <$>
+		av_frame_get_side_data ptr (fromCEnum av_frame_data_matrixencoding)
+	getPayloadType _ = av_frame_data_matrixencoding
+	getPayloadSize (AVFrameDataMatrixEncoding x) = fromIntegral$ sizeOf x
+	peekPayload ptr _ = peek ptr
+	pokePayload = poke
+instance AVFrameSideDataPayload AVFrameDataDownmixInfo where
+	peekAVFrameSideDataPtr ptr = castPtr <$>
+		av_frame_get_side_data ptr (fromCEnum av_frame_data_downmix_info)
+	getPayloadType _ = av_frame_data_downmix_info
+	getPayloadSize (AVFrameDataDownmixInfo  x) = fromIntegral$ sizeOf x
+	peekPayload ptr _ = peek ptr
+	pokePayload = poke
+instance AVFrameSideDataPayload AVFrameDataReplayGain where
+	peekAVFrameSideDataPtr ptr = castPtr <$>
+		av_frame_get_side_data ptr (fromCEnum av_frame_data_replaygain)
+	getPayloadType _ = av_frame_data_replaygain
+	getPayloadSize (AVFrameDataReplayGain  x) = fromIntegral$ sizeOf x
+	peekPayload ptr _ = peek ptr
+	pokePayload = poke
+instance AVFrameSideDataPayload AVFrameDataDisplayMatrix where
+	peekAVFrameSideDataPtr ptr = castPtr <$>
+		av_frame_get_side_data ptr (fromCEnum av_frame_data_displaymatrix)
+	getPayloadType _ = av_frame_data_displaymatrix
+	getPayloadSize (AVFrameDataDisplayMatrix  x) = fromIntegral$ sizeOf x
+	peekPayload ptr _ = peek ptr
+	pokePayload = poke
+instance AVFrameSideDataPayload AVFrameDataAfd where
+	peekAVFrameSideDataPtr ptr = castPtr <$>
+		av_frame_get_side_data ptr (fromCEnum av_frame_data_afd)
+	getPayloadType _ = av_frame_data_afd
+	getPayloadSize _ = 1
+	peekPayload ptr _ = (AVFrameDataAfd).toCEnum.fromIntegral <$> (peek (castPtr ptr) :: IO Word8)
+	pokePayload ptr (AVFrameDataAfd x) = poke (castPtr ptr) (fromIntegral.fromCEnum$ x :: Word8)
+instance AVFrameSideDataPayload AVFrameDataMotionVectors where
+	peekAVFrameSideDataPtr ptr = castPtr <$>
+		av_frame_get_side_data ptr (fromCEnum av_frame_data_motion_vectors)
+	getPayloadType _ = av_frame_data_motion_vectors
+	getPayloadSize (AVFrameDataMotionVectors  x) = fromIntegral$ sizeOf x
+	peekPayload ptr _ = peek ptr
+	pokePayload = poke
+instance AVFrameSideDataPayload AVFrameDataSkipSamples where
+	peekAVFrameSideDataPtr ptr = castPtr <$>
+		av_frame_get_side_data ptr (fromCEnum av_frame_data_skip_samples)
+	getPayloadType _ = av_frame_data_skip_samples
+	getPayloadSize (AVFrameDataSkipSamples  x) = fromIntegral$ sizeOf x
+	peekPayload ptr _ = peek ptr
+	pokePayload = poke
+
+-- | Set side data for an AVFrame
+frameSetSideData :: (MonadIO m, MonadError String m, AVFrameSideDataPayload a) =>
+	AVFrame                -- ^ The frame to modify
+	-> AVFrameSideData a   -- ^ The new side data.  If there is already side data
+	                       --   of this type, then the old data will be replaced
 	-> m ()
-frameNewSideData frame sdtype size = do
-	r <- liftIO.withThis frame$ \ptr ->
-		av_frame_new_side_data ptr (fromCEnum sdtype) (fromIntegral size)
-	when (r == nullPtr)$
-		throwError$ "frameNewSizeData: av_frame_new_side_data returned a null pointer"
+frameSetSideData frame sd = do
+	let AVFrameSideData metadata payload = sd
+	let sdType = getPayloadType payload
+	let sdSize = getPayloadSize payload
 
--- | Execute a monadic action that depends on the AVFrameSideData of an
--- AVFrame.  The monadic action should not invoke 'frameRemoveSideData' or
--- 'frameUnref'
-withFrameSideData :: (MonadIO m, MonadError String m) =>
-	AVFrame -> AVFrameSideDataType -> (AVFrameSideData -> m a) -> m a
-withFrameSideData frame sdtype action = do
-	sd <- liftIO.withThis frame$ \ptr ->
-		av_frame_get_side_data ptr (fromCEnum sdtype)
-	if sd == nullPtr then
-		throwError$ "withFrameSideData: av_frame_get_side_data returned a null pointer"
-	else
-		action.(AVFrameSideData).castPtr$ sd
+	frameRemoveSideData frame sdType
 
--- | Free side data
+	psd <- liftIO.withThis frame$ \ptr ->
+		av_frame_new_side_data ptr (fromCEnum sdType) (fromIntegral sdSize)
+	when (psd == nullPtr)$
+		throwError$ "frameSetSideData: av_frame_new_side_data returned a null pointer"
+
+	pdata <- liftIO (#{peek AVFrameSideData, data} psd :: IO (Ptr a))
+	dsize <- liftIO (#{peek AVFrameSideData, size} psd :: IO (CInt))
+
+	when (pdata == nullPtr)$
+		throwError$ "frameSetSideData: av_frame_new_side_data did not allocate a buffer"
+	when ((fromIntegral dsize) /= sdSize)$
+		throwError$ "frameSetSideData: av_frame_new_side_data allocated a buffer of size " ++
+			(show dsize) ++ " but we require " ++ (show sdSize) ++ " bytes"
+	
+	liftIO$ pokePayload pdata payload
+
+	let pmetadata = psd `plusPtr` #{offset AVFrameSideData, metadata}
+	liftIO.withThis metadata$ \psrc -> av_dict_copy pmetadata psrc 0
+
+-- | Get the side data associated with an AVFrame
+frameGetSideData :: forall a m. (MonadIO m, AVFrameSideDataPayload a) =>
+	AVFrame -> m (Maybe (AVFrameSideData a))
+frameGetSideData frame = liftIO.withThis frame$ \ptr -> do
+	psd <- peekAVFrameSideDataPtr ptr :: IO (Ptr a)
+	if psd == nullPtr then return Nothing else do
+		pdata <- #{peek AVFrameSideData, data} psd :: IO (Ptr a)
+		dsize <- #{peek AVFrameSideData, size} psd :: IO CInt
+		metadata <- #{peek AVFrameSideData, metadata} psd :: IO (Ptr ())
+		if (pdata == nullPtr) then return Nothing else do
+			m <- unsafeDictCopyFromPtr metadata []
+			p <- peekPayload pdata (fromIntegral dsize)
+			return.Just$ AVFrameSideData m p
+
+-- | Explicitly free side data
 frameRemoveSideData :: MonadIO m => AVFrame -> AVFrameSideDataType -> m ()
-frameRemoveSideData frame sdtype = liftIO.withThis frame$ \ptr -> av_frame_remove_side_data ptr (fromCEnum sdtype)
+frameRemoveSideData frame sdtype = liftIO.withThis frame$ \ptr ->
+	av_frame_remove_side_data ptr (fromCEnum sdtype)
 
 -- | Get a String representation of an AVFrameSideDataType
 frameSideDataName :: AVFrameSideDataType -> String

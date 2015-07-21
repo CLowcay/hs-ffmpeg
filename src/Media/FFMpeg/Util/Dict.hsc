@@ -14,6 +14,13 @@ Bindings to dict.c
 -}
 
 module Media.FFMpeg.Util.Dict (
+	av_dict_get,
+	av_dict_count,
+	av_dict_set,
+	av_dict_set_int,
+	av_dict_copy,
+	av_dict_get_string,
+
 	av_dict_match_case,
 	av_dict_ignore_suffix,
 	av_dict_dont_overwrite,

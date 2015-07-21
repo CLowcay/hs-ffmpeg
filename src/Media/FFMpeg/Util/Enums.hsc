@@ -15,6 +15,27 @@ Enumerations from libavutil.
 -}
 
 module Media.FFMpeg.Util.Enums (
+	AVFrameSideDataType,
+	av_frame_data_panscan,
+	av_frame_data_a53_cc,
+	av_frame_data_stereo3d,
+	av_frame_data_matrixencoding,
+	av_frame_data_downmix_info,
+	av_frame_data_replaygain,
+	av_frame_data_displaymatrix,
+	av_frame_data_afd,
+	av_frame_data_motion_vectors,
+	av_frame_data_skip_samples,
+
+	AVActiveFormatDescription,
+	av_afd_same,
+	av_afd_4_3,
+	av_afd_16_9,
+	av_afd_14_9,
+	av_afd_4_3_sp_14_9,
+	av_afd_16_9_sp_14_9,
+	av_afd_sp_4_3,
+
 	PixelFormat,
 	pix_fmt_none,
 	pix_fmt_yuv420p,
@@ -116,13 +137,59 @@ module Media.FFMpeg.Util.Enums (
 	avchroma_loc_topleft,
 	avchroma_loc_top,
 	avchroma_loc_bottomleft,
-	avchroma_loc_bottom
+	avchroma_loc_bottom,
+
+	AVStereo3DType,
+	av_stereo3d_2d,
+	av_stereo3d_sidebyside,
+	av_stereo3d_topbottom,
+	av_stereo3d_framesequence,
+	av_stereo3d_checkerboard,
+	av_stereo3d_sidebyside_quincunx,
+	av_stereo3d_lines,
+	av_stereo3d_columns,
+
+	AVStereo3DFlags,
+	av_stereo3d_flag_invert,
+
+	AVDownmixType,
+	av_downmix_type_unknown,
+	av_downmix_type_loro,
+	av_downmix_type_ltrt,
+	av_downmix_type_dplii
 ) where
 
 import Foreign.C.Types
 import Media.FFMpeg.Internal.Common
 
 #include "ffmpeg.h"
+
+-- | AVFrameSideDataType enum
+newtype AVFrameSideDataType = AVFrameSideDataType CInt deriving (Eq, Show, CEnum)
+#{enum AVFrameSideDataType, AVFrameSideDataType,
+	av_frame_data_panscan = AV_FRAME_DATA_PANSCAN,
+	av_frame_data_a53_cc = AV_FRAME_DATA_A53_CC,
+	av_frame_data_stereo3d = AV_FRAME_DATA_STEREO3D,
+	av_frame_data_matrixencoding = AV_FRAME_DATA_MATRIXENCODING,
+	av_frame_data_downmix_info = AV_FRAME_DATA_DOWNMIX_INFO,
+	av_frame_data_replaygain = AV_FRAME_DATA_REPLAYGAIN,
+	av_frame_data_displaymatrix = AV_FRAME_DATA_DISPLAYMATRIX,
+	av_frame_data_afd = AV_FRAME_DATA_AFD,
+	av_frame_data_motion_vectors = AV_FRAME_DATA_MOTION_VECTORS,
+	av_frame_data_skip_samples = AV_FRAME_DATA_SKIP_SAMPLES
+}
+
+-- | AVActiveFormatDescription
+newtype AVActiveFormatDescription = AVActiveFormatDescription CInt deriving (Eq, Show, CEnum)
+#{enum AVActiveFormatDescription, AVActiveFormatDescription,
+	av_afd_same = AV_AFD_SAME,
+	av_afd_4_3 = AV_AFD_4_3,
+	av_afd_16_9 = AV_AFD_16_9,
+	av_afd_14_9 = AV_AFD_14_9,
+	av_afd_4_3_sp_14_9 = AV_AFD_4_3_SP_14_9,
+	av_afd_16_9_sp_14_9 = AV_AFD_16_9_SP_14_9,
+	av_afd_sp_4_3 = AV_AFD_SP_4_3
+}
 
 -- | PixelFormat enumeration
 newtype PixelFormat = PixelFormat CInt deriving (Eq, Show, CEnum)
@@ -266,5 +333,33 @@ newtype AVChromaLocation = AVChromaLocation CInt deriving (Eq, Show, CEnum)
 	avchroma_loc_top = AVCHROMA_LOC_TOP,
 	avchroma_loc_bottomleft = AVCHROMA_LOC_BOTTOMLEFT,
 	avchroma_loc_bottom = AVCHROMA_LOC_BOTTOM
+}
+
+-- | AVStereo3DType enum
+newtype AVStereo3DType = AVStereo3DType CInt deriving (Eq, Show, CEnum)
+#{enum AVStereo3DType, AVStereo3DType,
+	av_stereo3d_2d = AV_STEREO3D_2D,
+	av_stereo3d_sidebyside = AV_STEREO3D_SIDEBYSIDE,
+	av_stereo3d_topbottom = AV_STEREO3D_TOPBOTTOM,
+	av_stereo3d_framesequence = AV_STEREO3D_FRAMESEQUENCE,
+	av_stereo3d_checkerboard = AV_STEREO3D_CHECKERBOARD,
+	av_stereo3d_sidebyside_quincunx = AV_STEREO3D_SIDEBYSIDE_QUINCUNX,
+	av_stereo3d_lines = AV_STEREO3D_LINES,
+	av_stereo3d_columns = AV_STEREO3D_COLUMNS
+}
+
+-- | Flags for the AVStereo3D struct
+newtype AVStereo3DFlags = AVStereo3DFlags CInt deriving (Eq, Show, CEnum, CFlags)
+#{enum AVStereo3DFlags, AVStereo3DFlags,
+	av_stereo3d_flag_invert = AV_STEREO3D_FLAG_INVERT
+}
+
+-- | AVDownmixType enum
+newtype AVDownmixType = AVDownmixType CInt deriving (Eq, Show, CEnum)
+#{enum AVDownmixType, AVDownmixType,
+	av_downmix_type_unknown = AV_DOWNMIX_TYPE_UNKNOWN,
+	av_downmix_type_loro = AV_DOWNMIX_TYPE_LORO,
+	av_downmix_type_ltrt = AV_DOWNMIX_TYPE_LTRT,
+	av_downmix_type_dplii = AV_DOWNMIX_TYPE_DPLII
 }
 

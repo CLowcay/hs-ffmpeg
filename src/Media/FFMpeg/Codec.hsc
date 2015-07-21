@@ -16,6 +16,7 @@ Bindings to libavcodec.
 
 module Media.FFMpeg.Codec (
 	module Media.FFMpeg.Codec.AVFrame,
+	module Media.FFMpeg.Codec.AVPicture,
 	module Media.FFMpeg.Codec.Enums,
 
 	libAVCodecVersion,
@@ -27,8 +28,6 @@ module Media.FFMpeg.Codec (
 	findDecoder,
 	decodeVideo2,
 	decodeAudio3,
-
-	pictureGetSize,
 
 	AVPacket,
 	allocPacket,
@@ -58,6 +57,7 @@ import System.IO.Unsafe
 import Text.Printf
 
 import Media.FFMpeg.Codec.AVFrame
+import Media.FFMpeg.Codec.AVPicture
 import Media.FFMpeg.Codec.Enums
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util
@@ -72,10 +72,6 @@ foreign import ccall "avcodec_decode_video2" avcodec_decode_video2 ::
 foreign import ccall "avcodec_decode_audio3" avcodec_decode_audio3 :: 
 	Ptr () -> Ptr () -> (Ptr CInt) -> Ptr () -> IO CInt
 -- TODO: add avcodec_decode_audio4
-foreign import ccall "avpicture_fill" avpicture_fill ::
-	Ptr () -> Ptr () -> CInt -> CInt -> CInt -> IO CInt
-foreign import ccall "avpicture_get_size" avpicture_get_size :: 
-	CInt -> CInt -> CInt -> CInt  -- C function is pure
 -- These functions go through a wrapper due to inlining
 foreign import ccall "b_init_packet" av_init_packet :: Ptr () -> IO ()
 foreign import ccall "&b_free_packet" pav_free_packet ::
@@ -256,28 +252,6 @@ decodeAudio3 ctx buf pkt = do
 --
 --decodeAudioPacket' :: CodecContext -> Packet -> IO ByteString
 --decodeAudioPacket' = decodeAudioPacket maxAudioFrameSize
-
--- TODO: review this class
---class ExternalPointer pic => HasPicture pic where
-	-- | Initialize the picture fields based on the specified image parameters and
-	-- the provided image data buffer. 
---	pictureFill :: (MonadIO m, MonadError String m) =>
---		pic              -- ^ picture to initialize
---		-> Buffer        -- ^ image buffer
---		-> m ()
---	pictureFill pic buf pf w h =
---		withThis pic $ \pic' -> 
---		withThis buf $ \buf' -> do
---			r <- liftIO$ avpicture_fill (castPtr pic') 
---				(castPtr buf')
---				(fromCEnum pf)
---				(fromIntegral w) (fromIntegral h)
---			when (r < 0) $
-	
--- | Calculate the size of the picture in bytes
-pictureGetSize :: PixelFormat -> Int -> Int -> Int
-pictureGetSize pf w h = fromIntegral$
-	avpicture_get_size (fromCEnum pf) (fromIntegral w) (fromIntegral h)
 
 -- | AVPacket struct
 newtype AVPacket = AVPacket (ForeignPtr AVPacket)

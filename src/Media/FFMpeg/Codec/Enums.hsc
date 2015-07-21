@@ -35,18 +35,6 @@ module Media.FFMpeg.Codec.Enums (
 	av_sample_fmt_fltp,
 	av_sample_fmt_dblp,
 
-	AVFrameSideDataType, 
-	av_frame_data_panscan,
-	av_frame_data_a53_cc,
-	av_frame_data_stereo3d,
-	av_frame_data_matrixencoding,
-	av_frame_data_downmix_info,
-	av_frame_data_replaygain,
-	av_frame_data_displaymatrix,
-	av_frame_data_afd,
-	av_frame_data_motion_vectors,
-	av_frame_data_skip_samples,
-
 	AVCodecId,
 	av_codec_id_none,
 	av_codec_id_mpeg1video,
@@ -466,7 +454,6 @@ import Media.FFMpeg.Internal.Common
 
 -- | AVMediaType
 newtype AVMediaType = AVMediaType CInt deriving (Eq, Show, CEnum)
-
 #{enum AVMediaType, AVMediaType,
 	avmedia_type_unknown = AVMEDIA_TYPE_UNKNOWN,
 	avmedia_type_video = AVMEDIA_TYPE_VIDEO,
@@ -478,7 +465,6 @@ newtype AVMediaType = AVMediaType CInt deriving (Eq, Show, CEnum)
 
 -- | AVSampleFormat
 newtype AVSampleFormat = AVSampleFormat CInt deriving (Eq, Show, CEnum)
-
 #{enum AVSampleFormat, AVSampleFormat,
 	av_sample_fmt_none = AV_SAMPLE_FMT_NONE,
 	av_sample_fmt_u8 = AV_SAMPLE_FMT_U8,
@@ -493,24 +479,8 @@ newtype AVSampleFormat = AVSampleFormat CInt deriving (Eq, Show, CEnum)
 	av_sample_fmt_dblp = AV_SAMPLE_FMT_DBLP
 }
 
-newtype AVFrameSideDataType = AVFrameSideDataType CInt deriving (Eq, Show, CEnum)
-
-#{enum AVFrameSideDataType, AVFrameSideDataType,
-	av_frame_data_panscan = AV_FRAME_DATA_PANSCAN,
-	av_frame_data_a53_cc = AV_FRAME_DATA_A53_CC,
-	av_frame_data_stereo3d = AV_FRAME_DATA_STEREO3D,
-	av_frame_data_matrixencoding = AV_FRAME_DATA_MATRIXENCODING,
-	av_frame_data_downmix_info = AV_FRAME_DATA_DOWNMIX_INFO,
-	av_frame_data_replaygain = AV_FRAME_DATA_REPLAYGAIN,
-	av_frame_data_displaymatrix = AV_FRAME_DATA_DISPLAYMATRIX,
-	av_frame_data_afd = AV_FRAME_DATA_AFD,
-	av_frame_data_motion_vectors = AV_FRAME_DATA_MOTION_VECTORS,
-	av_frame_data_skip_samples = AV_FRAME_DATA_SKIP_SAMPLES
-}
-
 -- | AVCodecId
 newtype AVCodecId = AVCodecId CInt deriving (Eq, Show, CEnum)
-
 #{enum AVCodecId, AVCodecId,
 	av_codec_id_none = AV_CODEC_ID_NONE,
 	av_codec_id_mpeg1video = AV_CODEC_ID_MPEG1VIDEO,
