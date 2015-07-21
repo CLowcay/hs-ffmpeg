@@ -26,6 +26,7 @@ library
         include-dirs:    src
         exposed-modules: Media.FFMpeg
                          Media.FFMpeg.Codec
+                         Media.FFMpeg.Codec.AVPicture
                          Media.FFMpeg.Codec.Enums
                          Media.FFMpeg.Format
                          Media.FFMpeg.Internal.Common
@@ -34,7 +35,6 @@ library
                          Media.FFMpeg.Util
                          Media.FFMpeg.Util.AVFrame
                          Media.FFMpeg.Util.AVFrameSideData
-                         Media.FFMpeg.Util.AVPicture
                          Media.FFMpeg.Util.ChannelLayout
                          Media.FFMpeg.Util.Dict
                          Media.FFMpeg.Util.Enums

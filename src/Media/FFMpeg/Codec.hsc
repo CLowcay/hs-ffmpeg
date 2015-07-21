@@ -15,6 +15,7 @@ Bindings to libavcodec.
 -}
 
 module Media.FFMpeg.Codec (
+	module Media.FFMpeg.Codec.AVPicture,
 	module Media.FFMpeg.Codec.Enums,
 
 	libAVCodecVersion,
@@ -54,6 +55,7 @@ import Foreign.Storable
 import System.IO.Unsafe
 import Text.Printf
 
+import Media.FFMpeg.Codec.AVPicture
 import Media.FFMpeg.Codec.Enums
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util

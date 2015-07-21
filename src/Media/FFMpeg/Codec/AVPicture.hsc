@@ -3,16 +3,16 @@
 
 {- |
  
-Description : Bindings to libavutil
+Description : Bindings to libavcodec
 Copyright   : (c) Callum Lowcay, 2015
 License     : BSD3
 Stability   : experimental
 
-Bindings to libavutil.
+Bindings to libavcodec.
 
 -}
 
-module Media.FFMpeg.Util.AVPicture (
+module Media.FFMpeg.Codec.AVPicture (
 	AVPicture (..),
 	PlanarColor,
 	makePlanarColor,
