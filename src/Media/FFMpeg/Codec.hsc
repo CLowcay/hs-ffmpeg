@@ -16,6 +16,7 @@ Bindings to libavcodec.
 
 module Media.FFMpeg.Codec (
 	module Media.FFMpeg.Codec.AVPacket,
+	module Media.FFMpeg.Codec.AVPacketSideData,
 	module Media.FFMpeg.Codec.AVPicture,
 	module Media.FFMpeg.Codec.Enums,
 
@@ -27,7 +28,7 @@ module Media.FFMpeg.Codec (
 	openCodec,
 	findDecoder,
 	decodeVideo2,
-	decodeAudio3,
+	decodeAudio3
 ) where
 
 #include "ffmpeg.h"
@@ -51,6 +52,7 @@ import System.IO.Unsafe
 import Text.Printf
 
 import Media.FFMpeg.Codec.AVPacket
+import Media.FFMpeg.Codec.AVPacketSideData
 import Media.FFMpeg.Codec.AVPicture
 import Media.FFMpeg.Codec.Enums
 import Media.FFMpeg.Internal.Common

@@ -15,6 +15,17 @@ Bindings to libavcodec.
 
 module Media.FFMpeg.Codec.AVPacket (
 	AVPacket,
+
+	packetGetPTS,
+	packetGetDTS,
+	packetGetData,
+	packetGetSize,
+	packetGetStreamIndex,
+	packetFlags,
+	packetGetDuration,
+	packetGetPos,
+	packetGetConvergenceDuration,
+
 	mkAVPacket,
 	packetAlloc,
 	packetFree,
@@ -29,7 +40,8 @@ module Media.FFMpeg.Codec.AVPacket (
 	packetSetSideData,
 	packetGetSideData,
 	packetFreeSideData,
-	packetSideDataName
+	packetSideDataName,
+	packetRescaleTS
 ) where
 
 #include "ffmpeg.h"
@@ -38,6 +50,8 @@ import Control.Applicative
 import Control.Arrow
 import Control.Monad
 import Control.Monad.Except
+import Data.Int
+import Data.Ratio
 import Data.Word
 import Foreign.C.String
 import Foreign.C.Types
@@ -86,6 +100,45 @@ newtype AVPacket = AVPacket (ForeignPtr AVPacket)
 
 instance ExternalPointer AVPacket where
 	withThis (AVPacket f) io = withForeignPtr f (io.castPtr)
+
+getInt :: CInt -> Int
+getInt = fromIntegral
+
+-- | Get the presentation timestamp from a packet
+packetGetPTS :: (MonadIO m) => AVPacket -> m AVTimestamp
+packetGetPTS pkt = liftIO.(AVTimestamp <$>).withThis pkt$ #{peek AVPacket, pts}
+
+-- | Get the decompression timestamp from a packet
+packetGetDTS :: MonadIO m => AVPacket -> m AVTimestamp
+packetGetDTS pkt = liftIO.(AVTimestamp <$>).withThis pkt$ #{peek AVPacket, dts}
+
+-- | Get a pointer to the data of a packet
+packetGetData :: MonadIO m => AVPacket -> m (Ptr Word8)
+packetGetData pkt = liftIO.withThis pkt$ #{peek AVPacket, data}
+
+-- | Get the data size of a packet
+packetGetSize :: MonadIO m => AVPacket -> m Int
+packetGetSize pkt = liftIO.(getInt <$>).withThis pkt$ #{peek AVPacket, size}
+
+-- | Get the stream_index from a packet
+packetGetStreamIndex :: MonadIO m => AVPacket -> m Int
+packetGetStreamIndex pkt = liftIO.(getInt <$>).withThis pkt$ #{peek AVPacket, stream_index}
+
+-- | Get the flags field from a packet
+packetFlags :: MonadIO m => AVPacket -> m AVPacketFlag
+packetFlags pkt = liftIO.(toCEnum <$>).withThis pkt$ #{peek AVPacket, flags}
+
+-- | Get the duration of a packet
+packetGetDuration :: MonadIO m => AVPacket -> m Int
+packetGetDuration pkt = liftIO.(getInt <$>).withThis pkt$ #{peek AVPacket, duration}
+
+-- | Get the byte position in the file of a packet
+packetGetPos :: MonadIO m => AVPacket -> m Int64
+packetGetPos pkt = liftIO.withThis pkt$ #{peek AVPacket, pos}
+
+-- | Get the convergence_duration of a packet
+packetGetConvergenceDuration :: MonadIO m => AVPacket -> m AVTimestamp
+packetGetConvergenceDuration pkt = liftIO.(AVTimestamp <$>).withThis pkt$ #{peek AVPacket, convergence_duration}
 
 -- | Create a new AVPacket which will be freed by the garbage collector
 mkAVPacket :: MonadIO m => m AVPacket
@@ -330,4 +383,11 @@ packetSideDataName :: AVPacketSideDataType -> String
 packetSideDataName =
 	-- safe because av_packet_side_data_name returns a const string
 	unsafePerformIO.peekCString.av_packet_side_data_name.fromCEnum
+
+-- | Change the timebase of a packet, rescaling the timestamps
+packetRescaleTS :: MonadIO m => AVPacket -> Rational -> Rational -> m ()
+packetRescaleTS pkt src dst =
+	liftIO.withThis pkt$ \ptr -> av_packet_rescale_ts ptr
+		(fromIntegral$ numerator src) (fromIntegral$ denominator src)
+		(fromIntegral$ numerator dst) (fromIntegral$ denominator dst)
 

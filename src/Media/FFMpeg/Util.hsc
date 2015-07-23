@@ -1,5 +1,6 @@
--- -*- haskell -*-
-{-# LANGUAGE ForeignFunctionInterface, ScopedTypeVariables, FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 {- |
 
@@ -26,6 +27,9 @@ module Media.FFMpeg.Util (
 	pav_free,
 	av_malloc,
 
+	-- * AVTimestamp
+	AVTimestamp(..),
+
 	-- * Haskell interface to libavutil
 	avMalloc,
 
@@ -37,6 +41,7 @@ module Media.FFMpeg.Util (
 
 import Control.Applicative
 import Control.Monad.Except
+import Data.Int
 import Data.Word
 import Foreign.C.Types
 import Foreign.ForeignPtr
@@ -59,6 +64,8 @@ foreign import ccall "av_freep" av_freep :: Ptr a -> IO ()
 -- | Pointer to av_free
 foreign import ccall "&av_free" pav_free :: FunPtr (Ptr a -> IO ())
 foreign import ccall "av_malloc" av_malloc :: CUInt -> IO (Ptr ())
+
+newtype AVTimestamp = AVTimestamp Int64 deriving (Eq, Ord, Num, Show)
 
 -- | Safely allocate a ForeignPtr with av_malloc
 avMalloc :: (MonadIO m, MonadError String m) => Word -> m (ForeignPtr ())
