@@ -35,6 +35,54 @@ module Media.FFMpeg.Codec.Enums (
 	av_sample_fmt_fltp,
 	av_sample_fmt_dblp,
 
+	AVPacketSideDataType,
+	av_pkt_data_palette,
+	av_pkt_data_new_extradata,
+	av_pkt_data_param_change,
+	av_pkt_data_h263_mb_info,
+	av_pkt_data_replaygain,
+	av_pkt_data_displaymatrix,
+	av_pkt_data_stereo3d,
+	--av_pkt_data_audio_service_type,
+	--av_pkt_data_quality_factor,
+	av_pkt_data_skip_samples,
+	av_pkt_data_jp_dualmono,
+	av_pkt_data_strings_metadata,
+	av_pkt_data_subtitle_position,
+	av_pkt_data_matroska_blockadditional,
+	av_pkt_data_webvtt_identifier,
+	av_pkt_data_webvtt_settings,
+	av_pkt_data_metadata_update,
+
+	AVPacketFlag,
+	av_pkt_flag_key,
+	av_pkt_flag_corrupt,
+
+	AVSideDataParamChangeFlags,
+	av_side_data_param_change_channel_count,
+	av_side_data_param_change_channel_layout,
+	av_side_data_param_change_sample_rate,
+	av_side_data_param_change_dimensions,
+
+	AVAudioServiceType,
+	av_audio_service_type_main,
+	av_audio_service_type_effects,
+	av_audio_service_type_visually_impaired,
+	av_audio_service_type_hearing_impaired,
+	av_audio_service_type_dialogue,
+	av_audio_service_type_commentary,
+	av_audio_service_type_emergency,
+	av_audio_service_type_voice_over,
+	av_audio_service_type_karaoke,
+
+	AVFieldOrder,
+	av_field_unknown,
+	av_field_progressive,
+	av_field_tt,
+	av_field_bb,
+	av_field_tb,
+	av_field_bt,
+
 	AVCodecId,
 	av_codec_id_none,
 	av_codec_id_mpeg1video,
@@ -448,7 +496,9 @@ module Media.FFMpeg.Codec.Enums (
 
 #include "ffmpeg.h"
 
+import Data.Word
 import Foreign.C.Types
+import Foreign.Storable
 
 import Media.FFMpeg.Internal.Common
 
@@ -477,6 +527,70 @@ newtype AVSampleFormat = AVSampleFormat CInt deriving (Eq, Show, CEnum)
 	av_sample_fmt_s32p = AV_SAMPLE_FMT_S32P,
 	av_sample_fmt_fltp = AV_SAMPLE_FMT_FLTP,
 	av_sample_fmt_dblp = AV_SAMPLE_FMT_DBLP
+}
+
+-- | AVPacketSideDataType
+newtype AVPacketSideDataType = AVPacketSideDataType CInt deriving (Eq, Show, CEnum)
+#{enum AVPacketSideDataType, AVPacketSideDataType,
+	av_pkt_data_palette = AV_PKT_DATA_PALETTE,
+	av_pkt_data_new_extradata = AV_PKT_DATA_NEW_EXTRADATA,
+	av_pkt_data_param_change = AV_PKT_DATA_PARAM_CHANGE,
+	av_pkt_data_h263_mb_info = AV_PKT_DATA_H263_MB_INFO,
+	av_pkt_data_replaygain = AV_PKT_DATA_REPLAYGAIN,
+	av_pkt_data_displaymatrix = AV_PKT_DATA_DISPLAYMATRIX,
+	av_pkt_data_stereo3d = AV_PKT_DATA_STEREO3D,
+	av_pkt_data_skip_samples = AV_PKT_DATA_SKIP_SAMPLES,
+	av_pkt_data_jp_dualmono = AV_PKT_DATA_JP_DUALMONO,
+	av_pkt_data_strings_metadata = AV_PKT_DATA_STRINGS_METADATA,
+	av_pkt_data_subtitle_position = AV_PKT_DATA_SUBTITLE_POSITION,
+	av_pkt_data_matroska_blockadditional = AV_PKT_DATA_MATROSKA_BLOCKADDITIONAL,
+	av_pkt_data_webvtt_identifier = AV_PKT_DATA_WEBVTT_IDENTIFIER,
+	av_pkt_data_webvtt_settings = AV_PKT_DATA_WEBVTT_SETTINGS,
+	av_pkt_data_metadata_update = AV_PKT_DATA_METADATA_UPDATE
+}
+
+--av_pkt_data_audio_service_type = AV_PKT_DATA_AUDIO_SERVICE_TYPE,
+--av_pkt_data_quality_factor = AV_PKT_DATA_QUALITY_FACTOR,
+
+-- | AV_PKT_FLAG_ flags
+newtype AVPacketFlag = AVPacketFlag CInt deriving (Eq, Show, CEnum, CFlags)
+#{enum AVPacketFlag, AVPacketFlag,
+	av_pkt_flag_key = AV_PKT_FLAG_KEY,
+	av_pkt_flag_corrupt = AV_PKT_FLAG_CORRUPT
+}
+
+-- | AVSideDataParamChangeFlags
+newtype AVSideDataParamChangeFlags = AVSideDataParamChangeFlags Word32 deriving (Eq, Show, Storable)
+#{enum AVSideDataParamChangeFlags, AVSideDataParamChangeFlags,
+	av_side_data_param_change_channel_count = AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_COUNT,
+	av_side_data_param_change_channel_layout = AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_LAYOUT,
+	av_side_data_param_change_sample_rate = AV_SIDE_DATA_PARAM_CHANGE_SAMPLE_RATE,
+	av_side_data_param_change_dimensions = AV_SIDE_DATA_PARAM_CHANGE_DIMENSIONS
+}
+
+-- | AVAudioServiceType
+newtype AVAudioServiceType = AVAudioServiceType CInt deriving (Eq, Show, CEnum, Storable)
+#{enum AVAudioServiceType, AVAudioServiceType,
+	av_audio_service_type_main = AV_AUDIO_SERVICE_TYPE_MAIN,
+	av_audio_service_type_effects = AV_AUDIO_SERVICE_TYPE_EFFECTS,
+	av_audio_service_type_visually_impaired = AV_AUDIO_SERVICE_TYPE_VISUALLY_IMPAIRED,
+	av_audio_service_type_hearing_impaired = AV_AUDIO_SERVICE_TYPE_HEARING_IMPAIRED,
+	av_audio_service_type_dialogue = AV_AUDIO_SERVICE_TYPE_DIALOGUE,
+	av_audio_service_type_commentary = AV_AUDIO_SERVICE_TYPE_COMMENTARY,
+	av_audio_service_type_emergency = AV_AUDIO_SERVICE_TYPE_EMERGENCY,
+	av_audio_service_type_voice_over = AV_AUDIO_SERVICE_TYPE_VOICE_OVER,
+	av_audio_service_type_karaoke = AV_AUDIO_SERVICE_TYPE_KARAOKE
+}
+
+-- | AVFieldOrder
+newtype AVFieldOrder = AVFieldOrder CInt deriving (Eq, Show, CEnum)
+#{enum AVFieldOrder, AVFieldOrder,
+	av_field_unknown = AV_FIELD_UNKNOWN,
+	av_field_progressive = AV_FIELD_PROGRESSIVE,
+	av_field_tt = AV_FIELD_TT,
+	av_field_bb = AV_FIELD_BB,
+	av_field_tb = AV_FIELD_TB,
+	av_field_bt = AV_FIELD_BT
 }
 
 -- | AVCodecId

@@ -26,6 +26,8 @@ library
         include-dirs:    src
         exposed-modules: Media.FFMpeg
                          Media.FFMpeg.Codec
+                         Media.FFMpeg.Codec.AVPacket
+                         Media.FFMpeg.Codec.AVPacketSideData
                          Media.FFMpeg.Codec.AVPicture
                          Media.FFMpeg.Codec.Enums
                          Media.FFMpeg.Format

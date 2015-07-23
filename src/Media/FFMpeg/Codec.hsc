@@ -15,6 +15,7 @@ Bindings to libavcodec.
 -}
 
 module Media.FFMpeg.Codec (
+	module Media.FFMpeg.Codec.AVPacket,
 	module Media.FFMpeg.Codec.AVPicture,
 	module Media.FFMpeg.Codec.Enums,
 
@@ -27,12 +28,6 @@ module Media.FFMpeg.Codec (
 	findDecoder,
 	decodeVideo2,
 	decodeAudio3,
-
-	AVPacket,
-	allocPacket,
-	newPacket,
-	packetGetStreamIndex,
-	packetGetSize
 ) where
 
 #include "ffmpeg.h"
@@ -55,6 +50,7 @@ import Foreign.Storable
 import System.IO.Unsafe
 import Text.Printf
 
+import Media.FFMpeg.Codec.AVPacket
 import Media.FFMpeg.Codec.AVPicture
 import Media.FFMpeg.Codec.Enums
 import Media.FFMpeg.Internal.Common
@@ -73,8 +69,6 @@ foreign import ccall "avcodec_decode_audio3" avcodec_decode_audio3 ::
 -- TODO: add avcodec_decode_audio4
 -- These functions go through a wrapper due to inlining
 foreign import ccall "b_init_packet" av_init_packet :: Ptr () -> IO ()
-foreign import ccall "&b_free_packet" pav_free_packet ::
-	FunPtr (Ptr () -> IO ())
 foreign import ccall "av_new_packet" av_new_packet :: Ptr () -> CInt -> IO CInt
 foreign import ccall "av_frame_get_buffer" av_frame_get_buffer ::
 	Ptr () -> CInt -> IO CInt
@@ -251,48 +245,4 @@ decodeAudio3 ctx buf pkt = do
 --
 --decodeAudioPacket' :: CodecContext -> Packet -> IO ByteString
 --decodeAudioPacket' = decodeAudioPacket maxAudioFrameSize
-
--- | AVPacket struct
-newtype AVPacket = AVPacket (ForeignPtr AVPacket)
-
-instance ExternalPointer AVPacket where
-	withThis (AVPacket pkt) io = withForeignPtr pkt (io . castPtr)
-
--- | Allocate an AVPacket.  Does not allocate any buffers
-allocPacket :: MonadIO m => m AVPacket
-allocPacket = liftIO$ do
-	fp <- mallocForeignPtrBytes	#{size AVPacket}
-	withForeignPtr fp$ \p -> av_init_packet p
-	addForeignPtrFinalizer pav_free_packet fp
-	return.AVPacket$ castForeignPtr fp
-
--- | Allocate packet with a buffer
-newPacket :: (MonadIO m, MonadError String m) =>
-	Int              -- ^ size of the buffer to allocate
-	-> m AVPacket
-newPacket size = do
-	fp <- liftIO.mallocForeignPtrBytes$ #{size AVPacket}
-	r <- liftIO.withForeignPtr fp$ \p -> av_new_packet p (fromIntegral size)
-
-	if (r /= 0) then
-		throwError$ "newPacket: error allocating new packet with size "
-			++ (show size) ++ ", error code " ++ (show r)
-	else liftIO$ do
-		addForeignPtrFinalizer pav_free_packet fp
-		return . AVPacket . castForeignPtr $ fp
-
--- TODO: is there a safe way to implement this function, so that it is
--- impossible to pass a freed packet to a libav function?
---cleanPacket :: AVPacket -> IO ()
---cleanPacket pkt = withThis pkt av_free_packet
-
--- |  get the stream_index field from an AVPacket
-packetGetStreamIndex :: MonadIO m => AVPacket -> m Int
-packetGetStreamIndex pkt = liftIO.withThis pkt $ \pkt' ->
-	fromIntegral <$> (#{peek AVPacket, stream_index} pkt' :: IO CInt)
-
--- | get the size field from an AVPacket
-packetGetSize :: MonadIO m => AVPacket -> m Int
-packetGetSize pkt = liftIO.withThis pkt $ \pkt' ->
-	fromIntegral <$> (#{peek AVPacket, size} pkt' :: IO CInt)
 

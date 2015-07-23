@@ -73,6 +73,15 @@ instance CFlags Word64 where
 	flagsToInt = fromIntegral
 	fempty = 0
 
+instance CFlags Word32 where
+	funion = (.|.)
+	fintersection = (.&.)
+	x `fminus` y = x .&. (complement y)
+	x `fhasAny` y = (x .&. y) /= 0
+	x `fhasAll` y = (x .&. y) == y
+	flagsToInt = fromIntegral
+	fempty = 0
+
 instance CFlags a => Monoid a where
 	mempty = fempty
 	mappend = funion

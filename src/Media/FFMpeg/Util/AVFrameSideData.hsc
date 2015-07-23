@@ -60,7 +60,7 @@ newtype AVFrameDataReplayGain = AVFrameDataReplayGain AVReplayGain deriving Stor
 newtype AVFrameDataDisplayMatrix = AVFrameDataDisplayMatrix DisplayMatrix deriving Storable
 newtype AVFrameDataAfd = AVFrameDataAfd AVActiveFormatDescription
 newtype AVFrameDataMotionVectors = AVFrameDataMotionVectors AVMotionVector deriving Storable
-newtype AVFrameDataSkipSamples = AVFrameDataSkipSamples SkipSamplesReason deriving Storable
+newtype AVFrameDataSkipSamples = AVFrameDataSkipSamples SkipSamples deriving Storable
 
 -- | Side data which can be associated with an AVFrame
 data AVFrameSideData a = AVFrameSideData {
@@ -190,7 +190,7 @@ data DisplayMatrix = DisplayMatrix
 	Double Double Double
 
 instance Storable DisplayMatrix where
-	sizeOf _ = 32 * 9
+	sizeOf _ = 4 * 9
 	alignment _ = 8
 	peek ptr = do
 		let pa = castPtr ptr :: Ptr Int32
@@ -275,7 +275,7 @@ data SkipSamples = SkipSamples {
 }
 
 instance Storable SkipSamples where
-	sizeOf _ = 32 + 32 + 2
+	sizeOf _ = 4 + 4 + 2
 	alignment _ = 8
 	peek ptr = do
 		_atStart <- peek (castPtr ptr)
