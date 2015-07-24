@@ -64,6 +64,118 @@ module Media.FFMpeg.Codec.Enums (
 	av_side_data_param_change_sample_rate,
 	av_side_data_param_change_dimensions,
 
+	AVCodecProp,
+	av_codec_prop_intra_only,
+	av_codec_prop_lossy,
+	av_codec_prop_lossless,
+	av_codec_prop_reorder,
+	av_codec_prop_bitmap_sub,
+	av_codec_prop_text_sub,
+
+	ff_max_b_frames,
+
+	AVCodecFlag,
+	codec_flag_unaligned,
+	codec_flag_qscale,
+	codec_flag_4mv,
+	codec_flag_output_corrupt,
+	codec_flag_qpel,
+	codec_flag_gmc,
+	codec_flag_mv0,
+	codec_flag_input_preserved,
+	codec_flag_pass1,
+	codec_flag_pass2,
+	codec_flag_gray,
+	codec_flag_emu_edge,
+	codec_flag_psnr,
+	codec_flag_truncated,
+	codec_flag_normalize_aqp,
+	codec_flag_interlaced_dct,
+	codec_flag_low_delay,
+	codec_flag_global_header,
+	codec_flag_bitexact,
+	codec_flag_ac_pred,
+	codec_flag_loop_filter,
+	codec_flag_interlaced_me,
+	codec_flag_closed_gop,
+
+	AVCodecFlag2,
+	codec_flag2_fast,
+	codec_flag2_no_output,
+	codec_flag2_local_header,
+	codec_flag2_drop_frame_timecode,
+	codec_flag2_ignore_crop,
+	codec_flag2_chunks,
+	codec_flag2_show_all,
+	codec_flag2_export_mvs,
+	codec_flag2_skip_manual,
+
+	AVCodecCap,
+	codec_cap_draw_horiz_band,
+	codec_cap_dr1,
+	codec_cap_truncated,
+	codec_cap_delay,
+	codec_cap_small_last_frame,
+	codec_cap_hwaccel_vdpau,
+	codec_cap_subframes,
+	codec_cap_experimental,
+	codec_cap_channel_conf,
+	codec_cap_neg_linesizes,
+	codec_cap_frame_threads,
+	codec_cap_slice_threads,
+	codec_cap_param_change,
+	codec_cap_auto_threads,
+	codec_cap_variable_frame_size,
+	codec_cap_intra_only,
+	codec_cap_lossless,
+
+	AVMBType,
+	mb_type_intra4X4,
+	mb_type_intra16X16,
+	mb_type_intra_pcm,
+	mb_type_16X16,
+	mb_type_16X8,
+	mb_type_8X16,
+	mb_type_8X8,
+	mb_type_interlaced,
+	mb_type_direct2,
+	mb_type_acpred,
+	mb_type_gmc,
+	mb_type_skip,
+	mb_type_p0l0,
+	mb_type_p1l0,
+	mb_type_p0l1,
+	mb_type_p1l1,
+	mb_type_l0,
+	mb_type_l1,
+	mb_type_l0l1,
+	mb_type_quant,
+	mb_type_cbp,
+
+	FFQscaleType,
+	ff_qscale_type_mpeg1,
+	ff_qscale_type_mpeg2,
+	ff_qscale_type_h264,
+	ff_qscale_type_vp56,
+
+	FFBufferType,
+	ff_buffer_type_internal,
+	ff_buffer_type_user,
+	ff_buffer_type_shared,
+	ff_buffer_type_copy,
+
+	FFBufferHints,
+	ff_buffer_hints_valid,
+	ff_buffer_hints_readable,
+	ff_buffer_hints_preserve,
+	ff_buffer_hints_reusable,
+
+	AVGetBufferFlag,
+	av_get_buffer_flag_ref,
+
+	AVSubtitleFlag,
+	av_subtitle_flag_forced,
+
 	AVAudioServiceType,
 	av_audio_service_type_main,
 	av_audio_service_type_effects,
@@ -82,6 +194,12 @@ module Media.FFMpeg.Codec.Enums (
 	av_field_bb,
 	av_field_tb,
 	av_field_bt,
+
+	AVSubtitleType,
+	subtitle_none,
+	subtitle_bitmap,
+	subtitle_text,
+	subtitle_ass,
 
 	AVCodecId,
 	av_codec_id_none,
@@ -568,6 +686,150 @@ newtype AVSideDataParamChangeFlags = AVSideDataParamChangeFlags Word32 deriving 
 	av_side_data_param_change_dimensions = AV_SIDE_DATA_PARAM_CHANGE_DIMENSIONS
 }
 
+-- | AV_CODEC_PROP_ flags
+newtype AVCodecProp = AVCodecProp CInt deriving (Eq, Show, CFlags)
+#{enum AVCodecProp, AVCodecProp,
+	av_codec_prop_intra_only = AV_CODEC_PROP_INTRA_ONLY,
+	av_codec_prop_lossy = AV_CODEC_PROP_LOSSY,
+	av_codec_prop_lossless = AV_CODEC_PROP_LOSSLESS,
+	av_codec_prop_reorder = AV_CODEC_PROP_REORDER,
+	av_codec_prop_bitmap_sub = AV_CODEC_PROP_BITMAP_SUB,
+	av_codec_prop_text_sub = AV_CODEC_PROP_TEXT_SUB
+}
+
+-- FF_MAX_B_FRAMES
+ff_max_b_frames :: Int
+ff_max_b_frames = #{const FF_MAX_B_FRAMES}
+
+-- CODEC_FLAG_ flags
+newtype AVCodecFlag = AVCodecFlag CInt deriving (Eq, Show, CFlags)
+#{enum AVCodecFlag, AVCodecFlag,
+	codec_flag_unaligned = CODEC_FLAG_UNALIGNED,
+	codec_flag_qscale = CODEC_FLAG_QSCALE,
+	codec_flag_4mv = CODEC_FLAG_4MV,
+	codec_flag_output_corrupt = CODEC_FLAG_OUTPUT_CORRUPT,
+	codec_flag_qpel = CODEC_FLAG_QPEL,
+	codec_flag_gmc = CODEC_FLAG_GMC,
+	codec_flag_mv0 = CODEC_FLAG_MV0,
+	codec_flag_input_preserved = CODEC_FLAG_INPUT_PRESERVED,
+	codec_flag_pass1 = CODEC_FLAG_PASS1,
+	codec_flag_pass2 = CODEC_FLAG_PASS2,
+	codec_flag_gray = CODEC_FLAG_GRAY,
+	codec_flag_emu_edge = CODEC_FLAG_EMU_EDGE,
+	codec_flag_psnr = CODEC_FLAG_PSNR,
+	codec_flag_truncated = CODEC_FLAG_TRUNCATED,
+	codec_flag_normalize_aqp = CODEC_FLAG_NORMALIZE_AQP,
+	codec_flag_interlaced_dct = CODEC_FLAG_INTERLACED_DCT,
+	codec_flag_low_delay = CODEC_FLAG_LOW_DELAY,
+	codec_flag_global_header = CODEC_FLAG_GLOBAL_HEADER,
+	codec_flag_bitexact = CODEC_FLAG_BITEXACT,
+	codec_flag_ac_pred = CODEC_FLAG_AC_PRED,
+	codec_flag_loop_filter = CODEC_FLAG_LOOP_FILTER,
+	codec_flag_interlaced_me = CODEC_FLAG_INTERLACED_ME,
+	codec_flag_closed_gop = CODEC_FLAG_CLOSED_GOP
+}
+
+-- | CODEC_FLAG2_ flags
+newtype AVCodecFlag2 = AVCodecFlag2 CInt deriving (Eq, Show, CFlags)
+#{enum AVCodecFlag2, AVCodecFlag2,
+	codec_flag2_fast = CODEC_FLAG2_FAST,
+	codec_flag2_no_output = CODEC_FLAG2_NO_OUTPUT,
+	codec_flag2_local_header = CODEC_FLAG2_LOCAL_HEADER,
+	codec_flag2_drop_frame_timecode = CODEC_FLAG2_DROP_FRAME_TIMECODE,
+	codec_flag2_ignore_crop = CODEC_FLAG2_IGNORE_CROP,
+	codec_flag2_chunks = CODEC_FLAG2_CHUNKS,
+	codec_flag2_show_all = CODEC_FLAG2_SHOW_ALL,
+	codec_flag2_export_mvs = CODEC_FLAG2_EXPORT_MVS,
+	codec_flag2_skip_manual = CODEC_FLAG2_SKIP_MANUAL
+}
+
+-- | CODEC_CAP_ flags
+newtype AVCodecCap = AVCodecCap CInt deriving (Eq, Show, CFlags)
+#{enum AVCodecCap, AVCodecCap,
+	codec_cap_draw_horiz_band = CODEC_CAP_DRAW_HORIZ_BAND,
+	codec_cap_dr1 = CODEC_CAP_DR1,
+	codec_cap_truncated = CODEC_CAP_TRUNCATED,
+	codec_cap_delay = CODEC_CAP_DELAY,
+	codec_cap_small_last_frame = CODEC_CAP_SMALL_LAST_FRAME,
+	codec_cap_hwaccel_vdpau = CODEC_CAP_HWACCEL_VDPAU,
+	codec_cap_subframes = CODEC_CAP_SUBFRAMES,
+	codec_cap_experimental = CODEC_CAP_EXPERIMENTAL,
+	codec_cap_channel_conf = CODEC_CAP_CHANNEL_CONF,
+	codec_cap_neg_linesizes = CODEC_CAP_NEG_LINESIZES,
+	codec_cap_frame_threads = CODEC_CAP_FRAME_THREADS,
+	codec_cap_slice_threads = CODEC_CAP_SLICE_THREADS,
+	codec_cap_param_change = CODEC_CAP_PARAM_CHANGE,
+	codec_cap_auto_threads = CODEC_CAP_AUTO_THREADS,
+	codec_cap_variable_frame_size = CODEC_CAP_VARIABLE_FRAME_SIZE,
+	codec_cap_intra_only = CODEC_CAP_INTRA_ONLY,
+	codec_cap_lossless = CODEC_CAP_LOSSLESS
+}
+
+-- | MB_TYPE_ flags
+newtype AVMBType = AVMBType CInt deriving (Eq, Show, CFlags)
+#{enum AVMBType, AVMBType,
+	mb_type_intra4X4 = MB_TYPE_INTRA4x4,
+	mb_type_intra16X16 = MB_TYPE_INTRA16x16,
+	mb_type_intra_pcm = MB_TYPE_INTRA_PCM,
+	mb_type_16X16 = MB_TYPE_16x16,
+	mb_type_16X8 = MB_TYPE_16x8,
+	mb_type_8X16 = MB_TYPE_8x16,
+	mb_type_8X8 = MB_TYPE_8x8,
+	mb_type_interlaced = MB_TYPE_INTERLACED,
+	mb_type_direct2 = MB_TYPE_DIRECT2,
+	mb_type_acpred = MB_TYPE_ACPRED,
+	mb_type_gmc = MB_TYPE_GMC,
+	mb_type_skip = MB_TYPE_SKIP,
+	mb_type_p0l0 = MB_TYPE_P0L0,
+	mb_type_p1l0 = MB_TYPE_P1L0,
+	mb_type_p0l1 = MB_TYPE_P0L1,
+	mb_type_p1l1 = MB_TYPE_P1L1,
+	mb_type_l0 = MB_TYPE_L0,
+	mb_type_l1 = MB_TYPE_L1,
+	mb_type_l0l1 = MB_TYPE_L0L1,
+	mb_type_quant = MB_TYPE_QUANT,
+	mb_type_cbp = MB_TYPE_CBP
+}
+
+-- | FF_QSCALE_TYPE_ constants
+newtype FFQscaleType = FFQscaleType CInt deriving (Eq, Show, CEnum)
+#{enum FFQscaleType, FFQscaleType,
+	ff_qscale_type_mpeg1 = FF_QSCALE_TYPE_MPEG1,
+	ff_qscale_type_mpeg2 = FF_QSCALE_TYPE_MPEG2,
+	ff_qscale_type_h264 = FF_QSCALE_TYPE_H264,
+	ff_qscale_type_vp56 = FF_QSCALE_TYPE_VP56
+}
+
+--  | FF_BUFFER_TYPE_ constants
+newtype FFBufferType = FFBufferType CInt deriving (Eq, Show, CEnum)
+#{enum FFBufferType, FFBufferType,
+	ff_buffer_type_internal = FF_BUFFER_TYPE_INTERNAL,
+	ff_buffer_type_user = FF_BUFFER_TYPE_USER,
+	ff_buffer_type_shared = FF_BUFFER_TYPE_SHARED,
+	ff_buffer_type_copy = FF_BUFFER_TYPE_COPY
+}
+
+-- | FF_BUFFER_HINTS_ flags
+newtype FFBufferHints = FFBufferHints CInt deriving (Eq, Show, CFlags)
+#{enum FFBufferHints, FFBufferHints,
+	ff_buffer_hints_valid = FF_BUFFER_HINTS_VALID,
+	ff_buffer_hints_readable = FF_BUFFER_HINTS_READABLE,
+	ff_buffer_hints_preserve = FF_BUFFER_HINTS_PRESERVE,
+	ff_buffer_hints_reusable = FF_BUFFER_HINTS_REUSABLE
+}
+
+-- | AV_GET_BUFFER_FLAG_ flags
+newtype AVGetBufferFlag = AVGetBufferFlag CInt deriving (Eq, Show, CFlags)
+#{enum AVGetBufferFlag, AVGetBufferFlag,
+	av_get_buffer_flag_ref = AV_GET_BUFFER_FLAG_REF
+}
+
+-- | AV_SUBTITLE_FLAG_ flags
+newtype AVSubtitleFlag = AVSubtitleFlag CInt deriving (Eq, Show, CFlags)
+#{enum AVSubtitleFlag, AVSubtitleFlag,
+	av_subtitle_flag_forced = AV_SUBTITLE_FLAG_FORCED
+}
+
 -- | AVAudioServiceType
 newtype AVAudioServiceType = AVAudioServiceType CInt deriving (Eq, Show, CEnum, Storable)
 #{enum AVAudioServiceType, AVAudioServiceType,
@@ -591,6 +853,15 @@ newtype AVFieldOrder = AVFieldOrder CInt deriving (Eq, Show, CEnum)
 	av_field_bb = AV_FIELD_BB,
 	av_field_tb = AV_FIELD_TB,
 	av_field_bt = AV_FIELD_BT
+}
+
+-- | AVSubtitleType
+newtype AVSubtitleType = AVSubtitleType CInt deriving (Eq, Show, CEnum)
+#{enum AVSubtitleType, AVSubtitleType,
+	subtitle_none = SUBTITLE_NONE,
+	subtitle_bitmap = SUBTITLE_BITMAP,
+	subtitle_text = SUBTITLE_TEXT,
+	subtitle_ass = SUBTITLE_ASS
 }
 
 -- | AVCodecId
