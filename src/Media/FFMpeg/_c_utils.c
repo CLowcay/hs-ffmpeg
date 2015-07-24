@@ -25,3 +25,11 @@ void b_av_packet_rescale_ts(AVPacket *pkt, int tb_src_num, int tb_src_den, int t
 	av_packet_rescale_ts(pkt, src, dst);
 }
 
+/*void b_av_freep(void *p) {
+	av_freep(p);
+}*/
+
+AVPacketSideData *b_av_packet_get_side_data_i(AVPacketSideData *p, int i) {
+	return &(p[i]);
+}
+

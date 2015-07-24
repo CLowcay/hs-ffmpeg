@@ -530,7 +530,7 @@ newtype AVSampleFormat = AVSampleFormat CInt deriving (Eq, Show, CEnum)
 }
 
 -- | AVPacketSideDataType
-newtype AVPacketSideDataType = AVPacketSideDataType CInt deriving (Eq, Show, CEnum)
+newtype AVPacketSideDataType = AVPacketSideDataType CInt deriving (Eq, Show, CEnum, Storable)
 #{enum AVPacketSideDataType, AVPacketSideDataType,
 	av_pkt_data_palette = AV_PKT_DATA_PALETTE,
 	av_pkt_data_new_extradata = AV_PKT_DATA_NEW_EXTRADATA,

@@ -26,6 +26,7 @@ module Media.FFMpeg.Util (
 	av_freep,
 	pav_free,
 	av_malloc,
+	av_realloc,
 
 	-- * AVTimestamp
 	AVTimestamp(..),
@@ -64,6 +65,7 @@ foreign import ccall "av_freep" av_freep :: Ptr a -> IO ()
 -- | Pointer to av_free
 foreign import ccall "&av_free" pav_free :: FunPtr (Ptr a -> IO ())
 foreign import ccall "av_malloc" av_malloc :: CUInt -> IO (Ptr ())
+foreign import ccall "av_realloc" av_realloc :: Ptr () -> CSize -> IO (Ptr ())
 
 newtype AVTimestamp = AVTimestamp Int64 deriving (Eq, Ord, Num, Show)
 

@@ -45,12 +45,14 @@ module Media.FFMpeg.Codec.AVPacket (
 	packDict,
 	packetSetSideData,
 	packetGetSideData,
+	packetFreeSideDataType,
 	packetFreeSideData,
 	packetSideDataName,
 	packetRescaleTS
 ) where
 
 #include "ffmpeg.h"
+#include "string.h"
 
 import Control.Applicative
 import Control.Arrow
@@ -383,18 +385,13 @@ packetSetSideData pkt sd = do
 	let sdType = getPayloadType payload
 	sdSize <- liftIO$ getPayloadSize payload
 
-	(pdata', dsize) <- liftIO (withThis pkt peekAVPacketSideDataPtr :: IO (Ptr a, Int))
+	packetFreeSideDataType pkt sdType
 
-	pdata <- liftIO$ if pdata' /= nullPtr then return pdata'
-		else withThis pkt$ \ptr -> castPtr <$>
-			av_packet_new_side_data ptr (fromCEnum sdType) (fromIntegral sdSize)
+	pdata <- liftIO.withThis pkt$ \ptr -> castPtr <$>
+		av_packet_new_side_data ptr (fromCEnum sdType) (fromIntegral sdSize)
 	
 	when (pdata == nullPtr)$
-		throwError$ "packetSetSideData: av_packet_new_side_data or av_realloc returned a null pointer"
-
-	when (dsize < sdSize)$
-		throwError$ "packetSetSideData: buffer is too small, saw " ++
-			(show dsize) ++ " but required " ++ (show sdSize)
+		throwError$ "packetSetSideData: av_packet_new_side_data returned a null pointer"
 
 	liftIO$ pokePayload pdata payload
 	
@@ -406,6 +403,43 @@ packetGetSideData pkt = liftIO.withThis pkt$ \ptr -> do
 	if (pdata == nullPtr) then return Nothing else do
 		v <- peekPayload pdata (fromIntegral dsize)
 		return.Just$ AVPacketSideData v
+
+foreign import ccall "b_av_packet_get_side_data_i" b_av_packet_get_side_data_i :: Ptr () -> CInt -> IO (Ptr ())
+foreign import ccall "memmove" memmove :: Ptr () -> Ptr () -> CSize -> IO (Ptr ())
+
+-- | Free all the side data of a particular type
+packetFreeSideDataType :: (MonadIO m, MonadError String m) =>
+	AVPacket -> AVPacketSideDataType -> m ()
+packetFreeSideDataType pkt sdType = do
+	(pdata', nFiltered) <- liftIO.withThis pkt$ \ptr -> do
+		ndata <- #{peek AVPacket, side_data_elems} ptr
+		pdata <- #{peek AVPacket, side_data} ptr
+		filtered <-
+			filterM notMatchingAndFreeFiltered =<<
+				mapM ((castPtr <$>).b_av_packet_get_side_data_i pdata) [0..(ndata - 1)]
+
+		let nFiltered = length filtered
+		let offsets = fmap (* #{size AVPacketSideData}) [0..]
+		forM (filtered `zip` offsets)$ \(pSrc, offDst) ->
+			memmove (pdata `plusPtr` offDst) pSrc #{size AVPacketSideData}
+
+		pdata' <- av_realloc pdata.fromIntegral$ #{size AVPacketSideData} * nFiltered
+		return (pdata', nFiltered)
+
+	when (pdata' == nullPtr)$
+		throwError$ "packetFreeSideDataType: av_realloc returned a null pointer"
+
+	liftIO.withThis pkt$ \ptr -> do
+		#{poke AVPacket, side_data} ptr pdata'
+		#{poke AVPacket, side_data_elems} ptr (fromIntegral nFiltered :: CInt)
+
+	where
+		notMatchingAndFreeFiltered :: Ptr () -> IO Bool
+		notMatchingAndFreeFiltered ptr = do
+			ptype <- #{peek AVPacketSideData, type} ptr
+			when (ptype == sdType)$ av_freep ptr
+			return$ ptype /= sdType
+		
 
 -- | Free all the side data associated with a packet
 packetFreeSideData :: MonadIO m => AVPacket -> m ()
