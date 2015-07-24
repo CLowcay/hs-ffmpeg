@@ -27,9 +27,7 @@ module Media.FFMpeg.Codec.Core (
 	codecGetSeekPreroll,
 	codecSetSeekPreroll,
 	codecGetMaxLowres,
-
-	--getRegisteredCodecs,
-
+	getRegisteredCodecs,
 	avcodecConfiguration,
 	avcodecLicense,
 	avcodecRegister,
@@ -98,10 +96,10 @@ instance ExternalPointer AVCodecContext where
 	withThis (AVCodecContext ctx) io = withForeignPtr ctx (io . castPtr)
 
 -- | AVCodec struct
-newtype AVCodec = AVCodec (ForeignPtr AVCodec)
+newtype AVCodec = AVCodec (Ptr AVCodec)
 
 instance ExternalPointer AVCodec where
-	withThis (AVCodec ctx) io = withForeignPtr ctx (io . castPtr)
+	withThis (AVCodec ctx) io = io$ castPtr ctx
 
 -- | Get the timebase of a packet
 codecGetPktTimebase :: MonadIO m => AVCodecContext -> m Rational
@@ -214,13 +212,13 @@ codecGetMaxLowres cd = liftIO.withThis cd$ \ptr ->
 	fromIntegral <$> av_codec_get_max_lowres ptr
 
 -- | Get all the codecs that have been registered
--- getRegisteredCodecs :: MonadIO m => m [AVCodec]
--- getRegisteredCodecs = liftIO$ allCodecs nullPtr
--- 	where
--- 		allCodecs :: Ptr AVCodec -> IO [Ptr AVCodec]
--- 		allCodecs prev = do
--- 			r <- av_codec_next prev
--- 			if r == nullPtr then return [] else (r :) <$> allCodecs r
+getRegisteredCodecs :: MonadIO m => m [AVCodec]
+getRegisteredCodecs = liftIO$ allCodecs nullPtr
+	where
+		allCodecs :: Ptr AVCodec -> IO [AVCodec]
+		allCodecs prev = do
+			r <- av_codec_next prev
+			if r == nullPtr then return [] else ((AVCodec r) :) <$> allCodecs r
 
 -- | Get the libav_codec configuration string
 avcodecConfiguration :: String
