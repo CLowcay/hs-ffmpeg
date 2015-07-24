@@ -4,7 +4,7 @@
 {- |
  
 Description : Bindings to libavcodec
-Copyright   : Callum Lowcay, 2015
+Copyright   : (c) Callum Lowcay, 2015
 License     : BSD3
 Stability   : experimental
 
@@ -16,6 +16,14 @@ module Media.FFMpeg.Codec.Encoding (
 ) where
 
 #include "ffmpeg.h"
+
+import Foreign.C.String
+import Foreign.C.Types
+import Foreign.Ptr
+
+import Media.FFMpeg.Codec.AVPacket
+import Media.FFMpeg.Codec.Core
+import Media.FFMpeg.Util.AVFrame
 
 foreign import ccall "avcodec_find_encoder" avcodec_find_encoder :: CInt -> IO (Ptr AVCodec)
 foreign import ccall "avcodec_find_encoder_by_name" avcodec_find_encoder_by_name :: CString -> IO (Ptr AVCodec)

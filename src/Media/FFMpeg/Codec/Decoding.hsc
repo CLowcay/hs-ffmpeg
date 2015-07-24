@@ -4,7 +4,7 @@
 {- |
  
 Description : Bindings to libavcodec
-Copyright   : Callum Lowcay, 2015
+Copyright   : (c) Callum Lowcay, 2015
 License     : BSD3
 Stability   : experimental
 
@@ -17,7 +17,18 @@ module Media.FFMpeg.Codec.Decoding (
 
 #include "ffmpeg.h"
 
-foreign import ccall "avcodec_find_decoder" avcodec_find_decoder :: AVCodecId -> IO (Ptr AVCodec)
+import Control.Monad.IO.Class
+import Foreign.C.String
+import Foreign.C.Types
+import Foreign.Ptr
+
+import Media.FFMpeg.Codec.AVPacket
+import Media.FFMpeg.Codec.Core
+import Media.FFMpeg.Codec.Enums
+import Media.FFMpeg.Internal.Common
+import Media.FFMpeg.Util.AVFrame
+
+foreign import ccall "avcodec_find_decoder" avcodec_find_decoder :: CInt -> IO (Ptr AVCodec)
 foreign import ccall "avcodec_find_decoder_by_name" avcodec_find_decoder_by_name :: CString -> IO (Ptr AVCodec)
 foreign import ccall "avcodec_default_get_buffer2" avcodec_default_get_buffer2 :: Ptr AVCodecContext -> Ptr AVFrame -> CInt -> IO CInt
 foreign import ccall "avcodec_align_dimensions" avcodec_align_dimensions :: Ptr AVCodecContext -> Ptr CInt -> Ptr CInt -> IO ()
@@ -27,4 +38,16 @@ foreign import ccall "avcodec_chroma_pos_to_enum" avcodec_chroma_pos_to_enum :: 
 foreign import ccall "avcodec_decode_audio4" avcodec_decode_audio4 :: Ptr AVCodecContext -> Ptr AVFrame -> Ptr CInt -> Ptr AVPacket -> IO CInt
 foreign import ccall "avcodec_decode_video2" avcodec_decode_video2 :: Ptr AVCodecContext -> Ptr AVFrame -> Ptr CInt -> Ptr AVPacket -> IO CInt
 -- foreign import ccall "avcodec_decode_subtitle2" avcodec_decode_subtitle2 :: Ptr AVCodecContext -> Ptr AVSubtitle -> Ptr CInt -> Ptr AVPacket -> IO CInt
+
+-- Find a decoder for a given AVCodecId
+findDecoder :: MonadIO m => AVCodecId -> m (Maybe AVCodec)
+findDecoder cid = liftIO$ do
+	r <- avcodec_find_decoder (fromCEnum cid)
+	if r == nullPtr then return Nothing else return.Just$ (AVCodec r)
+
+-- Find the decoder with the given name
+findDecoderByName :: MonadIO m => String -> m (Maybe AVCodec)
+findDecoderByName s = liftIO.withCString s$ \ps -> do
+	r <- avcodec_find_decoder_by_name ps
+	if r == nullPtr then return Nothing else return.Just$ (AVCodec r)
 

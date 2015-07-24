@@ -4,7 +4,7 @@
 {- |
  
 Description : Bindings to libavcodec
-Copyright   : Callum Lowcay, 2015
+Copyright   : (c) Callum Lowcay, 2015
 License     : BSD3
 Stability   : experimental
 
@@ -14,7 +14,7 @@ Bindings to libavcodec.
 
 module Media.FFMpeg.Codec.Core (
 	AVCodecContext,
-	AVCodec,
+	AVCodec(..),
 	AVCodecDescriptor,
 
 	codecGetPktTimebase,

@@ -19,6 +19,8 @@ module Media.FFMpeg.Codec (
 	module Media.FFMpeg.Codec.AVPacketSideData,
 	module Media.FFMpeg.Codec.AVPicture,
 	module Media.FFMpeg.Codec.Core,
+	module Media.FFMpeg.Codec.Decoding,
+	module Media.FFMpeg.Codec.Encoding,
 	module Media.FFMpeg.Codec.Enums,
 ) where
 
@@ -40,7 +42,9 @@ import System.IO.Unsafe
 import Media.FFMpeg.Codec.AVPacket
 import Media.FFMpeg.Codec.AVPacketSideData
 import Media.FFMpeg.Codec.AVPicture
-import Media.FFMpeg.Codec.Core
+import Media.FFMpeg.Codec.Core hiding (AVCodec(AVCodec))
+import Media.FFMpeg.Codec.Decoding
+import Media.FFMpeg.Codec.Encoding
 import Media.FFMpeg.Codec.Enums
 import Media.FFMpeg.Internal.Common
 
