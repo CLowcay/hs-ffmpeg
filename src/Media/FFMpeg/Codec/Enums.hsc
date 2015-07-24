@@ -201,6 +201,31 @@ module Media.FFMpeg.Codec.Enums (
 	subtitle_text,
 	subtitle_ass,
 
+	AVDiscard,
+	avdiscard_none,
+	avdiscard_default,
+	avdiscard_nonref,
+	avdiscard_bidir,
+	avdiscard_nonintra,
+	avdiscard_nonkey,
+	avdiscard_all,
+
+	ff_input_buffer_padding_size,
+
+	Motion_Est_ID,
+	me_zero,
+	me_full,
+	me_log,
+	me_phods,
+	me_epzs,
+	me_x1,
+	me_hex,
+	me_umh,
+	me_tesa,
+	me_iter,
+
+	ff_min_buffer_size,
+
 	AVCodecId,
 	av_codec_id_none,
 	av_codec_id_mpeg1video,
@@ -863,6 +888,41 @@ newtype AVSubtitleType = AVSubtitleType CInt deriving (Eq, Show, CEnum)
 	subtitle_text = SUBTITLE_TEXT,
 	subtitle_ass = SUBTITLE_ASS
 }
+
+-- | AVDiscard
+newtype AVDiscard = AVDiscard CInt deriving (Eq, Show, CEnum)
+#{enum AVDiscard, AVDiscard,
+	avdiscard_none  = AVDISCARD_NONE,
+	avdiscard_default = AVDISCARD_DEFAULT,
+	avdiscard_nonref = AVDISCARD_NONREF,
+	avdiscard_bidir = AVDISCARD_BIDIR,
+	avdiscard_nonintra = AVDISCARD_NONINTRA,
+	avdiscard_nonkey = AVDISCARD_NONKEY,
+	avdiscard_all = AVDISCARD_ALL
+}
+
+-- | FF_INPUT_BUFFER_PADDING_SIZE
+ff_input_buffer_padding_size :: Int
+ff_input_buffer_padding_size = #{const FF_INPUT_BUFFER_PADDING_SIZE}
+
+-- | Motion_Est_ID
+newtype Motion_Est_ID = Motion_Est_ID CInt deriving (Eq, Show, CEnum)
+#{enum Motion_Est_ID, Motion_Est_ID,
+	me_zero = ME_ZERO,
+	me_full = ME_FULL,
+	me_log = ME_LOG,
+	me_phods = ME_PHODS,
+	me_epzs = ME_EPZS,
+	me_x1 = ME_X1,
+	me_hex = ME_HEX,
+	me_umh = ME_UMH,
+	me_tesa = ME_TESA,
+	me_iter = ME_ITER
+}
+
+-- | FF_MIN_BUFFER_SIZE
+ff_min_buffer_size :: Int
+ff_min_buffer_size = #{const FF_MIN_BUFFER_SIZE}
 
 -- | AVCodecId
 newtype AVCodecId = AVCodecId CInt deriving (Eq, Show, CEnum, Storable)

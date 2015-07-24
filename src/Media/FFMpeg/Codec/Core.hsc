@@ -4,8 +4,7 @@
 {- |
  
 Description : Bindings to libavcodec
-Copyright   : (c) Vasyl Pasternak, 2009
-                  Callum Lowcay, 2015
+Copyright   : Callum Lowcay, 2015
 License     : BSD3
 Stability   : experimental
 
