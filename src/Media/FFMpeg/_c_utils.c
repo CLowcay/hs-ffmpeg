@@ -33,3 +33,16 @@ AVPacketSideData *b_av_packet_get_side_data_i(AVPacketSideData *p, int i) {
 	return &(p[i]);
 }
 
+void b_av_codec_get_pkt_timebase(AVCodecContext *p, int *num, int *den) {
+	AVRational r = av_codec_get_pkt_timebase(p);
+	*num = r.num;
+	*den = r.den;
+}
+
+void b_av_codec_set_pkt_timebase(AVCodecContext *p, int num, int den) {
+	AVRational v;
+	v.num = num;
+	v.den = den;
+	av_codec_set_pkt_timebase(p, v);
+}
+

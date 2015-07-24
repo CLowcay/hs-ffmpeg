@@ -29,6 +29,7 @@ library
                          Media.FFMpeg.Codec.AVPacket
                          Media.FFMpeg.Codec.AVPacketSideData
                          Media.FFMpeg.Codec.AVPicture
+                         Media.FFMpeg.Codec.Core
                          Media.FFMpeg.Codec.Enums
                          Media.FFMpeg.Format
                          Media.FFMpeg.Internal.Common

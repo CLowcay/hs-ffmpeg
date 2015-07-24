@@ -621,7 +621,7 @@ import Foreign.Storable
 import Media.FFMpeg.Internal.Common
 
 -- | AVMediaType
-newtype AVMediaType = AVMediaType CInt deriving (Eq, Show, CEnum)
+newtype AVMediaType = AVMediaType CInt deriving (Eq, Show, CEnum, Storable)
 #{enum AVMediaType, AVMediaType,
 	avmedia_type_unknown = AVMEDIA_TYPE_UNKNOWN,
 	avmedia_type_video = AVMEDIA_TYPE_VIDEO,
@@ -687,7 +687,7 @@ newtype AVSideDataParamChangeFlags = AVSideDataParamChangeFlags Word32 deriving 
 }
 
 -- | AV_CODEC_PROP_ flags
-newtype AVCodecProp = AVCodecProp CInt deriving (Eq, Show, CFlags)
+newtype AVCodecProp = AVCodecProp CInt deriving (Eq, Show, CEnum, CFlags)
 #{enum AVCodecProp, AVCodecProp,
 	av_codec_prop_intra_only = AV_CODEC_PROP_INTRA_ONLY,
 	av_codec_prop_lossy = AV_CODEC_PROP_LOSSY,
@@ -865,7 +865,7 @@ newtype AVSubtitleType = AVSubtitleType CInt deriving (Eq, Show, CEnum)
 }
 
 -- | AVCodecId
-newtype AVCodecId = AVCodecId CInt deriving (Eq, Show, CEnum)
+newtype AVCodecId = AVCodecId CInt deriving (Eq, Show, CEnum, Storable)
 #{enum AVCodecId, AVCodecId,
 	av_codec_id_none = AV_CODEC_ID_NONE,
 	av_codec_id_mpeg1video = AV_CODEC_ID_MPEG1VIDEO,
