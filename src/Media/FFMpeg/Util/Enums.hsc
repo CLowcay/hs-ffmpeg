@@ -27,6 +27,8 @@ module Media.FFMpeg.Util.Enums (
 	av_frame_data_motion_vectors,
 	av_frame_data_skip_samples,
 
+	av_num_data_pointers,
+
 	AVActiveFormatDescription,
 	av_afd_same,
 	av_afd_4_3,
@@ -178,6 +180,10 @@ newtype AVFrameSideDataType = AVFrameSideDataType CInt deriving (Eq, Show, CEnum
 	av_frame_data_motion_vectors = AV_FRAME_DATA_MOTION_VECTORS,
 	av_frame_data_skip_samples = AV_FRAME_DATA_SKIP_SAMPLES
 }
+
+-- | AV_NUM_DATA_POINTERS
+av_num_data_pointers :: Int
+av_num_data_pointers = #{const AV_NUM_DATA_POINTERS}
 
 -- | AVActiveFormatDescription
 newtype AVActiveFormatDescription = AVActiveFormatDescription CInt deriving (Eq, Show, CEnum)
