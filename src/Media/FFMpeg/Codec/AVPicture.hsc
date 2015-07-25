@@ -13,10 +13,12 @@ Bindings to libavcodec.
 -}
 
 module Media.FFMpeg.Codec.AVPicture (
-	AVPicture (..),
-	PlanarColor,
+	AVPicture(..),
+	HasAVPicture(..),
+	AVSubtitlePicture(..),
 	makePlanarColor,
-	pictureGetSize
+	pictureGetSize,
+	PlanarColor
 ) where
 
 #include "ffmpeg.h"
@@ -31,8 +33,7 @@ import Foreign.Marshal.Array
 import Foreign.Ptr
 
 import Media.FFMpeg.Internal.Common
-import Media.FFMpeg.Util.AVFrame
-import Media.FFMpeg.Util.Enums
+import Media.FFMpeg.Util
 
 foreign import ccall "avpicture_alloc" avpicture_alloc :: Ptr () -> CInt -> CInt -> CInt -> IO CInt
 foreign import ccall "avpicture_free" avpicture_free :: Ptr () -> IO ()
@@ -62,8 +63,20 @@ pictureGetSize pf width height = do
 		throwError$ "pictureGetSize: failed with error code " ++ (show r)
 	else return.fromIntegral$ r
 
+-- | AVPicture struct
+newtype AVPicture = AVPicture (ForeignPtr AVPicture)
+
+instance ExternalPointer AVPicture where
+	withThis (AVPicture ctx) io = withForeignPtr ctx (io . castPtr)
+
 -- | A class that represents the AVPicture struct
-class ExternalPointer p => AVPicture p where
+class HasAVPicture p where
+	-- | Make a new AVPicture
+	mkPicture :: (MonadIO m, MonadError String m) => m p
+
+	-- | Get a pointer to the AVPicture struct
+	withAVPicturePtr :: p -> (Ptr () -> IO b) -> IO b
+
 	-- | Allocate a buffer for a picture and execute a monadic action with that
 	-- buffer.  The buffer is freed when the action returns, so the action must
 	-- not return any references that depend on the buffer.
@@ -74,6 +87,16 @@ class ExternalPointer p => AVPicture p where
 		-> Int           -- ^ height
 		-> (p -> m b)    -- ^ the monadic action to execute
 		-> m b
+	pictureAlloc picture format width height action = do
+		r <- liftIO.withAVPicturePtr picture$ \ptr ->
+			avpicture_alloc ptr (fromCEnum format) (fromIntegral width) (fromIntegral height)
+		if r /= 0 then
+			throwError$ "pictureAlloc: failed to allocate picture with error code " ++ (show r)
+		else do
+			r <- action picture
+			liftIO.withAVPicturePtr picture$ \ptr -> avpicture_free ptr
+			return r
+
 	-- | Connect an AVPicture to an external buffer.  The buffer is not managed
 	-- by libav or hs-ffmeg.
 	pictureFill :: (MonadIO m, MonadError String m) =>
@@ -83,6 +106,12 @@ class ExternalPointer p => AVPicture p where
 		-> Int           -- ^ width in pixels
 		-> Int           -- ^ height in pixels
 		-> m ()
+	pictureFill picture pbuff format width height = do
+		r <- liftIO.withAVPicturePtr picture$ \ptr ->
+			avpicture_fill ptr (castPtr pbuff) (fromCEnum format) (fromIntegral width) (fromIntegral height)
+		when (r < 0) $
+			throwError$ "pictureFill: failed with error code " ++ (show r)
+
 	-- | Copy an AVPicture into an external buffer.  The buffer is not managed by
 	-- libav or hs-ffmpeg.
 	pictureLayout :: (MonadIO m, MonadError String m) =>
@@ -93,27 +122,49 @@ class ExternalPointer p => AVPicture p where
 		-> Ptr b         -- ^ Pointer to the buffer
 		-> Int           -- ^ size of the buffer in bytes
 		-> m Int         -- ^ the number of bytes written to the buffer
+	pictureLayout picture format width height pbuff buffSize = do
+		r <- liftIO.withAVPicturePtr picture$ \ptr ->
+			avpicture_layout ptr (fromCEnum format)
+			(fromIntegral width) (fromIntegral height)
+			(castPtr pbuff) (fromIntegral buffSize)
+		if r < 0 then
+			throwError$ "pictureLayout: failed with error code " ++ (show r)
+		else return.fromIntegral$ r
+
 	-- | Copy image data.  Both the source and the destination must have
 	-- sufficiently large buffers allocated.
-	pictureCopy :: (MonadIO m, AVPicture src) =>
+	pictureCopy :: (MonadIO m, HasAVPicture src) =>
 		p                -- ^ destination
 		-> src           -- ^ source
 		-> PixelFormat   -- ^ The pixel format of the source and destination AVPictures
 		-> Int           -- ^ width in pixels
 		-> Int           -- ^ height in pixels
 		-> m ()
+	pictureCopy dst src format width height = liftIO$
+		withAVPicturePtr dst$ \pd ->
+		withAVPicturePtr src$ \ps ->
+			av_picture_copy pd ps (fromCEnum format)
+				(fromIntegral width) (fromIntegral height)
+
 	-- | Crop an image top and left.  Both the source and the destination must
 	-- have appropriate buffers allocated.
-	pictureCrop :: (MonadIO m, AVPicture src) =>
+	pictureCrop :: (MonadIO m, HasAVPicture src) =>
 		p                -- ^ destination
 		-> src           -- ^ source
 		-> PixelFormat   -- ^ The pixel format of the source and destination AVPictures
 		-> Int           -- ^ top_band
 		-> Int           -- ^ left_band
 		-> m ()
+	pictureCrop dst src format topBand leftBand = liftIO$
+		withAVPicturePtr dst $ \pd ->
+		withAVPicturePtr src $ \ps -> do
+			av_picture_crop pd ps (fromCEnum format)
+				(fromIntegral topBand) (fromIntegral leftBand)
+			return ()
+
 	-- | Pad an image.  Both the source and the destination must have appropriate
 	-- buffers allocated.
-	picturePad :: (MonadIO m, AVPicture src) =>
+	picturePad :: (MonadIO m, HasAVPicture src) =>
 		p                -- ^ destination
 		-> src           -- ^ source
 		-> Int           -- ^ source height
@@ -125,48 +176,33 @@ class ExternalPointer p => AVPicture p where
 		-> Int           -- ^ right padding
 		-> PlanarColor   -- ^ the color to pad with
 		-> m ()
-
-instance AVPicture AVFrame where
-	pictureAlloc picture format width height action = do
-		r <- liftIO.withThis picture$ \ptr ->
-			avpicture_alloc ptr (fromCEnum format) (fromIntegral width) (fromIntegral height)
-		if r /= 0 then
-			throwError$ "pictureAlloc: failed to allocate picture with error code " ++ (show r)
-		else do
-			r <- action picture
-			liftIO.withThis picture$ \ptr -> avpicture_free ptr
-			return r
-	pictureFill picture pbuff format width height = do
-		r <- liftIO.withThis picture$ \ptr ->
-			avpicture_fill ptr (castPtr pbuff) (fromCEnum format) (fromIntegral width) (fromIntegral height)
-		when (r < 0) $
-			throwError$ "pictureFill: failed with error code " ++ (show r)
-	pictureLayout picture format width height pbuff buffSize = do
-		r <- liftIO.withThis picture$ \ptr ->
-			avpicture_layout ptr (fromCEnum format)
-			(fromIntegral width) (fromIntegral height)
-			(castPtr pbuff) (fromIntegral buffSize)
-		if r < 0 then
-			throwError$ "pictureLayout: failed with error code " ++ (show r)
-		else return.fromIntegral$ r
-	pictureCopy dst src format width height = liftIO$
-		withThis dst$ \pd ->
-		withThis src$ \ps ->
-			av_picture_copy pd ps (fromCEnum format)
-				(fromIntegral width) (fromIntegral height)
-	pictureCrop dst src format topBand leftBand = liftIO$
-		withThis dst $ \pd ->
-		withThis src $ \ps -> do
-			av_picture_crop pd ps (fromCEnum format)
-				(fromIntegral topBand) (fromIntegral leftBand)
-			return ()
 	picturePad dst src height width format top bottom left right (PlanarColor fpColor) = liftIO$
-		withThis dst $ \pd ->
-		withThis src $ \ps ->
+		withAVPicturePtr dst $ \pd ->
+		withAVPicturePtr src $ \ps ->
 		withForeignPtr fpColor$ \pc -> do
 			av_picture_pad pd ps
 				(fromIntegral height) (fromIntegral width) (fromCEnum format)
 				(fromIntegral top) (fromIntegral bottom)
 				(fromIntegral left) (fromIntegral right) pc
 			return ()
+
+instance HasAVPicture AVFrame where
+	mkPicture = frameAlloc
+	withAVPicturePtr = withThis
+
+instance HasAVPicture AVPicture where
+	mkPicture = do
+		fp <- avMallocz #{size AVPicture}
+		return.AVPicture$ fp
+	withAVPicturePtr = withThis
+
+-- | Special AVPicture type for subtitles
+data AVSubtitlePicture = AVSubtitlePicture (ForeignPtr ()) Int
+
+instance HasAVPicture AVSubtitlePicture where
+	mkPicture = do
+		fp <- avMallocz #{size AVPicture}
+		return$ AVSubtitlePicture fp 0
+
+	withAVPicturePtr (AVSubtitlePicture fp off) action = withForeignPtr fp (action.(`plusPtr` off))
 
