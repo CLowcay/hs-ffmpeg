@@ -437,7 +437,7 @@ packetFreeSideDataType pkt sdType = do
 		notMatchingAndFreeFiltered :: Ptr () -> IO Bool
 		notMatchingAndFreeFiltered ptr = do
 			ptype <- #{peek AVPacketSideData, type} ptr
-			when (ptype == sdType)$ av_freep ptr
+			when (ptype == sdType)$ av_free ptr
 			return$ ptype /= sdType
 		
 

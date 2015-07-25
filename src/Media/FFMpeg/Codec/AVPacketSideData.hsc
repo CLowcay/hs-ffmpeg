@@ -57,8 +57,7 @@ import Foreign.Storable
 import qualified Data.ByteString as B
 
 import Media.FFMpeg.Codec.Enums
-import Media.FFMpeg.Util.AVFrameSideData
-import Media.FFMpeg.Util.Dict
+import Media.FFMpeg.Util
 
 newtype AVPacketSideDataPalette = AVPacketSideDataPalette B.ByteString
 newtype AVPacketSideDataNewExtradata = AVPacketSideDataNewExtradata B.ByteString

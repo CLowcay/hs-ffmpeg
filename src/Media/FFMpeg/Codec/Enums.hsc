@@ -850,7 +850,7 @@ newtype AVGetBufferFlag = AVGetBufferFlag CInt deriving (Eq, Show, CFlags)
 }
 
 -- | AV_SUBTITLE_FLAG_ flags
-newtype AVSubtitleFlag = AVSubtitleFlag CInt deriving (Eq, Show, CFlags)
+newtype AVSubtitleFlag = AVSubtitleFlag CInt deriving (Eq, Show, CEnum, CFlags, Storable)
 #{enum AVSubtitleFlag, AVSubtitleFlag,
 	av_subtitle_flag_forced = AV_SUBTITLE_FLAG_FORCED
 }
@@ -881,7 +881,7 @@ newtype AVFieldOrder = AVFieldOrder CInt deriving (Eq, Show, CEnum)
 }
 
 -- | AVSubtitleType
-newtype AVSubtitleType = AVSubtitleType CInt deriving (Eq, Show, CEnum)
+newtype AVSubtitleType = AVSubtitleType CInt deriving (Eq, Show, CEnum, Storable)
 #{enum AVSubtitleType, AVSubtitleType,
 	subtitle_none = SUBTITLE_NONE,
 	subtitle_bitmap = SUBTITLE_BITMAP,
