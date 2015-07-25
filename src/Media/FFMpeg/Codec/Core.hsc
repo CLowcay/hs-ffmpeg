@@ -1,5 +1,6 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ForeignFunctionInterface #-}
 
 {- |
  
@@ -16,6 +17,9 @@ module Media.FFMpeg.Codec.Core (
 	AVCodecContext,
 	AVCodec(..),
 	AVCodecDescriptor,
+
+	AVSubtitle(..),
+	AVSubtitleRect(..),
 
 	codecGetPktTimebase,
 	codecSetPktTimebase,
@@ -44,6 +48,7 @@ import Control.Applicative
 import Control.Monad
 import Control.Monad.Except
 import Data.Ratio
+import Data.Traversable hiding (mapM)
 import Data.Version
 import Data.Word
 import Foreign.C.String
@@ -55,9 +60,10 @@ import Foreign.Ptr
 import Foreign.Storable
 import System.IO.Unsafe
 
+import Media.FFMpeg.Codec.AVPicture
 import Media.FFMpeg.Codec.Enums
 import Media.FFMpeg.Internal.Common
-import Media.FFMpeg.Util.Dict
+import Media.FFMpeg.Util
 
 foreign import ccall "b_av_codec_get_pkt_timebase" av_codec_get_pkt_timebase :: Ptr AVCodecContext -> Ptr CInt -> Ptr CInt -> IO ()
 foreign import ccall "b_av_codec_set_pkt_timebase" av_codec_set_pkt_timebase :: Ptr AVCodecContext -> CInt -> CInt -> IO ()
@@ -87,7 +93,10 @@ foreign import ccall "avcodec_get_context_defaults3" avcodec_get_context_default
 foreign import ccall "avcodec_copy_context" avcodec_copy_context :: Ptr AVCodecContext -> Ptr AVCodecContext -> IO CInt
 foreign import ccall "avcodec_open2" avcodec_open2 :: Ptr AVCodecContext -> Ptr AVCodec -> Ptr (Ptr ()) -> IO CInt
 foreign import ccall "avcodec_close" avcodec_close :: Ptr AVCodecContext -> IO CInt
--- foreign import ccall "avsubtitle_free" avsubtitle_free :: Ptr AVSubtitle -> IO ()
+foreign import ccall "avsubtitle_free" avsubtitle_free :: Ptr () -> IO ()
+foreign import ccall "&avsubtitle_free" pavsubtitle_free :: FunPtr (Ptr () -> IO ())
+
+foreign import ccall "memmove" memmove :: Ptr () -> Ptr () -> CSize -> IO (Ptr ())
 
 -- | AVCodecContext struct
 newtype AVCodecContext = AVCodecContext (ForeignPtr (Ptr (AVCodecContext)))
@@ -100,6 +109,117 @@ newtype AVCodec = AVCodec (Ptr AVCodec)
 
 instance ExternalPointer AVCodec where
 	withThis (AVCodec ctx) io = io$ castPtr ctx
+
+-- | AVSubtitle struct
+data AVSubtitle = AVSubtitle {
+		avSubtitle_format :: Word16,
+		avSubtitle_start_display_time :: Word32,
+		avSubtitle_end_display_time :: Word32,
+		avSubtitle_rects :: [AVSubtitleRect],
+		avSubtitle_pts :: AVTimestamp
+	}
+
+-- | AVSubtitleRect struct
+data AVSubtitleRect = forall avpicture. HasAVPicture avpicture =>
+	AVSubtitleRect {
+		avSubtitleRect_x :: Int,
+		avSubtitleRect_y :: Int,
+		avSubtitleRect_w :: Int,
+		avSubtitleRect_h :: Int,
+		avSubtitleRect_nb_colors :: Int,
+		avSubtitleRect_pict :: avpicture,
+		avSubtitleRect_type :: AVSubtitleType,
+		avSubtitleRect_text :: Maybe String,
+		avSubtitleRect_ass :: Maybe String,
+		avSubtitleRect_flags :: AVSubtitleFlag
+	}
+
+instance Storable AVSubtitleRect where
+	sizeOf _ = #{size AVSubtitleRect}
+	alignment _ = 8
+	peek ptr = do
+		_x <- #{peek AVSubtitleRect, x} ptr :: IO CInt
+		_y <- #{peek AVSubtitleRect, y} ptr :: IO CInt
+		_w <- #{peek AVSubtitleRect, w} ptr :: IO CInt
+		_h <- #{peek AVSubtitleRect, h} ptr :: IO CInt
+		_nb_colors <- #{peek AVSubtitleRect, nb_colors} ptr :: IO CInt
+		_type <- #{peek AVSubtitleRect, type} ptr
+		_text <- #{peek AVSubtitleRect, text} ptr
+		_ass <- #{peek AVSubtitleRect, ass} ptr
+		_flags <- #{peek AVSubtitleRect, flags} ptr
+
+		text <- peekCString `traverse` justPtr _text
+		ass <- peekCString `traverse` justPtr _ass
+
+		fpSub <- newForeignPtr_ (castPtr ptr)
+		addForeignPtrFinalizer pav_free fpSub
+		addForeignPtrFinalizer pavsubtitle_free fpSub
+		let pict = AVSubtitlePicture fpSub #{offset AVSubtitleRect, pict}
+
+		return$ AVSubtitleRect
+			(fromIntegral _x) (fromIntegral _y)
+			(fromIntegral _w) (fromIntegral _h)
+			(fromIntegral _nb_colors)
+			pict _type text ass _flags
+
+	poke ptr avsr = do
+		pText <- case avSubtitleRect_text avsr of
+			Nothing -> return nullPtr
+			Just p -> withCStringLen p newAVCString
+
+		pASS <- case avSubtitleRect_ass avsr of
+			Nothing -> return nullPtr
+			Just p -> withCStringLen p newAVCString
+
+		#{poke AVSubtitleRect, x} ptr (toCInt$ avSubtitleRect_x avsr)
+		#{poke AVSubtitleRect, y} ptr (toCInt$ avSubtitleRect_y avsr)
+		#{poke AVSubtitleRect, w} ptr (toCInt$ avSubtitleRect_w avsr)
+		#{poke AVSubtitleRect, h} ptr (toCInt$ avSubtitleRect_h avsr)
+		#{poke AVSubtitleRect, nb_colors} ptr (toCInt$ avSubtitleRect_nb_colors avsr)
+
+		case avsr of
+			AVSubtitleRect {avSubtitleRect_pict = pict} -> withAVPicturePtr pict$ \ppict ->
+				memmove (ptr `plusPtr` #{offset AVSubtitleRect, pict}) ppict #{size AVPicture}
+
+		#{poke AVSubtitleRect, type} ptr (fromCEnum$ avSubtitleRect_type avsr)
+		#{poke AVSubtitleRect, text} ptr pText
+		#{poke AVSubtitleRect, ass} ptr pASS
+		#{poke AVSubtitleRect, flags} ptr (fromCEnum$ avSubtitleRect_flags avsr)
+
+		where
+			newAVCString :: (CString, Int) -> IO CString
+			newAVCString (p, l) = do
+				pa <- castPtr <$> (av_malloc$ fromIntegral (l+1))
+				copyArray pa p l
+				poke (pa `plusPtr` l) (0 :: CChar)
+				return pa
+			toCInt :: Integral a => a -> CInt
+			toCInt = fromIntegral
+
+-- | __WARNING__: Do not call avsubtitle_free on a peeked AVSubtitle unless
+-- there are no rects
+instance Storable AVSubtitle where
+	sizeOf _ = #{size AVSubtitle}
+	alignment _ = 8
+	peek ptr = do
+		_format <- #{peek AVSubtitle, format} ptr
+		_start_display_time <- #{peek AVSubtitle, start_display_time} ptr
+		_end_display_time <- #{peek AVSubtitle, end_display_time} ptr
+		num_rects <- #{peek AVSubtitle, num_rects} ptr :: IO CUInt
+		_rects <- peekArray (fromIntegral num_rects)$ ptr `plusPtr` #{offset AVSubtitle, rects}
+		_pts <- #{peek AVSubtitle, pts} ptr
+
+		return$ AVSubtitle
+			_format _start_display_time
+			_end_display_time _rects _pts
+
+	poke ptr avs = do
+		#{poke AVSubtitle, format} ptr (avSubtitle_format avs)
+		#{poke AVSubtitle, start_display_time} ptr (avSubtitle_start_display_time avs)
+		#{poke AVSubtitle, end_display_time} ptr (avSubtitle_end_display_time avs)
+		#{poke AVSubtitle, num_rects} ptr (length$ avSubtitle_rects avs)
+		pokeArray (ptr `plusPtr` #{offset AVSubtitle, rects})$ avSubtitle_rects avs
+		#{poke AVSubtitle, pts} ptr (avSubtitle_pts avs)
 
 -- | Get the timebase of a packet
 codecGetPktTimebase :: MonadIO m => AVCodecContext -> m Rational
