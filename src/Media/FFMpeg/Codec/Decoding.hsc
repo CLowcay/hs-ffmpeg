@@ -13,12 +13,22 @@ Bindings to libavcodec.
 -}
 
 module Media.FFMpeg.Codec.Decoding (
+	findDecoder,
+	findDecoderByName,
+	alignDimensions,
+	alignDimensions2,
+	toChromaPos,
+	fromChromaPos,
+	decodeAudio,
+	decodeVideo,
+	decodeSubtitle
 ) where
 
 #include "ffmpeg.h"
 
 import Control.Applicative
-import Control.Monad.IO.Class
+import Control.Monad
+import Control.Monad.Except
 import Foreign.C.String
 import Foreign.C.Types
 import Foreign.Marshal.Alloc
@@ -101,4 +111,73 @@ toChromaPos cl = unsafePerformIO$  -- safe because avcodec_enum_to_chroma_pos ha
 fromChromaPos :: (Int, Int) -> AVChromaLocation
 fromChromaPos (x, y) =
 	toCEnum$ avcodec_chroma_pos_to_enum (fromIntegral x) (fromIntegral y)
+
+-- | Decode a single frame of audio.  If the AVFrame already contains decoded
+-- data, then it will be replaced and the old data freed.  Note that it may be
+-- necessary to call this function multiple times to decode all the audio in a
+-- packet.
+decodeAudio :: (MonadIO m, MonadError String m) =>
+	AVCodecContext   -- ^ Codec context
+	-> AVFrame       -- ^ Frame to store the decoded audio
+	-> AVPacket      -- ^ Packet containing the input buffer
+	-> m (Bool, Int) -- ^ (did decode frame, bytes consumed)
+decodeAudio ctx frame pkt = do
+	frameUnref frame
+	(r, g) <- liftIO$
+		withThis ctx$ \pctx ->
+		withThis frame$ \pframe ->
+		withThis pkt$ \ppkt ->
+		alloca$ \pGotFrame -> do
+			r <- avcodec_decode_audio4 pctx pframe pGotFrame ppkt
+			g <- peek pGotFrame
+			return (r, g)
+	
+	when (r < 0)$
+		throwError$ "decodeAudio: avcodec_decode_audio4 failed with error code " ++ (show r)
+	
+	return (g /= 0, fromIntegral r)
+
+-- | Decode a single frame of video.  If the AVFrame already contains decoded
+-- data, then it will be replaced and the old data freed.  Generally a single
+-- packet will contain a single frame, but this is apparently not always the
+-- case, so it may be necessary to call this function multiple times to decode
+-- a single packet.
+decodeVideo :: (MonadIO m, MonadError String m) =>
+	AVCodecContext -> AVFrame -> AVPacket -> m (Bool, Int)
+decodeVideo ctx frame pkt = do
+	frameUnref frame
+	(r, g) <- liftIO$
+		withThis ctx$ \pctx ->
+		withThis frame$ \pframe ->
+		withThis pkt$ \ppkt ->
+		alloca$ \pGotFrame -> do
+			r <- avcodec_decode_video2 pctx pframe pGotFrame ppkt
+			g <- peek pGotFrame
+			return (r, g)
+	
+	when (r < 0)$
+		throwError$ "decodeVideo: avcodec_decode_video2 failed with error code " ++ (show r)
+	
+	return (g /= 0, fromIntegral r)
+
+-- | Decode a subtitle.  As for Video, one packet will generally contain one
+-- subtitle, but the API doesn't seem to guarantee it, so it may be necessary
+-- to call this function multiple times to decode a single packet.
+decodeSubtitle :: (MonadIO m, MonadError String m) =>
+	AVCodecContext -> AVPacket -> m (Maybe AVSubtitle, Int)
+decodeSubtitle ctx pkt = do
+	(r, s) <- liftIO$
+		withThis ctx$ \pctx ->
+		withThis pkt$ \ppkt ->
+		alloca$ \psub ->
+		alloca$ \pGotFrame -> do
+			r <- avcodec_decode_subtitle2 pctx (castPtr psub) pGotFrame ppkt
+			g <- peek pGotFrame
+			s <- if g /= 0 then Just <$> peek psub else return Nothing
+			return (r, s)
+	
+	when (r < 0)$
+		throwError$ "decodeSubtitle: avcodec_decode_subtitle failed with error code " ++ (show r)
+	
+	return (s, fromIntegral r)
 
