@@ -21,7 +21,11 @@ module Media.FFMpeg.Codec.Decoding (
 	fromChromaPos,
 	decodeAudio,
 	decodeVideo,
-	decodeSubtitle
+	decodeSubtitle,
+
+	flushAudioDec,
+	flushVideoDec,
+	flushSubtitleDec
 ) where
 
 #include "ffmpeg.h"
@@ -137,6 +141,24 @@ decodeAudio ctx frame pkt = do
 	
 	return (g /= 0, fromIntegral r)
 
+-- | Flush a delayed audio codec.  Returns True if output was produced.  This
+-- function should be called repeatedly until it returns False.
+flushAudioDec :: (MonadIO m, MonadError String m) =>
+	AVCodecContext -> AVFrame -> m Bool
+flushAudioDec ctx frame = do
+	(r, g) <- liftIO$
+		withThis ctx$ \pctx ->
+		withThis frame$ \pframe ->
+		alloca$ \pGotFrame -> do
+			r <- avcodec_decode_audio4 pctx pframe pGotFrame nullPtr
+			g <- peek pGotFrame
+			return (r, g)
+
+	when (r < 0)$
+		throwError$ "flushAudioDec: avcodec_decode_audio4 failed with error code " ++ (show r)
+	
+	return$ g /= 0
+
 -- | Decode a single frame of video.  If the AVFrame already contains decoded
 -- data, then it will be replaced and the old data freed.  Generally a single
 -- packet will contain a single frame, but this is apparently not always the
@@ -160,6 +182,24 @@ decodeVideo ctx frame pkt = do
 	
 	return (g /= 0, fromIntegral r)
 
+-- | Flush a delayed video codec.  Returns True if output was produced.  This
+-- function should be called repeatedly until it returns False.
+flushVideoDec :: (MonadIO m, MonadError String m) =>
+	AVCodecContext -> AVFrame -> m Bool
+flushVideoDec ctx frame = do
+	(r, g) <- liftIO$
+		withThis ctx$ \pctx ->
+		withThis frame$ \pframe ->
+		alloca$ \pGotFrame -> do
+			r <- avcodec_decode_video2 pctx pframe pGotFrame nullPtr
+			g <- peek pGotFrame
+			return (r, g)
+
+	when (r < 0)$
+		throwError$ "flushVideoDec: avcodec_decode_video4 failed with error code " ++ (show r)
+	
+	return$ g /= 0
+
 -- | Decode a subtitle.  As for Video, one packet will generally contain one
 -- subtitle, but the API doesn't seem to guarantee it, so it may be necessary
 -- to call this function multiple times to decode a single packet.
@@ -180,4 +220,23 @@ decodeSubtitle ctx pkt = do
 		throwError$ "decodeSubtitle: avcodec_decode_subtitle failed with error code " ++ (show r)
 	
 	return (s, fromIntegral r)
+
+-- | Flush a delayed subtitle codec.  This function should be called until it
+-- returns Nothing.
+flushSubtitleDec :: (MonadIO m, MonadError String m) =>
+	AVCodecContext -> m (Maybe AVSubtitle)
+flushSubtitleDec ctx = do
+	(r, s) <- liftIO$
+		withThis ctx$ \pctx ->
+		alloca$ \psub ->
+		alloca$ \pGotFrame -> do
+			r <- avcodec_decode_subtitle2 pctx (castPtr psub) pGotFrame nullPtr
+			g <- peek pGotFrame
+			s <- if g /= 0 then Just <$> peek psub else return Nothing
+			return (r, s)
+	
+	when (r < 0)$
+		throwError$ "flushSubtitleDec: avcodec_decode_subtitle failed with error code " ++ (show r)
+	
+	return s
 

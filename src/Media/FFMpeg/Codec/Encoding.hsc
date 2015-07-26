@@ -16,7 +16,10 @@ module Media.FFMpeg.Codec.Encoding (
 	findEncoder,
 	findEncoderByName,
 	encodeAudio,
-	encodeVideo
+	encodeVideo,
+
+	flushAudioEnc,
+	flushVideoEnc
 ) where
 
 #include "ffmpeg.h"
@@ -79,6 +82,26 @@ encodeAudio ctx pkt frame = do
 
 	return (g == 1)
 
+-- | Flush a delayed audio codec.  This function should be called repeatedly
+-- until it returns False.
+flushAudioEnc :: (MonadIO m, MonadError String m) =>
+	AVCodecContext -> AVPacket -> m Bool
+flushAudioEnc ctx pkt = do
+	packetFree pkt
+
+	(r, g) <- liftIO$
+		withThis ctx$ \pctx ->
+		withThis pkt$ \ppkt ->
+		alloca$ \pGotFrame -> do
+			r <- avcodec_encode_audio2 pctx ppkt nullPtr pGotFrame
+			g <- peek pGotFrame
+			return (r, g)
+
+	when (r /= 0)$
+		throwError$ "flushAudioEnc: avcodec_encode_audio2 failed with error code " ++ (show r)
+
+	return$ g == 1
+
 -- | Encode a video frame.  If the AVPacket contains any data, it will be
 -- freed.  If the encoder produces output, a new buffer will be allocated in
 -- the AVPacket.
@@ -100,4 +123,24 @@ encodeVideo ctx pkt frame = do
 		throwError$ "encodeVideo: avcodec_encode_video2 failed with error code " ++ (show r)
 
 	return (g == 1)
+
+-- | Flush a delayed video codec.  This function should be called repeatedly
+-- until it returns False.
+flushVideoEnc :: (MonadIO m, MonadError String m) =>
+	AVCodecContext -> AVPacket -> m Bool
+flushVideoEnc ctx pkt = do
+	packetFree pkt
+
+	(r, g) <- liftIO$
+		withThis ctx$ \pctx ->
+		withThis pkt$ \ppkt ->
+		alloca$ \pGotFrame -> do
+			r <- avcodec_encode_video2 pctx ppkt nullPtr pGotFrame
+			g <- peek pGotFrame
+			return (r, g)
+
+	when (r /= 0)$
+		throwError$ "flushVideoEnc: avcodec_encode_video2 failed with error code " ++ (show r)
+
+	return$ g == 1
 
