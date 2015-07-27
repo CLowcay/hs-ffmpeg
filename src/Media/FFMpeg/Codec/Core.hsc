@@ -39,7 +39,23 @@ module Media.FFMpeg.Codec.Core (
 
 	getCodecContext,
 
-	libAVCodecVersion
+	libAVCodecVersion,
+
+	getCodecTagString,
+	codecString,
+	getProfileName,
+	flushBuffers,
+	getBitsPerSample,
+	Endianness(..),
+	getPCMCodec,
+	getExactBitsPerSample,
+	codecGetType,
+	codecGetName,
+	codecIsEncoder,
+	codecIsDecoder,
+	codecDescriptorGet,
+	codecDescriptors,
+	codecDescriptorGetByName
 ) where
 
 #include "ffmpeg.h"
@@ -95,6 +111,28 @@ foreign import ccall "avcodec_open2" avcodec_open2 :: Ptr AVCodecContext -> Ptr 
 foreign import ccall "avcodec_close" avcodec_close :: Ptr AVCodecContext -> IO CInt
 foreign import ccall "avsubtitle_free" avsubtitle_free :: Ptr () -> IO ()
 foreign import ccall "&avsubtitle_free" pavsubtitle_free :: FunPtr (Ptr () -> IO ())
+
+foreign import ccall "av_get_codec_tag_string" av_get_codec_tag_string :: CString -> CInt -> CUInt -> IO CSize
+foreign import ccall "avcodec_string" avcodec_string :: CString -> CInt -> Ptr AVCodecContext -> CInt -> IO ()
+foreign import ccall "av_get_profile_name" av_get_profile_name :: Ptr AVCodec -> CInt -> IO CString
+foreign import ccall "avcodec_fill_audio_frame" avcodec_fill_audio_frame :: Ptr AVFrame -> CInt -> CInt -> Ptr Word8 -> CInt -> CInt -> IO CInt
+foreign import ccall "avcodec_flush_buffers" avcodec_flush_buffers :: Ptr AVCodecContext -> IO ()
+foreign import ccall "av_get_bits_per_sample" av_get_bits_per_sample :: CInt -> CInt
+foreign import ccall "av_get_pcm_codec" av_get_pcm_codec :: CInt -> CInt -> CInt
+foreign import ccall "av_get_exact_bits_per_sample" av_get_exact_bits_per_sample :: CInt -> CInt
+foreign import ccall "av_get_audio_frame_duration" av_get_audio_frame_duration :: Ptr AVCodecContext -> CInt -> IO CInt
+foreign import ccall "av_fast_padded_malloc" av_fast_padded_malloc :: Ptr () -> Ptr CUInt -> CSize -> IO ()
+foreign import ccall "av_fast_padded_mallocz" av_fast_padded_mallocz :: Ptr () -> Ptr CUInt -> CSize -> IO ()
+foreign import ccall "av_xiphlacing" av_xiphlacing :: CString -> CUInt -> IO CUInt
+foreign import ccall "av_lockmgr_register" av_lockmgr_register :: FunPtr (Ptr (Ptr ()) -> CInt -> IO CInt) -> IO CInt
+foreign import ccall "avcodec_get_type" avcodec_get_type :: CInt -> CInt
+foreign import ccall "avcodec_get_name" avcodec_get_name :: CInt -> CString
+foreign import ccall "avcodec_is_open" avcodec_is_open :: Ptr AVCodecContext -> IO CInt
+foreign import ccall "av_codec_is_encoder" av_codec_is_encoder :: Ptr AVCodec -> IO CInt
+foreign import ccall "av_codec_is_decoder" av_codec_is_decoder :: Ptr AVCodec -> IO CInt
+foreign import ccall "avcodec_descriptor_get" avcodec_descriptor_get :: CInt -> Ptr ()
+foreign import ccall "avcodec_descriptor_next" avcodec_descriptor_next :: Ptr () -> Ptr ()
+foreign import ccall "avcodec_descriptor_get_by_name" avcodec_descriptor_get_by_name :: CString -> Ptr ()
 
 foreign import ccall "memmove" memmove :: Ptr () -> Ptr () -> CSize -> IO (Ptr ())
 
@@ -242,7 +280,7 @@ codecSetPktTimebase ctx r = liftIO.withThis ctx$ \ptr -> do
 -- | AVCodecDescriptor struct
 -- __WARNING__: The storable instance leaks memory when poking, so use sparingly
 data AVCodecDescriptor = AVCodecDescriptor {
-	avCodecDescriptor_id :: AVCodecId,
+	avCodecDescriptor_id :: AVCodecID,
 	avCodecDescriptor_type :: AVMediaType,
 	avCodecDescriptor_name :: String,
 	avCodecDescriptor_long_name :: String,
@@ -389,4 +427,87 @@ getCodecContext cd dict = do
 -- | Which version of libavcodec are we using?
 libAVCodecVersion :: Version
 libAVCodecVersion = fromVersionNum #{const LIBAVCODEC_VERSION_INT}
+
+-- | Convert a codec tag to a string
+getCodecTagString :: Word -> String
+getCodecTagString tag = unsafePerformIO$ do  -- safe because there are no observable side effects
+	sz <- av_get_codec_tag_string nullPtr 0 (fromIntegral tag)
+	allocaBytes (fromIntegral sz)$ \pb -> do
+		av_get_codec_tag_string pb (fromIntegral sz) (fromIntegral tag)
+		peekCStringLen (pb, fromIntegral sz)
+
+-- | Get information about a codec in a string
+codecString :: MonadIO m => AVCodecContext -> Bool -> m String
+codecString ctx isEncoder = liftIO$
+	withThis ctx$ \pctx ->
+	allocaBytes buffsize$ \pb -> do
+		avcodec_string pb (fromIntegral buffsize) pctx (if isEncoder then 1 else 0)
+		peekCString pb
+	where buffsize = 4096
+
+-- | Get the string name of a profile ID
+getProfileName :: MonadIO m => AVCodec -> Int -> m String
+getProfileName cd profile = liftIO.withThis cd$ \pcd ->
+	peekCString =<< av_get_profile_name pcd (fromIntegral profile)
+
+-- | Flush buffers associated with a codec and reset it to its default state
+flushBuffers :: MonadIO m => AVCodecContext -> m ()
+flushBuffers ctx = liftIO.withThis ctx$ \pctx -> avcodec_flush_buffers pctx
+
+getBitsPerSample :: AVCodecID -> Int
+getBitsPerSample = fromIntegral.av_get_bits_per_sample.fromCEnum
+
+data Endianness = LittleEndian | BigEndian | NativeEndian deriving (Eq, Show, Enum)
+
+-- | Get a PCM codec for the given sample format and endianness
+getPCMCodec :: AVSampleFormat -> Endianness -> AVCodecID
+getPCMCodec format end = toCEnum$ av_get_pcm_codec (fromCEnum format) (encodeEndianness end)
+	where
+		encodeEndianness LittleEndian = 0
+		encodeEndianness BigEndian = 1
+		encodeEndianness NativeEndian = -1
+
+-- | See libav docs
+getExactBitsPerSample :: AVCodecID -> Int
+getExactBitsPerSample = fromIntegral.av_get_exact_bits_per_sample.fromCEnum
+
+-- | Get the media type of a codec
+codecGetType :: AVCodecID -> AVMediaType
+codecGetType = toCEnum.avcodec_get_type.fromCEnum
+
+-- | Get the string name of a codec
+codecGetName :: AVCodecID -> String
+codecGetName =
+	-- safe because it's a const string
+	unsafePerformIO.peekCString.avcodec_get_name.fromCEnum
+
+-- | Determine if the codec is an encoder
+codecIsEncoder :: MonadIO m => AVCodec -> m Bool
+codecIsEncoder cd = liftIO.withThis cd$ \pcd -> (/= 0) <$> av_codec_is_encoder pcd
+
+-- | Determine if the codec is a decoder
+codecIsDecoder :: MonadIO m => AVCodec -> m Bool
+codecIsDecoder cd = liftIO.withThis cd$ \pcd -> (/= 0) <$> av_codec_is_decoder pcd
+
+-- | Get the descriptor of a codec
+codecDescriptorGet :: AVCodecID -> AVCodecDescriptor
+codecDescriptorGet =
+	-- safe because avcodec_descriptor_get returns a const *
+	unsafePerformIO.peek.castPtr.avcodec_descriptor_get.fromCEnum
+
+-- | Descriptors for all the codecs known to libav
+codecDescriptors :: [AVCodecDescriptor]
+codecDescriptors =
+	-- safe because avcodec_descriptor_next returns const *
+	unsafePerformIO$ mapM peek$
+		takeWhile (/= nullPtr)$
+			castPtr <$> iterate avcodec_descriptor_next
+				(avcodec_descriptor_next nullPtr)
+
+-- | Get the descriptor of a codec by name
+codecDescriptorGetByName :: String -> Maybe AVCodecDescriptor
+codecDescriptorGetByName s =
+	-- safe because avcodec_descriptor_get_by_name returns a const *
+	unsafePerformIO.withCString s$
+		(peek `traverse`).justPtr.castPtr.avcodec_descriptor_get_by_name 
 

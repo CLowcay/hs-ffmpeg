@@ -58,8 +58,8 @@ foreign import ccall "avcodec_decode_audio4" avcodec_decode_audio4 :: Ptr AVCode
 foreign import ccall "avcodec_decode_video2" avcodec_decode_video2 :: Ptr AVCodecContext -> Ptr AVFrame -> Ptr CInt -> Ptr AVPacket -> IO CInt
 foreign import ccall "avcodec_decode_subtitle2" avcodec_decode_subtitle2 :: Ptr AVCodecContext -> Ptr () -> Ptr CInt -> Ptr AVPacket -> IO CInt
 
--- Find a decoder for a given AVCodecId
-findDecoder :: MonadIO m => AVCodecId -> m (Maybe AVCodec)
+-- Find a decoder for a given AVCodecID
+findDecoder :: MonadIO m => AVCodecID -> m (Maybe AVCodec)
 findDecoder cid = liftIO$ do
 	r <- avcodec_find_decoder (fromCEnum cid)
 	if r == nullPtr then return Nothing else return.Just$ (AVCodec r)

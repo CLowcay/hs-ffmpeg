@@ -226,7 +226,7 @@ module Media.FFMpeg.Codec.Enums (
 
 	ff_min_buffer_size,
 
-	AVCodecId,
+	AVCodecID,
 	av_codec_id_none,
 	av_codec_id_mpeg1video,
 	av_codec_id_mpeg2video,
@@ -925,8 +925,8 @@ ff_min_buffer_size :: Int
 ff_min_buffer_size = #{const FF_MIN_BUFFER_SIZE}
 
 -- | AVCodecId
-newtype AVCodecId = AVCodecId CInt deriving (Eq, Show, CEnum, Storable)
-#{enum AVCodecId, AVCodecId,
+newtype AVCodecID = AVCodecID CInt deriving (Eq, Show, CEnum, Storable)
+#{enum AVCodecID, AVCodecID,
 	av_codec_id_none = AV_CODEC_ID_NONE,
 	av_codec_id_mpeg1video = AV_CODEC_ID_MPEG1VIDEO,
 	av_codec_id_mpeg2video = AV_CODEC_ID_MPEG2VIDEO,
