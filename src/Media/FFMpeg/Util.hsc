@@ -17,6 +17,7 @@ Bindings to libavutil.
 module Media.FFMpeg.Util (
 	module Media.FFMpeg.Util.AVFrame,
 	module Media.FFMpeg.Util.AVFrameSideData,
+	module Media.FFMpeg.Util.Buffer,
 	module Media.FFMpeg.Util.ChannelLayout,
 	module Media.FFMpeg.Util.Dict,
 	module Media.FFMpeg.Util.Enums,
@@ -34,12 +35,7 @@ module Media.FFMpeg.Util (
 
 	-- * Haskell interface to libavutil
 	avMalloc,
-	avMallocz,
-
-	-- * Buffer management
-	Buffer,
-	allocBuffer,
-	bufferSize
+	avMallocz
 ) where
 
 import Control.Applicative
@@ -57,6 +53,7 @@ import Text.Printf
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util.AVFrame
 import Media.FFMpeg.Util.AVFrameSideData
+import Media.FFMpeg.Util.Buffer
 import Media.FFMpeg.Util.ChannelLayout
 import Media.FFMpeg.Util.Dict
 import Media.FFMpeg.Util.Enums
@@ -88,26 +85,4 @@ avMallocz size = do
 	if (ptr == nullPtr)
 		then throwError "avMallocz: allocated a null pointer"
 		else liftIO$ newForeignPtr pav_free (castPtr ptr)
-
--- | A convenient Buffer object
-data Buffer = Buffer !Int !(ForeignPtr ()) !(Ptr ())
-
-instance ExternalPointer Buffer where
-	withThis (Buffer _ fp ptr) io = do
-		r <- io$ castPtr ptr
-		touchForeignPtr fp
-		return r
-	
--- | Allocate a buffer
-allocBuffer :: MonadIO m =>
-	Int                -- ^ the size of the buffer
-	-> m Buffer
-allocBuffer size = do
-	fp <- liftIO$ mallocForeignPtrBytes size
-	return$ Buffer size fp (unsafeForeignPtrToPtr fp)
-		-- safe because the Ptr is always paired with a reference to the ForeignPtr
-
--- | The size of a Buffer in bytes
-bufferSize :: Buffer -> Int
-bufferSize (Buffer size _ _) = size
 
