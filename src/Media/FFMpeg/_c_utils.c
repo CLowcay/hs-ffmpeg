@@ -46,3 +46,17 @@ void b_av_codec_set_pkt_timebase(AVCodecContext *p, int num, int den) {
 	av_codec_set_pkt_timebase(p, v);
 }
 
+void b_av_guess_sample_aspect_ratio(AVFormatContext *format, AVStream *stream, AVFrame *frame, int *num, int *den) {
+	AVRational r;
+	r = av_guess_sample_aspect_ratio(format, stream, frame);
+	*num = r.num;
+	*den = r.den;
+}
+
+void b_av_guess_frame_rate(AVFormatContext *ctx, AVStream *stream, AVFrame *frame, int *num, int *den) {
+	AVRational r;
+	r = av_guess_frame_rate(ctx, stream, frame);
+	*num = r.num;
+	*den = r.den;
+}
+

@@ -13,20 +13,14 @@ Bindings to libavformat.
 -}
 
 module Media.FFMpeg.Format (
+	module Media.FFMpeg.Format.Core,
 	module Media.FFMpeg.Format.Demuxing,
 	module Media.FFMpeg.Format.Muxing,
 
 	libAVFormatVersion,
-	registerAll,
 
-	AVFormatContext,
 	findStreamInfo,
-	dumpFormat,
-	openInputFile,
-
-	AVStream,
-	getStreams,
-	readFrame
+	dumpFormat
 ) where
 
 #include "ffmpeg.h"
@@ -47,6 +41,7 @@ import System.IO.Unsafe
 import Text.Printf (printf)
 
 import Media.FFMpeg.Codec
+import Media.FFMpeg.Format.Core
 import Media.FFMpeg.Format.Demuxing
 import Media.FFMpeg.Format.Muxing
 import Media.FFMpeg.Internal.Common
@@ -66,12 +61,6 @@ foreign import ccall "av_read_frame" av_read_frame :: Ptr () -> Ptr () -> IO CIn
 -- | Which version of libavformat are we using?
 libAVFormatVersion :: Version
 libAVFormatVersion = fromVersionNum #{const LIBAVFORMAT_VERSION_INT}
-
--- | AVFormatContext struct
-newtype AVFormatContext = AVFormatContext (ForeignPtr AVFormatContext)
-
-instance ExternalPointer AVFormatContext where
-	withThis (AVFormatContext fmt) io = withForeignPtr fmt (io . castPtr)
 
 -- | findStreamInfo
 -- TODO: upgrade
@@ -100,48 +89,43 @@ dumpFormat io fmt s = liftIO$
 		forM_ [1..count] $ \i -> dump_format fmt' i s' io
 
 -- | Open a media file
-openInputFile :: (MonadIO m, MonadError String m) =>
-	FilePath                   -- ^file to open
-	-> AVDictionary            -- ^dictionary containing options for the demuxer
-	-> m AVFormatContext       -- ^a new AVFormatContext structure
-openInputFile name dict = do
-	pp <- liftIO malloc
-	liftIO$ poke pp nullPtr
-	
-	r <- liftIO$
-		withCString name $ \s ->
-		withThis dict $ \pd -> avformat_open_input pp s nullPtr pd
-
-	if r /= 0 then do
-		liftIO$ free pp
-		throwError$ "openInputFile: failed to open \"" ++ name
-			++ "\" with errorcode " ++ (show r)
-	else liftIO$ do
-		fp <- newForeignPtr pavformat_close_input =<< peek pp
-		free pp
-		return . AVFormatContext . castForeignPtr $ fp
-
--- | AVStream struct
-newtype AVStream = AVStream (Ptr AVStream)
-
-instance ExternalPointer AVStream where
-	withThis (AVStream s) io = io (castPtr s)
+-- openInputFile :: (MonadIO m, MonadError String m) =>
+-- 	FilePath                   -- ^file to open
+-- 	-> AVDictionary            -- ^dictionary containing options for the demuxer
+-- 	-> m AVFormatContext       -- ^a new AVFormatContext structure
+-- openInputFile name dict = do
+-- 	pp <- liftIO malloc
+-- 	liftIO$ poke pp nullPtr
+-- 	
+-- 	r <- liftIO$
+-- 		withCString name $ \s ->
+-- 		withThis dict $ \pd -> avformat_open_input pp s nullPtr pd
+-- 
+-- 	if r /= 0 then do
+-- 		liftIO$ free pp
+-- 		throwError$ "openInputFile: failed to open \"" ++ name
+-- 			++ "\" with errorcode " ++ (show r)
+-- 	else liftIO$ do
+-- 		fp <- newForeignPtr pavformat_close_input =<< peek pp
+-- 		free pp
+-- 		return . AVFormatContext . castForeignPtr $ fp
 
 -- | Retrieve all streams from the AVFormatContext
-getStreams :: MonadIO m => AVFormatContext -> m [AVStream]
-getStreams fmt = liftIO$
-	withThis fmt $ \fmt' -> do
-		count <- fromIntegral <$>
-			(#{peek AVFormatContext, nb_streams} fmt' :: IO CUInt)
-		let streamsPtr = fmt' `plusPtr` #{offset AVFormatContext, streams}
-		(fmap AVStream) <$> peekArray count streamsPtr
+--getStreams :: MonadIO m => AVFormatContext -> m [AVStream]
+--getStreams fmt = liftIO$
+--	withThis fmt $ \fmt' -> do
+--		count <- fromIntegral <$>
+--			(#{peek AVFormatContext, nb_streams} fmt' :: IO CUInt)
+--		let streamsPtr = fmt' `plusPtr` #{offset AVFormatContext, streams}
+--		(fmap AVStream) <$> peekArray count streamsPtr
 
 -- | Read a frame from the file.
 -- Returns False if there is an error or EOF occured, otherwise True
-readFrame :: (MonadIO m) => AVFormatContext -> AVPacket -> m Bool
-readFrame fmt pkt = liftIO$
-	withThis fmt $ \fmt' ->
-	withThis pkt $ \pkt' -> do
-		r <- av_read_frame fmt' pkt'
-		return$ r >= 0
+-- readFrame :: (MonadIO m) => AVFormatContext -> AVPacket -> m Bool
+-- readFrame fmt pkt = liftIO$
+-- 	withThis fmt $ \fmt' ->
+-- 	withThis pkt $ \pkt' -> do
+-- 		r <- av_read_frame fmt' pkt'
+-- 		return$ r >= 0
+-- 		z
 

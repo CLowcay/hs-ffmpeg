@@ -144,7 +144,7 @@ instance ExternalPointer AVCodecContext where
 	withThis (AVCodecContext ctx) io = withForeignPtr ctx (io . castPtr)
 
 -- | AVCodec struct
-newtype AVCodec = AVCodec (Ptr AVCodec)
+newtype AVCodec = AVCodec (Ptr AVCodec) -- Ptr is OK because codecs are never freed
 
 instance ExternalPointer AVCodec where
 	withThis (AVCodec ctx) io = io$ castPtr ctx

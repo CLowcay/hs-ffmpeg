@@ -41,8 +41,10 @@ import System.IO.Unsafe
 
 import Media.FFMpeg.Codec.AVPacket
 import Media.FFMpeg.Codec.AVPacketSideData
-import Media.FFMpeg.Codec.AVPicture hiding (AVPicture(AVPicture), AVSubtitlePicture)
-import Media.FFMpeg.Codec.Core hiding (AVCodec(AVCodec))
+import Media.FFMpeg.Codec.AVPicture hiding (AVPicture(..), AVSubtitlePicture)
+import Media.FFMpeg.Codec.AVPicture (AVPicture)
+import Media.FFMpeg.Codec.Core hiding (AVCodec(..))
+import Media.FFMpeg.Codec.Core (AVCodec)
 import Media.FFMpeg.Codec.Decoding
 import Media.FFMpeg.Codec.Encoding
 import Media.FFMpeg.Codec.Enums

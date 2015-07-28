@@ -62,7 +62,7 @@ module Media.FFMpeg.Codec.AVPacket (
 	copyPacket,
 	copyPacketSideData,
 	packetCopyProps,
-	AVPacketSideDataPayload,
+	AVPacketSideDataPayload(peekPayload, pokePayload),
 	peekAVPacketSideDataPtrType,
 	getPackedDictSize,
 	getPackedDict,
