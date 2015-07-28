@@ -19,8 +19,7 @@ module Media.FFMpeg.Format (
 
 	libAVFormatVersion,
 
-	findStreamInfo,
-	dumpFormat
+	findStreamInfo
 ) where
 
 #include "ffmpeg.h"
@@ -70,23 +69,6 @@ findStreamInfo fmt = do
 
 	when (r < 0) $ do
 		throwError$ "findStreamInfo: failed with error code " ++ (show r)
-
--- | Output format information to the console (for input streams)
-dumpInputFormat :: MonadIO m => AVFormatContext -> FilePath -> m ()
-dumpInputFormat = dumpFormat 0
-
--- | Output format information to the console (for output streams)
-dumpOutputFormat :: MonadIO m => AVFormatContext -> FilePath -> m ()
-dumpOutputFormat = dumpFormat 1
-
--- | Dump format information for all streams
-dumpFormat :: MonadIO m => CInt -> AVFormatContext -> FilePath -> m ()
-dumpFormat io fmt s = liftIO$
-	withThis fmt $ \fmt' ->
-	withCString s $ \s' -> do
-		count <- fromIntegral <$>
-			(#{peek AVFormatContext, nb_streams} fmt' :: IO CUInt)
-		forM_ [1..count] $ \i -> dump_format fmt' i s' io
 
 -- | Open a media file
 -- openInputFile :: (MonadIO m, MonadError String m) =>

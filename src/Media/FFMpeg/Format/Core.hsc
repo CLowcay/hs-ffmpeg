@@ -33,7 +33,18 @@ module Media.FFMpeg.Format.Core (
 	newStream,
 	AVPacketSideDataPayload,
 	streamGetSideData,
-	newProgram
+	newProgram,
+
+	TagTable(..),
+	codecGetID,
+	codecGetTag,
+	findDefaultStreamIndex,
+	dumpInputFormat,
+	dumpOutputFormat,
+	dumpFormat,
+	queryCodec,
+	guessSampleAspectRatio,
+	guessFrameRate
 ) where
 
 #include "ffmpeg.h"
@@ -43,11 +54,13 @@ import Control.Arrow
 import Control.Monad
 import Control.Monad.Except
 import Data.Int
+import Data.Ratio
 import Data.Word
 import Foreign.C.String
 import Foreign.C.Types
 import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
+import Foreign.Marshal.Utils
 import Foreign.Ptr
 import Foreign.Storable
 import System.IO.Unsafe
@@ -81,6 +94,9 @@ newtype AVProgram = AVProgram (Ptr AVProgram) -- Not safe.  All access to AVProg
 instance ExternalPointer AVProgram where
 	withThis (AVProgram ptr) io = io.castPtr$ ptr
 
+-- | Type for stream indexes
+newtype StreamIndex = StreamIndex CInt
+
 foreign import ccall "avformat_version" avformat_version :: IO CUInt
 foreign import ccall "avformat_configuration" avformat_configuration :: IO CString
 foreign import ccall "avformat_license" avformat_license :: IO CString
@@ -103,8 +119,8 @@ foreign import ccall "av_hex_dump" av_hex_dump :: Ptr CFile -> Ptr Word8 -> CInt
 foreign import ccall "av_hex_dump_log" av_hex_dump_log :: Ptr () -> CInt -> Ptr Word8 -> CInt -> IO ()
 foreign import ccall "av_pkt_dump2" av_pkt_dump2 :: Ptr CFile -> Ptr AVPacket -> CInt -> Ptr AVStream -> IO ()
 foreign import ccall "av_pkt_dump_log2" av_pkt_dump_log2 :: Ptr () -> CInt -> Ptr AVPacket -> CInt -> Ptr AVStream -> IO ()
-foreign import ccall "av_codec_get_id" av_codec_get_id :: Ptr (Ptr ()) -> CUInt -> CInt
-foreign import ccall "av_codec_get_tag" av_codec_get_tag :: Ptr (Ptr ()) -> CInt -> CUInt
+foreign import ccall "av_codec_get_id" av_codec_get_id :: Ptr (Ptr ()) -> CUInt -> IO CInt
+foreign import ccall "av_codec_get_tag" av_codec_get_tag :: Ptr (Ptr ()) -> CInt -> IO CUInt
 foreign import ccall "av_codec_get_tag2" av_codec_get_tag2 :: Ptr (Ptr ()) -> CInt -> Ptr CUInt -> IO CInt
 foreign import ccall "av_find_default_stream_index" av_find_default_stream_index :: Ptr AVFormatContext -> IO CInt
 foreign import ccall "av_index_search_timestamp" av_index_search_timestamp :: Ptr AVStream -> Int64 -> CInt -> IO CInt
@@ -116,7 +132,7 @@ foreign import ccall "av_get_frame_filename" av_get_frame_filename :: CString ->
 foreign import ccall "av_filename_number_test" av_filename_number_test :: CString -> IO CInt
 foreign import ccall "av_sdp_create" av_sdp_create :: Ptr AVFormatContext -> CInt -> CString -> CInt -> IO CInt
 foreign import ccall "av_match_ext" av_match_ext :: CString -> CString -> IO CInt
-foreign import ccall "avformat_query_codec" avformat_query_codec :: CString -> CInt -> CInt -> IO CInt
+foreign import ccall "avformat_query_codec" avformat_query_codec :: Ptr AVOutputFormat -> CInt -> CInt -> IO CInt
 foreign import ccall "b_av_guess_sample_aspect_ratio" av_guess_sample_aspect_ratio ::
 	Ptr AVFormatContext -> Ptr AVStream -> Ptr AVFrame -> Ptr CInt -> Ptr CInt -> IO ()
 foreign import ccall "av_guess_frame_rate" av_guess_frame_rate :: 
@@ -248,4 +264,104 @@ newProgram ctx pid = do
 
 	when (r == nullPtr)$
 		throwError "newProgram: av_new_program returned a null pointer"
+
+foreign import ccall "avformat_get_riff_video_tags" avformat_get_riff_video_tags :: IO (Ptr ())
+foreign import ccall "avformat_get_riff_audio_tags" avformat_get_riff_audio_tags :: IO (Ptr ())
+foreign import ccall "avformat_get_mov_video_tags" avformat_get_mov_video_tags :: IO (Ptr ())
+foreign import ccall "avformat_get_mov_audio_tags" avformat_get_mov_audio_tags :: IO (Ptr ())
+
+-- | Enumeration of tag tables
+data TagTable = RIFFVideo | RIFFAudio | MOVVideo | MOVAudio deriving (Eq, Show, Enum)
+
+-- | Get a pointer to a tag table
+getTable :: TagTable -> Ptr ()
+getTable RIFFVideo = unsafePerformIO$ avformat_get_riff_video_tags
+getTable RIFFAudio = unsafePerformIO$ avformat_get_riff_audio_tags
+getTable MOVVideo = unsafePerformIO$ avformat_get_mov_video_tags
+getTable MOVAudio = unsafePerformIO$ avformat_get_mov_audio_tags
+
+-- | Get the codec ID associated with a tag
+codecGetID :: TagTable -> Word -> Maybe AVCodecID
+codecGetID table tag = unsafePerformIO$ do
+	cid <- with (getTable table)$ \ptr ->
+		toCEnum.fromIntegral <$> av_codec_get_id ptr (fromIntegral tag)
+	if cid == av_codec_id_none then return Nothing else return$ Just cid
+
+-- | Get the tag associated with a codec
+codecGetTag :: TagTable -> AVCodecID -> Maybe Word
+codecGetTag table cid = unsafePerformIO$ do
+	(r, tag) <-
+		with (getTable table)$ \ptr ->
+		alloca$ \ptag -> do
+			r <- av_codec_get_tag2 ptr (fromCEnum cid) ptag
+			tag <- peek ptag
+			return (r, fromIntegral tag)
+	
+	if r == 0 then return Nothing else return$ Just tag
+
+-- | Get the index of the main stream in a media file
+findDefaultStreamIndex :: MonadIO m => AVFormatContext -> m StreamIndex
+findDefaultStreamIndex ctx = liftIO.withThis ctx$ (fmap StreamIndex).av_find_default_stream_index
+
+-- | Dump format information for all input streams
+dumpInputFormat :: MonadIO m => AVFormatContext -> FilePath -> m ()
+dumpInputFormat = dumpFormat False
+
+-- | Dump format information for all output streams
+dumpOutputFormat :: MonadIO m => AVFormatContext -> FilePath -> m ()
+dumpOutputFormat = dumpFormat True
+
+dumpFormat :: MonadIO m => Bool -> AVFormatContext -> FilePath -> m ()
+dumpFormat isOutput fmt s = liftIO$
+	withThis fmt $ \fmt' ->
+	withCString s $ \s' -> do
+		count <- fromIntegral <$>
+			(#{peek AVFormatContext, nb_streams} fmt' :: IO CUInt)
+		forM_ [1..count] $ \i -> av_dump_format fmt' i s' io
+	where io = if isOutput then 1 else 0
+
+-- | Determine if a given output format can accommodate the given codec
+queryCodec :: MonadIO m => AVOutputFormat -> AVCodecID -> FFCompliance -> m (Maybe Bool)
+queryCodec ouf cid compliance = do
+	r <- liftIO.withThis ouf$ \po ->
+		avformat_query_codec po (fromCEnum cid) (fromCEnum compliance)
+
+	return$ case r of
+		0 -> Just False
+		1 -> Just True
+		_ -> Nothing
+
+-- | Guess the sample aspect ratio of a given frame within a given stream
+-- within a given format context
+guessSampleAspectRatio :: MonadIO m => AVFormatContext -> AVStream -> AVFrame -> m (Maybe Rational)
+guessSampleAspectRatio ctx stream frame = liftIO$ do
+	(num, den) <-
+		withThis ctx$ \pctx ->
+		withThis stream$ \pstream ->
+		withThis frame$ \pframe ->
+		alloca$ \pnum ->
+		alloca$ \pden -> do
+			av_guess_sample_aspect_ratio pctx pstream pframe pnum pden
+			num <- peek pnum
+			den <- peek pden
+			return (fromIntegral num, fromIntegral den)
+	
+	if num == 0 && den == 1 then return Nothing else return.Just$ num % den
+
+-- | Guess the frame rate at a given frame within a given stream within a given
+-- format context
+guessFrameRate :: MonadIO m => AVFormatContext -> AVStream -> AVFrame -> m (Maybe Rational)
+guessFrameRate ctx stream frame = liftIO$ do
+	(num, den) <-
+		withThis ctx$ \pctx ->
+		withThis stream$ \pstream ->
+		withThis frame$ \pframe ->
+		alloca$ \pnum ->
+		alloca$ \pden -> do
+			av_guess_frame_rate pctx pstream pframe pnum pden
+			num <- peek pnum
+			den <- peek pden
+			return (fromIntegral num, fromIntegral den)
+
+	if num == 0 && den == 1 then return Nothing else return.Just$ num % den
 
