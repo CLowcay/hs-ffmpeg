@@ -453,9 +453,9 @@ codecString ctx isEncoder = liftIO$
 	where buffsize = 4096
 
 -- | Get the string name of a profile ID
-getProfileName :: MonadIO m => AVCodec -> Int -> m String
+getProfileName :: MonadIO m => AVCodec -> FFProfile -> m String
 getProfileName cd profile = liftIO.withThis cd$ \pcd ->
-	peekCString =<< av_get_profile_name pcd (fromIntegral profile)
+	peekCString =<< av_get_profile_name pcd (fromCEnum profile)
 
 -- | Flush buffers associated with a codec and reset it to its default state
 flushBuffers :: MonadIO m => AVCodecContext -> m ()
