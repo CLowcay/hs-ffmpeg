@@ -14,9 +14,11 @@ Bindings to libavcodec.
 -}
 
 module Media.FFMpeg.Codec.Core (
+	avsubtitle_free,
+
 	AVCodecContext,
 	AVCodec(..),
-	AVCodecDescriptor,
+	AVCodecDescriptor(..),
 
 	AVSubtitle(..),
 	AVSubtitleRect(..),
@@ -72,6 +74,7 @@ import Foreign.C.Types
 import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
+import Foreign.Marshal.Utils
 import Foreign.Ptr
 import Foreign.Storable
 import System.IO.Unsafe
@@ -133,8 +136,6 @@ foreign import ccall "av_codec_is_decoder" av_codec_is_decoder :: Ptr AVCodec ->
 foreign import ccall "avcodec_descriptor_get" avcodec_descriptor_get :: CInt -> Ptr ()
 foreign import ccall "avcodec_descriptor_next" avcodec_descriptor_next :: Ptr () -> Ptr ()
 foreign import ccall "avcodec_descriptor_get_by_name" avcodec_descriptor_get_by_name :: CString -> Ptr ()
-
-foreign import ccall "memmove" memmove :: Ptr () -> Ptr () -> CSize -> IO (Ptr ())
 
 -- | AVCodecContext struct
 newtype AVCodecContext = AVCodecContext (ForeignPtr (Ptr (AVCodecContext)))
@@ -217,7 +218,7 @@ instance Storable AVSubtitleRect where
 
 		case avsr of
 			AVSubtitleRect {avSubtitleRect_pict = pict} -> withAVPicturePtr pict$ \ppict ->
-				memmove (ptr `plusPtr` #{offset AVSubtitleRect, pict}) ppict #{size AVPicture}
+				moveBytes (ptr `plusPtr` #{offset AVSubtitleRect, pict}) ppict #{size AVPicture}
 
 		#{poke AVSubtitleRect, type} ptr (fromCEnum$ avSubtitleRect_type avsr)
 		#{poke AVSubtitleRect, text} ptr pText
@@ -252,11 +253,17 @@ instance Storable AVSubtitle where
 			_end_display_time _rects _pts
 
 	poke ptr avs = do
+		let rects = avSubtitle_rects avs
+		prect <- av_malloc$
+			(fromIntegral$ sizeOf (undefined :: AVSubtitleRect)) *
+			(fromIntegral$ length rects)
+		pokeArray (castPtr prect) rects
+		
 		#{poke AVSubtitle, format} ptr (avSubtitle_format avs)
 		#{poke AVSubtitle, start_display_time} ptr (avSubtitle_start_display_time avs)
 		#{poke AVSubtitle, end_display_time} ptr (avSubtitle_end_display_time avs)
 		#{poke AVSubtitle, num_rects} ptr (length$ avSubtitle_rects avs)
-		pokeArray (ptr `plusPtr` #{offset AVSubtitle, rects})$ avSubtitle_rects avs
+		#{poke AVSubtitle, rects} ptr prect
 		#{poke AVSubtitle, pts} ptr (avSubtitle_pts avs)
 
 -- | Get the timebase of a packet

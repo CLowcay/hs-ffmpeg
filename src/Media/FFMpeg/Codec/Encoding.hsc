@@ -24,12 +24,15 @@ module Media.FFMpeg.Codec.Encoding (
 
 #include "ffmpeg.h"
 
+import Control.Applicative
 import Control.Monad
 import Control.Monad.Except
+import Data.Ratio
 import Data.Word
 import Foreign.C.String
 import Foreign.C.Types
 import Foreign.Marshal.Alloc
+import Foreign.Marshal.Utils
 import Foreign.Ptr
 import Foreign.Storable
 
@@ -37,7 +40,7 @@ import Media.FFMpeg.Codec.AVPacket
 import Media.FFMpeg.Codec.Core
 import Media.FFMpeg.Codec.Enums
 import Media.FFMpeg.Internal.Common
-import Media.FFMpeg.Util.AVFrame
+import Media.FFMpeg.Util
 
 foreign import ccall "avcodec_find_encoder" avcodec_find_encoder :: CInt -> IO (Ptr AVCodec)
 foreign import ccall "avcodec_find_encoder_by_name" avcodec_find_encoder_by_name :: CString -> IO (Ptr AVCodec)
@@ -143,4 +146,75 @@ flushVideoEnc ctx pkt = do
 		throwError$ "flushVideoEnc: avcodec_encode_video2 failed with error code " ++ (show r)
 
 	return$ g == 1
+
+-- | Encode a subtitle.  This function takes two AVPackets because some
+-- subtitles encode into more than one packet.  The return value contains the
+-- number of packets used (which will be 0, 1, or 2).
+encodeSubtitle :: (MonadIO m, MonadError String m) =>
+	AVCodecContext -> AVPacket -> AVPacket -> AVSubtitle -> m Int
+encodeSubtitle ctx pkt1 pkt2 subtitle = do
+	-- This procedure is based on "do_subtitle_out()" from "ffmpeg.c" (link:
+	-- https://www.ffmpeg.org/doxygen/trunk/ffmpeg_8c_source.html#l00857)
+
+	-- marshal the subtitle
+	psub <- liftIO.(fmap castPtr).av_malloc.fromIntegral$ sizeOf (undefined :: AVSubtitle)
+	liftIO$ poke psub subtitle
+
+	pktTimebase <- codecGetPktTimebase ctx
+	codecID <- (return.avCodecDescriptor_id) =<< codecGetCodecDescriptor ctx
+
+	-- preadjust the timing
+	let newPts = (avSubtitle_pts subtitle) + (rescaleTSQ
+		(fromIntegral$ avSubtitle_start_display_time subtitle)
+		(1 % 1000) av_time_base_q)
+	let newEndDisplayTime =
+		(avSubtitle_end_display_time subtitle) - (avSubtitle_start_display_time subtitle)
+	
+	liftIO$ #{poke AVSubtitle, pts} psub newPts
+	liftIO$ #{poke AVSubtitle, start_display_time} psub (0 :: Word32)
+	liftIO$ #{poke AVSubtitle, end_display_time} psub newEndDisplayTime
+
+	-- write the first packet
+	allocBufferRef subtitleOutMaxSize$ \pavbuff -> do
+		(pbuff, size) <- getBufferData pavbuff
+		r <- liftIO.withThis ctx$ \pctx ->
+			avcodec_encode_subtitle pctx pbuff (fromIntegral size) (castPtr psub)
+		when (r /= 0)$ do
+			liftIO$ avsubtitle_free (castPtr psub)
+			liftIO$ with pavbuff av_buffer_unref
+			throwError$ "encodeSubtitle: 1st avcodec_encode_subtitle failed with error code " ++ (show r)
+
+		newPacketFromBuffer pkt1 pavbuff
+		packetSetPTS pkt1$ rescaleTSQ newPts av_time_base_q pktTimebase
+		packetSetDTS pkt1$ rescaleTSQ newPts av_time_base_q pktTimebase
+		packetSetDuration pkt1$ fromIntegral$
+			rescaleQ (fromIntegral newEndDisplayTime) (1 % 1000) pktTimebase
+	
+	-- write the extra packet for DVB subtitles
+	when (codecID == av_codec_id_dvb_subtitle)$ do
+		allocBufferRef subtitleOutMaxSize$ \pavbuff -> do
+			(pbuff, size) <- getBufferData pavbuff
+			nrects <- liftIO (#{peek AVSubtitle, num_rects} psub :: IO CUInt)
+			liftIO$ #{poke AVSubtitle, num_rects} psub (0 :: CUInt)
+			r <- liftIO.withThis ctx$ \pctx ->
+				avcodec_encode_subtitle pctx pbuff (fromIntegral size) (castPtr psub)
+			liftIO$ #{poke AVSubtitle, num_rects} psub nrects
+			when (r /= 0)$ do
+				liftIO$ avsubtitle_free (castPtr psub)
+				liftIO$ with pavbuff av_buffer_unref
+				packetFree pkt1
+				throwError$ "encodeSubtitle: 2nd avcodec_encode_subtitle failed with error code " ++ (show r)
+
+			newPacketFromBuffer pkt2 pavbuff
+			packetSetPTS pkt2$
+				(rescaleTSQ newPts av_time_base_q pktTimebase) +
+				(AVTimestamp$ fromIntegral (90 * newEndDisplayTime))
+			packetSetDTS pkt2$ rescaleTSQ newPts av_time_base_q pktTimebase
+			packetSetDuration pkt2$ fromIntegral$
+				rescaleQ (fromIntegral newEndDisplayTime) (1 % 1000) pktTimebase
+
+	if (codecID == av_codec_id_dvb_subtitle) then return 2 else return 1
+
+	where
+		subtitleOutMaxSize = 1024 * 1024
 

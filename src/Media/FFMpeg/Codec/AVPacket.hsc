@@ -14,6 +14,30 @@ Bindings to libavcodec.
 -}
 
 module Media.FFMpeg.Codec.AVPacket (
+	av_init_packet,
+	av_new_packet,
+	av_shrink_packet,
+	av_grow_packet,
+	av_packet_from_data,
+	av_dup_packet,
+	av_copy_packet,
+	av_copy_packet_side_data,
+	av_free_packet,
+	av_packet_new_side_data,
+	av_packet_shrink_side_data,
+	av_packet_get_side_data,
+	av_packet_merge_side_data,
+	av_packet_split_side_data,
+	av_packet_side_data_name,
+	av_packet_pack_dictionary,
+	av_packet_unpack_dictionary,
+	av_packet_free_side_data,
+	av_packet_ref,
+	av_packet_unref,
+	av_packet_move_ref,
+	av_packet_copy_props,
+	av_packet_rescale_ts,
+
 	AVPacket,
 
 	packetGetPTS,
@@ -48,7 +72,8 @@ module Media.FFMpeg.Codec.AVPacket (
 	packetFreeSideDataType,
 	packetFreeSideData,
 	packetSideDataName,
-	packetRescaleTS
+	packetRescaleTS,
+	newPacketFromBuffer
 ) where
 
 #include "ffmpeg.h"
@@ -66,6 +91,7 @@ import Foreign.C.Types
 import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
+import Foreign.Marshal.Utils
 import Foreign.Ptr
 import Foreign.Storable
 import qualified Data.ByteString as B
@@ -405,7 +431,6 @@ packetGetSideData pkt = liftIO.withThis pkt$ \ptr -> do
 		return.Just$ AVPacketSideData v
 
 foreign import ccall "b_av_packet_get_side_data_i" b_av_packet_get_side_data_i :: Ptr () -> CInt -> IO (Ptr ())
-foreign import ccall "memmove" memmove :: Ptr () -> Ptr () -> CSize -> IO (Ptr ())
 
 -- | Free all the side data of a particular type
 packetFreeSideDataType :: (MonadIO m, MonadError String m) =>
@@ -421,7 +446,7 @@ packetFreeSideDataType pkt sdType = do
 		let nFiltered = length filtered
 		let offsets = fmap (* #{size AVPacketSideData}) [0..]
 		forM (filtered `zip` offsets)$ \(pSrc, offDst) ->
-			memmove (pdata `plusPtr` offDst) pSrc #{size AVPacketSideData}
+			moveBytes (pdata `plusPtr` offDst) pSrc #{size AVPacketSideData}
 
 		pdata' <- av_realloc pdata.fromIntegral$ #{size AVPacketSideData} * nFiltered
 		return (pdata', nFiltered)
@@ -457,4 +482,16 @@ packetRescaleTS pkt src dst =
 	liftIO.withThis pkt$ \ptr -> av_packet_rescale_ts ptr
 		(fromIntegral$ numerator src) (fromIntegral$ denominator src)
 		(fromIntegral$ numerator dst) (fromIntegral$ denominator dst)
+
+-- | Initialise a packet with the given buffer, and default values for all
+-- other fields
+newPacketFromBuffer :: MonadIO m => AVPacket -> Ptr AVBufferRef -> m ()
+newPacketFromBuffer pkt pbuffRef = do
+	packetFree pkt
+	(pdata, size) <- getBufferData pbuffRef
+	liftIO.withThis pkt$ \ppkt -> do
+		av_init_packet ppkt
+		#{poke AVPacket, buf} ppkt pbuffRef
+		#{poke AVPacket, data} ppkt pdata
+		#{poke AVPacket, size} ppkt (fromIntegral size :: CInt)
 
