@@ -1,5 +1,5 @@
--- -*- haskell -*-
-{-# LANGUAGE ForeignFunctionInterface, FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ForeignFunctionInterface #-}
 
 {- |
 
@@ -13,6 +13,9 @@ Bindings to libavformat.
 -}
 
 module Media.FFMpeg.Format (
+	module Media.FFMpeg.Format.Demuxing,
+	module Media.FFMpeg.Format.Muxing,
+
 	libAVFormatVersion,
 	registerAll,
 
@@ -44,9 +47,10 @@ import System.IO.Unsafe
 import Text.Printf (printf)
 
 import Media.FFMpeg.Codec
+import Media.FFMpeg.Format.Demuxing
+import Media.FFMpeg.Format.Muxing
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util
-import Media.FFMpeg.Util.Dict
 
 -- | Initialize libavformat and register all the muxers, demuxers and protocols
 foreign import ccall "av_register_all" registerAll :: IO ()

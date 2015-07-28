@@ -34,6 +34,8 @@ library
                          Media.FFMpeg.Codec.Encoding
                          Media.FFMpeg.Codec.Enums
                          Media.FFMpeg.Format
+                         Media.FFMpeg.Format.Demuxing
+                         Media.FFMpeg.Format.Muxing
                          Media.FFMpeg.Internal.Common
                          Media.FFMpeg.SWScale
                          Media.FFMpeg.SWScale.Enums
