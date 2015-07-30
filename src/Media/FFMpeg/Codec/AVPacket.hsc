@@ -158,8 +158,8 @@ packetGetSize :: MonadIO m => AVPacket -> m Int
 packetGetSize pkt = liftIO.(getInt <$>).withThis pkt$ #{peek AVPacket, size}
 
 -- | Get the stream_index from a packet
-packetGetStreamIndex :: MonadIO m => AVPacket -> m Int
-packetGetStreamIndex pkt = liftIO.(getInt <$>).withThis pkt$ #{peek AVPacket, stream_index}
+packetGetStreamIndex :: MonadIO m => AVPacket -> m StreamIndex
+packetGetStreamIndex pkt = liftIO.(StreamIndex <$>).withThis pkt$ #{peek AVPacket, stream_index}
 
 -- | Get the flags field from a packet
 packetFlags :: MonadIO m => AVPacket -> m AVPacketFlag
@@ -186,8 +186,8 @@ packetSetDTS :: MonadIO m => AVPacket -> AVTimestamp -> m ()
 packetSetDTS pkt (AVTimestamp x) = liftIO.withThis pkt$ \ptr -> #{poke AVPacket, dts} ptr x
 
 -- | Set the stream_index of a packet
-packetSetStreamIndex :: MonadIO m => AVPacket -> Int -> m ()
-packetSetStreamIndex pkt v = liftIO.withThis pkt$ \ptr -> #{poke AVPacket, stream_index} ptr (setInt v)
+packetSetStreamIndex :: MonadIO m => AVPacket -> StreamIndex -> m ()
+packetSetStreamIndex pkt (StreamIndex v) = liftIO.withThis pkt$ \ptr -> #{poke AVPacket, stream_index} ptr v
 
 -- | Set the flags field of a packet
 packetSetFlags :: MonadIO m => AVPacket -> AVPacketFlag -> m ()

@@ -20,9 +20,6 @@ module Media.FFMpeg.Format.Core (
 	AVStream,
 	AVProgram,
 
-	StreamIndex(..),
-	ProgramID(..),
-
 	getStreams,
 	withAVStream,
 
@@ -101,12 +98,6 @@ instance ExternalPointer AVStream where
 newtype AVProgram = AVProgram (Ptr AVProgram) -- Not safe.  All access to AVProgram needs to be bracketed
 instance ExternalPointer AVProgram where
 	withThis (AVProgram ptr) io = io.castPtr$ ptr
-
--- | Type for stream indexes
-newtype StreamIndex = StreamIndex CInt deriving (Eq, Ord, Show)
-
--- | Type for program ids
-newtype ProgramID = ProgramID CInt deriving (Eq, Ord, Show)
 
 foreign import ccall "avformat_version" avformat_version :: IO CUInt
 foreign import ccall "avformat_configuration" avformat_configuration :: IO CString

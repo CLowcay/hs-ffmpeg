@@ -31,6 +31,10 @@ module Media.FFMpeg.Util (
 	av_realloc,
 	pav_free,
 
+	-- * Indexes and ids
+	StreamIndex(..),
+	ProgramID(..),
+
 	-- * AVTimestamp
 	AVTimestamp(..),
 	av_nopts_value,
@@ -89,6 +93,13 @@ foreign import ccall "av_mallocz" av_mallocz :: CUInt -> IO (Ptr ())
 foreign import ccall "av_realloc" av_realloc :: Ptr () -> CSize -> IO (Ptr ())
 
 foreign import ccall "av_rescale_rnd" av_rescale_rnd :: Int64 -> Int64 -> Int64 -> CInt -> Int64
+
+-- | Type for stream indexes
+newtype StreamIndex = StreamIndex CInt deriving (Eq, Ord, Show)
+
+-- | Type for program ids
+newtype ProgramID = ProgramID CInt deriving (Eq, Ord, Show)
+
 
 newtype AVTimestamp = AVTimestamp Int64 deriving (Eq, Ord, Num, Show, Storable)
 
