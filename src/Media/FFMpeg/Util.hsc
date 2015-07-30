@@ -21,6 +21,7 @@ module Media.FFMpeg.Util (
 	module Media.FFMpeg.Util.ChannelLayout,
 	module Media.FFMpeg.Util.Dict,
 	module Media.FFMpeg.Util.Enums,
+	module Media.FFMpeg.Util.Error,
 
 	-- * Raw bindings
 	av_free,
@@ -75,6 +76,7 @@ import Media.FFMpeg.Util.Buffer
 import Media.FFMpeg.Util.ChannelLayout
 import Media.FFMpeg.Util.Dict
 import Media.FFMpeg.Util.Enums
+import Media.FFMpeg.Util.Error
 
 #include "ffmpeg.h"
 
