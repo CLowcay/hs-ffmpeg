@@ -33,6 +33,9 @@ import Foreign.Ptr
 -- constraint
 class ExternalPointer a where
 	withThis :: a -> (Ptr b -> IO c) -> IO c
+	withOrNull :: Maybe a -> (Ptr b -> IO c) -> IO c
+	withOrNull Nothing io = io nullPtr
+	withOrNull (Just x) io = withThis x io
 
 -- | Used for marshalling enumerations and flags
 class CEnum a where
