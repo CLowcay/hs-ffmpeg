@@ -25,10 +25,6 @@ void b_av_packet_rescale_ts(AVPacket *pkt, int tb_src_num, int tb_src_den, int t
 	av_packet_rescale_ts(pkt, src, dst);
 }
 
-/*void b_av_freep(void *p) {
-	av_freep(p);
-}*/
-
 AVPacketSideData *b_av_packet_get_side_data_i(AVPacketSideData *p, int i) {
 	return &(p[i]);
 }
@@ -58,5 +54,11 @@ void b_av_guess_frame_rate(AVFormatContext *ctx, AVStream *stream, AVFrame *fram
 	r = av_guess_frame_rate(ctx, stream, frame);
 	*num = r.num;
 	*den = r.den;
+}
+
+void b_avformat_close_input(AVFormatContext *ctx) {
+	AVFormatContext **s;
+	*s = ctx;
+	avformat_close_input(s);
 }
 

@@ -21,7 +21,7 @@ extra-source-files: src/config.h.in
                     hs-ffmpeg.buildinfo.in
 
 library
-        build-depends:   base >= 4.7 && < 4.8, bytestring, mtl >= 2.2, transformers >= 0.3
+        build-depends:   base >= 4.7 && < 4.8, bytestring, mtl >= 2.2, transformers >= 0.3, containers >= 0.5
         hs-source-dirs:  src
         include-dirs:    src
         exposed-modules: Media.FFMpeg
@@ -36,6 +36,7 @@ library
                          Media.FFMpeg.Format
                          Media.FFMpeg.Format.Core
                          Media.FFMpeg.Format.Demuxing
+                         Media.FFMpeg.Format.Enums
                          Media.FFMpeg.Format.Muxing
                          Media.FFMpeg.Internal.Common
                          Media.FFMpeg.SWScale
@@ -47,6 +48,7 @@ library
                          Media.FFMpeg.Util.ChannelLayout
                          Media.FFMpeg.Util.Dict
                          Media.FFMpeg.Util.Enums
+                         Media.FFMpeg.Util.Error
         other-modules:   
         c-sources:       src/Media/FFMpeg/_c_utils.c
         default-language:    Haskell2010

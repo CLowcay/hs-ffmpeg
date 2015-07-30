@@ -15,10 +15,16 @@ Bindings to libavformat.
 
 module Media.FFMpeg.Format.Core (
 	AVFormatContext,
-	AVInputFormat,
-	AVOutputFormat,
+	AVInputFormat(..),
+	AVOutputFormat(..),
 	AVStream,
 	AVProgram,
+
+	StreamIndex(..),
+	ProgramID(..),
+
+	getStreams,
+	withAVStream,
 
 	avformatConfiguration,
 	avformatLicense,
@@ -30,6 +36,7 @@ module Media.FFMpeg.Format.Core (
 	inputFormats,
 	outputFormats,
 	mkAVFormatContext,
+	mkAVFormatContextFromPtr,
 	newStream,
 	AVPacketSideDataPayload,
 	streamGetSideData,
@@ -60,6 +67,7 @@ import Foreign.C.String
 import Foreign.C.Types
 import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
+import Foreign.Marshal.Array
 import Foreign.Marshal.Utils
 import Foreign.Ptr
 import Foreign.Storable
@@ -95,7 +103,10 @@ instance ExternalPointer AVProgram where
 	withThis (AVProgram ptr) io = io.castPtr$ ptr
 
 -- | Type for stream indexes
-newtype StreamIndex = StreamIndex CInt
+newtype StreamIndex = StreamIndex CInt deriving (Eq, Ord, Show)
+
+-- | Type for program ids
+newtype ProgramID = ProgramID CInt deriving (Eq, Ord, Show)
 
 foreign import ccall "avformat_version" avformat_version :: IO CUInt
 foreign import ccall "avformat_configuration" avformat_configuration :: IO CString
@@ -139,6 +150,29 @@ foreign import ccall "av_guess_frame_rate" av_guess_frame_rate ::
 	Ptr AVFormatContext -> Ptr AVStream -> Ptr AVFrame -> Ptr CInt -> Ptr CInt -> IO ()
 foreign import ccall "avformat_match_stream_specifier" avformat_match_stream_specifier :: Ptr AVFormatContext -> Ptr AVStream -> CString -> IO CInt
 foreign import ccall "avformat_queue_attached_pictures" avformat_queue_attached_pictures :: Ptr AVFormatContext -> IO CInt
+
+-- | Get the stream indexes from a format context
+getStreams :: MonadIO m => AVFormatContext -> m [StreamIndex]
+getStreams ctx = do
+	nbStreams <- liftIO.withThis ctx$ \pctx ->
+		(#{peek AVFormatContext, nb_streams} pctx :: IO CUInt)
+	return$ (StreamIndex).fromIntegral <$> [0..(nbStreams - 1)]
+
+-- | Get an AVStream from a format context
+withAVStream :: (MonadIO m, MonadError String m) =>
+	AVFormatContext -> StreamIndex -> (AVStream -> m b) -> m b
+withAVStream ctx idx action  = do
+	nbStreams <- liftIO.withThis ctx$ \pctx ->
+		(#{peek AVFormatContext, nb_streams} pctx :: IO CUInt)
+
+	when (idx >= (StreamIndex$ fromIntegral nbStreams))$
+		throwError$ "withAVStream: invalid stream index " ++ (show idx)
+
+	let StreamIndex i = idx
+
+	streams <- liftIO.withThis ctx$ #{peek AVFormatContext, streams}
+	pstream <- liftIO.peek$ streams `advancePtr` (fromIntegral i)
+	action$ AVStream pstream
 
 -- | The avformat configuration string
 avformatConfiguration :: String
@@ -194,7 +228,18 @@ mkAVFormatContext = do
 	ptr <- liftIO$ avformat_alloc_context
 	if ptr == nullPtr
 		then throwError$ "mkAVFormatContext: avformat_alloc_context returned a null pointer"
-		else liftIO$ AVFormatContext <$> newForeignPtr pavformat_free_context ptr
+		else mkAVFormatContextFromPtr ptr Nothing
+
+-- | Make an AVFormatContext given a pointer
+mkAVFormatContextFromPtr :: MonadIO m =>
+	Ptr AVFormatContext -> Maybe (FunPtr (Ptr () -> IO ())) -> m AVFormatContext
+mkAVFormatContextFromPtr ptr mf = liftIO$ do
+	fp <- newForeignPtr pavformat_free_context ptr
+	case mf of
+		Just f -> addForeignPtrFinalizer f (castForeignPtr fp)
+		Nothing -> return ()
+
+	return$ AVFormatContext fp
 
 -- | Create a new stream and add it to a format context
 newStream :: (MonadIO m, MonadError String m) => AVFormatContext -> Maybe AVCodec -> m ()

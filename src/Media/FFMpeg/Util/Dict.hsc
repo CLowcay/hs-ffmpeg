@@ -20,6 +20,7 @@ module Media.FFMpeg.Util.Dict (
 	av_dict_set_int,
 	av_dict_copy,
 	av_dict_get_string,
+	av_dict_free,
 
 	av_dict_match_case,
 	av_dict_ignore_suffix,
@@ -62,6 +63,7 @@ foreign import ccall "av_dict_set" av_dict_set :: Ptr (Ptr ()) -> CString -> CSt
 foreign import ccall "av_dict_set_int" av_dict_set_int :: Ptr (Ptr ()) -> CString -> Int64 -> CInt -> IO CInt
 foreign import ccall "av_dict_copy" av_dict_copy :: Ptr (Ptr ()) -> Ptr () -> CInt -> IO ()
 foreign import ccall "av_dict_get_string" av_dict_get_string :: Ptr () -> Ptr CString -> CChar -> CChar -> IO CInt
+foreign import ccall "av_dict_free" av_dict_free :: Ptr () -> IO ()
 
 -- re-imported for local use
 foreign import ccall "av_freep" av_freep :: Ptr a -> IO ()
