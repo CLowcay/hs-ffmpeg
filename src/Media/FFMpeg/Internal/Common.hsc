@@ -1,5 +1,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 {- |
@@ -14,6 +16,7 @@ Internal utility module for the ffmpeg bindings
 -}
 
 module Media.FFMpeg.Internal.Common (
+	AVRational(..),
 	ExternalPointer (..),
 	CEnum (..),
 	CFlags (..),
@@ -21,21 +24,62 @@ module Media.FFMpeg.Internal.Common (
 	justPtr
 ) where
 
+import Control.Monad.IO.Class
 import Data.Bits
 import Data.Monoid
+import Data.Ratio
 import Data.Version
 import Data.Word
+import Foreign.C.String
 import Foreign.C.Types
 import Foreign.ForeignPtr
+import Foreign.ForeignPtr.Unsafe
+import Foreign.Marshal.Alloc
 import Foreign.Ptr
+import Foreign.Storable
+
+-- | Rational type with a Storable instance
+newtype AVRational = AVRational {fromAVRational :: Rational}
+	deriving (Eq, Show, Ord, Num, Fractional, RealFrac, Real)
+
+instance Storable AVRational where
+	sizeOf _ = #{size int} * 2
+	alignment _ = 8
+	peek ptr = do
+		num <- peek (castPtr ptr) :: IO CInt
+		den <- peek (ptr `plusPtr` #{size int}) :: IO CInt
+		return.AVRational$ fromIntegral num % fromIntegral den
+	poke ptr (AVRational v) = do
+		poke (castPtr ptr) (fromIntegral$ numerator v :: CInt)
+		poke (ptr `plusPtr` #{size int}) (fromIntegral$ denominator v :: CInt)
 
 -- | Similar to 'Foreign.Marshal.Utils.with' but without needing the Storable
--- constraint
+-- constraint (and also more generic)
 class ExternalPointer a where
-	withThis :: a -> (Ptr b -> IO c) -> IO c
-	withOrNull :: Maybe a -> (Ptr b -> IO c) -> IO c
+	type UnderlyingType a :: *
+	withThis :: MonadIO m => a -> (Ptr (UnderlyingType a) -> m b) -> m b
+	withOrNull :: MonadIO m => Maybe a -> (Ptr (UnderlyingType a) -> m b) -> m b
 	withOrNull Nothing io = io nullPtr
 	withOrNull (Just x) io = withThis x io
+
+instance ExternalPointer (Ptr a) where
+	type UnderlyingType (Ptr a) = a
+	withThis ptr action = action ptr
+
+instance ExternalPointer (ForeignPtr a) where
+	type UnderlyingType (ForeignPtr a) = a
+	withThis fptr action = do
+		r <- action$ unsafeForeignPtrToPtr fptr
+		liftIO$ touchForeignPtr fptr
+		return r
+
+instance ExternalPointer [Char] where
+	type UnderlyingType String = CChar
+	withThis string action = do
+		s <- liftIO$ newCString string
+		r <- action s
+		liftIO$ free s
+		return r
 
 -- | Used for marshalling enumerations and flags
 class CEnum a where
