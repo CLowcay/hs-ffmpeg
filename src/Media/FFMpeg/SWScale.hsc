@@ -1,5 +1,6 @@
--- -*- haskell -*-
-{-# LANGUAGE ForeignFunctionInterface, FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE TypeFamilies #-}
 
 {- |
 
@@ -52,7 +53,7 @@ foreign import ccall "&sws_freeContext" psws_freeContext ::
 	FunPtr (Ptr () -> IO ())
 
 foreign import ccall "sws_scale" sws_scale ::
-	Ptr () -> Ptr () -> Ptr () -> CInt -> CInt -> Ptr () -> Ptr () -> IO CInt
+	Ptr SwsContext -> Ptr () -> Ptr () -> CInt -> CInt -> Ptr () -> Ptr () -> IO CInt
 
 -- | Which version of libswscale are we using?
 libSWScaleVersion :: Version
@@ -60,9 +61,9 @@ libSWScaleVersion = fromVersionNum #{const LIBSWSCALE_VERSION_INT}
 
 -- | SwsContext struct
 newtype SwsContext = SwsContext (ForeignPtr SwsContext)
-
 instance ExternalPointer SwsContext where
-    withThis (SwsContext ctx) io = withForeignPtr ctx (io . castPtr)
+	type UnderlyingType SwsContext = SwsContext
+	withThis (SwsContext fp) = withThis fp
 
 -- | Get SWScale context
 getContext :: (MonadIO m, MonadError String m) =>

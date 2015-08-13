@@ -1,6 +1,7 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE TypeFamilies #-}
 
 {- |
  
@@ -83,6 +84,7 @@ import Media.FFMpeg.Codec.AVPicture
 import Media.FFMpeg.Codec.Enums
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util
+import Media.FFMpeg.Util.Classes
 
 foreign import ccall "b_av_codec_get_pkt_timebase" av_codec_get_pkt_timebase :: Ptr AVCodecContext -> Ptr CInt -> Ptr CInt -> IO ()
 foreign import ccall "b_av_codec_set_pkt_timebase" av_codec_set_pkt_timebase :: Ptr AVCodecContext -> CInt -> CInt -> IO ()
@@ -110,7 +112,7 @@ foreign import ccall "avcodec_get_context_defaults3" avcodec_get_context_default
 -- foreign import ccall "avcodec_get_frame_class" avcodec_get_frame_class :: Ptr AVClass
 -- foreign import ccall "avcodec_get_subtitle_rect_class" avcodec_get_subtitle_rect_class :: Ptr AVClass
 foreign import ccall "avcodec_copy_context" avcodec_copy_context :: Ptr AVCodecContext -> Ptr AVCodecContext -> IO CInt
-foreign import ccall "avcodec_open2" avcodec_open2 :: Ptr AVCodecContext -> Ptr AVCodec -> Ptr (Ptr ()) -> IO CInt
+foreign import ccall "avcodec_open2" avcodec_open2 :: Ptr AVCodecContext -> Ptr AVCodec -> Ptr (UnderlyingType AVDictionary) -> IO CInt
 foreign import ccall "avcodec_close" avcodec_close :: Ptr AVCodecContext -> IO CInt
 foreign import ccall "avsubtitle_free" avsubtitle_free :: Ptr () -> IO ()
 foreign import ccall "&avsubtitle_free" pavsubtitle_free :: FunPtr (Ptr () -> IO ())
@@ -137,17 +139,13 @@ foreign import ccall "avcodec_descriptor_get" avcodec_descriptor_get :: CInt -> 
 foreign import ccall "avcodec_descriptor_next" avcodec_descriptor_next :: Ptr () -> Ptr ()
 foreign import ccall "avcodec_descriptor_get_by_name" avcodec_descriptor_get_by_name :: CString -> Ptr ()
 
--- | AVCodecContext struct
-newtype AVCodecContext = AVCodecContext (ForeignPtr (Ptr (AVCodecContext)))
-
-instance ExternalPointer AVCodecContext where
-	withThis (AVCodecContext ctx) io = withForeignPtr ctx (io . castPtr)
-
 -- | AVCodec struct
-newtype AVCodec = AVCodec (Ptr AVCodec) -- Ptr is OK because codecs are never freed
-
+newtype AVCodec = AVCodec (Ptr AVCodec)
 instance ExternalPointer AVCodec where
-	withThis (AVCodec ctx) io = io$ castPtr ctx
+	type UnderlyingType AVCodec = AVCodec
+	withThis (AVCodec p) = withThis p
+
+-- Ptr is OK because codecs are never freed
 
 -- | AVSubtitle struct
 data AVSubtitle = AVSubtitle {
@@ -268,20 +266,20 @@ instance Storable AVSubtitle where
 
 -- | Get the timebase of a packet
 codecGetPktTimebase :: MonadIO m => AVCodecContext -> m Rational
-codecGetPktTimebase ctx = liftIO.withThis ctx$ \ptr ->
-	alloca $ \pnum ->
-	alloca $ \pden -> do
-		pctx <- peek ptr
-		av_codec_get_pkt_timebase pctx pnum pden
-		n <- fromIntegral<$> peek pnum
-		d <- fromIntegral<$> peek pden
-		return$ n % d
+codecGetPktTimebase ctx =
+	withThis ctx$ \pctx ->
+	liftIO$
+		alloca$ \pnum ->
+		alloca$ \pden -> do
+			av_codec_get_pkt_timebase pctx pnum pden
+			n <- fromIntegral<$> peek pnum
+			d <- fromIntegral<$> peek pden
+			return$ n % d
 
 -- | Set the timebase of a packet
 codecSetPktTimebase :: MonadIO m => AVCodecContext -> Rational -> m ()
-codecSetPktTimebase ctx r = liftIO.withThis ctx$ \ptr -> do
-	pctx <- peek ptr
-	av_codec_set_pkt_timebase pctx
+codecSetPktTimebase ctx r = withThis ctx$ \pctx ->
+	liftIO$ av_codec_set_pkt_timebase pctx
 		(fromIntegral$ numerator r) (fromIntegral$ denominator r)
 
 -- | AVCodecDescriptor struct
@@ -325,48 +323,41 @@ instance Storable AVCodecDescriptor where
 
 -- | Get information about a codec
 codecGetCodecDescriptor :: MonadIO m => AVCodecContext -> m AVCodecDescriptor
-codecGetCodecDescriptor ctx = liftIO.withThis ctx$ \ptr -> do
-	pctx <- peek ptr
-	peek =<< (av_codec_get_codec_descriptor pctx)
+codecGetCodecDescriptor ctx = withThis ctx$ \pctx ->
+	liftIO$ peek =<< (av_codec_get_codec_descriptor pctx)
 
 -- | Set the codec descriptor
 -- __WARNING__: This function leaks memory so use sparingly
 codecSetCodecDescriptor :: MonadIO m => AVCodecContext -> AVCodecDescriptor -> m ()
-codecSetCodecDescriptor ctx d = liftIO.withThis ctx$ \ptr -> do
-	pctx <- peek ptr
+codecSetCodecDescriptor ctx d = withThis ctx$ \pctx -> liftIO$ do
 	pcd <- mallocBytes #{size AVCodecDescriptor}
 	poke pcd d
 	av_codec_set_codec_descriptor pctx pcd
 
 -- | Get the properties flags from a codec context
 codecGetCodecProperties :: MonadIO m => AVCodecContext -> m AVCodecProp
-codecGetCodecProperties ctx = liftIO.withThis ctx$ \ptr -> do
-	pctx <- peek ptr
+codecGetCodecProperties ctx = withThis ctx$ \pctx -> liftIO$
 	toCEnum.fromIntegral <$> av_codec_get_codec_properties pctx
 
 -- | Get the lowres field from a codec context
 codecGetLowres :: MonadIO m => AVCodecContext -> m Int
-codecGetLowres ctx = liftIO.withThis ctx$ \ptr -> do
-	pctx <- peek ptr
+codecGetLowres ctx = withThis ctx$ \pctx -> liftIO$
 	fromIntegral <$> av_codec_get_lowres pctx
 
 -- | Set the lowres field in a codec context
 codecSetLowres :: MonadIO m => AVCodecContext -> Int -> m ()
-codecSetLowres ctx v = liftIO.withThis ctx$ \ptr -> do
-	pctx <- peek ptr
+codecSetLowres ctx v = withThis ctx$ \pctx -> liftIO$
 	av_codec_set_lowres pctx (fromIntegral v)
 
 -- | Get the seek preroll value from a codec context
 codecGetSeekPreroll :: MonadIO m => AVCodecContext -> m Int
-codecGetSeekPreroll ctx = liftIO.withThis ctx$ \ptr -> do
-	pctx <- peek ptr
-	fromIntegral <$> av_codec_get_seek_preroll pctx
+codecGetSeekPreroll ctx = withThis ctx$ \pctx -> do
+	liftIO$ fromIntegral <$> av_codec_get_seek_preroll pctx
 
 -- | Set the seek preroll value in a codec context
 codecSetSeekPreroll :: MonadIO m => AVCodecContext -> Int -> m ()
-codecSetSeekPreroll ctx v = liftIO.withThis ctx$ \ptr -> do
-	pctx <- peek ptr
-	av_codec_set_seek_preroll pctx (fromIntegral v)
+codecSetSeekPreroll ctx v = withThis ctx$ \pctx ->
+	liftIO$ av_codec_set_seek_preroll pctx (fromIntegral v)
 
 -- foreign import ccall "av_codec_get_chroma_intra_matrix" av_codec_get_chroma_intra_matrix :: Ptr AVCodecContext -> IO (Ptr Word16)
 -- foreign import ccall "av_codec_set_chroma_intra_matrix" av_codec_set_chroma_intra_matrix :: Ptr AVCodecContext -> Ptr Word16 -> IO ()
@@ -445,9 +436,9 @@ getCodecTagString tag = unsafePerformIO$ do  -- safe because there are no observ
 
 -- | Get information about a codec in a string
 codecString :: MonadIO m => AVCodecContext -> Bool -> m String
-codecString ctx isEncoder = liftIO$
+codecString ctx isEncoder =
 	withThis ctx$ \pctx ->
-	allocaBytes buffsize$ \pb -> do
+	liftIO.allocaBytes buffsize$ \pb -> do
 		avcodec_string pb (fromIntegral buffsize) pctx (if isEncoder then 1 else 0)
 		peekCString pb
 	where buffsize = 4096
@@ -459,7 +450,7 @@ getProfileName cd profile = liftIO.withThis cd$ \pcd ->
 
 -- | Flush buffers associated with a codec and reset it to its default state
 flushBuffers :: MonadIO m => AVCodecContext -> m ()
-flushBuffers ctx = liftIO.withThis ctx$ \pctx -> avcodec_flush_buffers pctx
+flushBuffers ctx = withThis ctx$ \pctx -> liftIO$ avcodec_flush_buffers pctx
 
 getBitsPerSample :: AVCodecID -> Int
 getBitsPerSample = fromIntegral.av_get_bits_per_sample.fromCEnum

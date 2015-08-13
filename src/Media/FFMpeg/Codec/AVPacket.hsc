@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies #-}
 
 {- |
 
@@ -118,8 +119,8 @@ foreign import ccall "av_packet_get_side_data" av_packet_get_side_data :: Ptr AV
 foreign import ccall "av_packet_merge_side_data" av_packet_merge_side_data :: Ptr AVPacket -> IO CInt
 foreign import ccall "av_packet_split_side_data" av_packet_split_side_data :: Ptr AVPacket -> IO CInt
 foreign import ccall "av_packet_side_data_name" av_packet_side_data_name :: CInt -> CString
-foreign import ccall "av_packet_pack_dictionary" av_packet_pack_dictionary :: Ptr () -> Ptr CInt -> IO (Ptr Word8)
-foreign import ccall "av_packet_unpack_dictionary" av_packet_unpack_dictionary :: Ptr Word8 -> CInt -> Ptr (Ptr ()) -> IO CInt
+foreign import ccall "av_packet_pack_dictionary" av_packet_pack_dictionary :: UnderlyingType AVDictionary -> Ptr CInt -> IO (Ptr Word8)
+foreign import ccall "av_packet_unpack_dictionary" av_packet_unpack_dictionary :: Ptr Word8 -> CInt -> Ptr (UnderlyingType AVDictionary) -> IO CInt
 foreign import ccall "av_packet_free_side_data" av_packet_free_side_data :: Ptr AVPacket -> IO ()
 foreign import ccall "av_packet_ref" av_packet_ref :: Ptr AVPacket -> Ptr AVPacket -> IO CInt
 foreign import ccall "av_packet_unref" av_packet_unref :: Ptr AVPacket -> IO ()
@@ -131,9 +132,9 @@ foreign import ccall "&b_free_packet" pav_free_packet :: FunPtr (Ptr () -> IO ()
 
 -- | AVPacket struct
 newtype AVPacket = AVPacket (ForeignPtr AVPacket)
-
 instance ExternalPointer AVPacket where
-	withThis (AVPacket f) io = withForeignPtr f (io.castPtr)
+	type UnderlyingType AVPacket = AVPacket
+	withThis (AVPacket fp) = withThis fp
 
 getInt :: CInt -> Int
 getInt = fromIntegral
@@ -272,8 +273,9 @@ peekAVPacketSideDataPtrType sdType ptr =
 
 getPackedDictSize :: AVDictionary -> IO Int
 getPackedDictSize dict =
-	withThis dict$ \pd ->
+	withThis dict$ \ppd ->
 	alloca$ \psize -> do
+		pd <- peek ppd
 		x <- av_packet_pack_dictionary pd psize
 		av_free x
 		fromIntegral <$> peek psize
@@ -288,8 +290,9 @@ getPackedDict ptr size = do
 
 packDict :: Ptr AVDictionary -> AVDictionary -> IO ()
 packDict ptr dict = 
-	withThis dict$ \pd ->
+	withThis dict$ \ppd ->
 	alloca$ \psize -> do
+		pd <- peek ppd
 		x <- av_packet_pack_dictionary pd psize
 		size <- fromIntegral <$> peek psize
 		copyArray (castPtr ptr) x size 

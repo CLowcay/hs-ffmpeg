@@ -733,7 +733,7 @@ newtype AVMediaType = AVMediaType CInt deriving (Eq, Show, CEnum, Storable)
 }
 
 -- | AVSampleFormat
-newtype AVSampleFormat = AVSampleFormat CInt deriving (Eq, Show, CEnum)
+newtype AVSampleFormat = AVSampleFormat CInt deriving (Eq, Show, CEnum, Storable)
 #{enum AVSampleFormat, AVSampleFormat,
 	av_sample_fmt_none = AV_SAMPLE_FMT_NONE,
 	av_sample_fmt_u8 = AV_SAMPLE_FMT_U8,

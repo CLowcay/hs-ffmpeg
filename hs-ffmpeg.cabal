@@ -46,9 +46,12 @@ library
                          Media.FFMpeg.Util.AVFrameSideData
                          Media.FFMpeg.Util.Buffer
                          Media.FFMpeg.Util.ChannelLayout
+                         Media.FFMpeg.Util.Classes
                          Media.FFMpeg.Util.Dict
                          Media.FFMpeg.Util.Enums
                          Media.FFMpeg.Util.Error
+                         Media.FFMpeg.Util.Maths
+                         Media.FFMpeg.Util.Options
         other-modules:   
         c-sources:       src/Media/FFMpeg/_c_utils.c
         default-language:    Haskell2010

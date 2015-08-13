@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE TypeFamilies #-}
 
 {- |
  
@@ -65,17 +66,17 @@ pictureGetSize pf width height = do
 
 -- | AVPicture struct
 newtype AVPicture = AVPicture (ForeignPtr AVPicture)
-
 instance ExternalPointer AVPicture where
-	withThis (AVPicture ctx) io = withForeignPtr ctx (io . castPtr)
+	type UnderlyingType AVPicture = AVPicture
+	withThis (AVPicture fp) = withThis fp
 
 -- | A class that represents the AVPicture struct
-class HasAVPicture p where
+class ExternalPointer p => HasAVPicture p where
 	-- | Make a new AVPicture
 	mkPicture :: (MonadIO m, MonadError String m) => m p
 
 	-- | Get a pointer to the AVPicture struct
-	withAVPicturePtr :: p -> (Ptr () -> IO b) -> IO b
+	withAVPicturePtr :: MonadIO m => p -> (Ptr (UnderlyingType p) -> m b) -> m b
 
 	-- | Allocate a buffer for a picture and execute a monadic action with that
 	-- buffer.  The buffer is freed when the action returns, so the action must
@@ -88,13 +89,13 @@ class HasAVPicture p where
 		-> (p -> m b)    -- ^ the monadic action to execute
 		-> m b
 	pictureAlloc picture format width height action = do
-		r <- liftIO.withAVPicturePtr picture$ \ptr ->
-			avpicture_alloc ptr (fromCEnum format) (fromIntegral width) (fromIntegral height)
+		r <- withAVPicturePtr picture$ \ptr -> liftIO$ avpicture_alloc (castPtr ptr)
+			(fromCEnum format) (fromIntegral width) (fromIntegral height)
 		if r /= 0 then
 			throwError$ "pictureAlloc: failed to allocate picture with error code " ++ (show r)
 		else do
 			r <- action picture
-			liftIO.withAVPicturePtr picture$ \ptr -> avpicture_free ptr
+			withAVPicturePtr picture$ \ptr -> liftIO$ avpicture_free (castPtr ptr)
 			return r
 
 	-- | Connect an AVPicture to an external buffer.  The buffer is not managed
@@ -107,8 +108,9 @@ class HasAVPicture p where
 		-> Int           -- ^ height in pixels
 		-> m ()
 	pictureFill picture pbuff format width height = do
-		r <- liftIO.withAVPicturePtr picture$ \ptr ->
-			avpicture_fill ptr (castPtr pbuff) (fromCEnum format) (fromIntegral width) (fromIntegral height)
+		r <- withAVPicturePtr picture$ \ptr -> liftIO$
+			avpicture_fill (castPtr ptr) (castPtr pbuff)
+				(fromCEnum format) (fromIntegral width) (fromIntegral height)
 		when (r < 0) $
 			throwError$ "pictureFill: failed with error code " ++ (show r)
 
@@ -123,10 +125,10 @@ class HasAVPicture p where
 		-> Int           -- ^ size of the buffer in bytes
 		-> m Int         -- ^ the number of bytes written to the buffer
 	pictureLayout picture format width height pbuff buffSize = do
-		r <- liftIO.withAVPicturePtr picture$ \ptr ->
-			avpicture_layout ptr (fromCEnum format)
-			(fromIntegral width) (fromIntegral height)
-			(castPtr pbuff) (fromIntegral buffSize)
+		r <- withAVPicturePtr picture$ \ptr ->
+			liftIO$ avpicture_layout (castPtr ptr) (fromCEnum format)
+				(fromIntegral width) (fromIntegral height)
+				(castPtr pbuff) (fromIntegral buffSize)
 		if r < 0 then
 			throwError$ "pictureLayout: failed with error code " ++ (show r)
 		else return.fromIntegral$ r
@@ -140,10 +142,10 @@ class HasAVPicture p where
 		-> Int           -- ^ width in pixels
 		-> Int           -- ^ height in pixels
 		-> m ()
-	pictureCopy dst src format width height = liftIO$
+	pictureCopy dst src format width height =
 		withAVPicturePtr dst$ \pd ->
 		withAVPicturePtr src$ \ps ->
-			av_picture_copy pd ps (fromCEnum format)
+			liftIO$ av_picture_copy (castPtr pd) (castPtr ps) (fromCEnum format)
 				(fromIntegral width) (fromIntegral height)
 
 	-- | Crop an image top and left.  Both the source and the destination must
@@ -155,10 +157,10 @@ class HasAVPicture p where
 		-> Int           -- ^ top_band
 		-> Int           -- ^ left_band
 		-> m ()
-	pictureCrop dst src format topBand leftBand = liftIO$
+	pictureCrop dst src format topBand leftBand =
 		withAVPicturePtr dst $ \pd ->
 		withAVPicturePtr src $ \ps -> do
-			av_picture_crop pd ps (fromCEnum format)
+			liftIO$ av_picture_crop (castPtr pd) (castPtr ps) (fromCEnum format)
 				(fromIntegral topBand) (fromIntegral leftBand)
 			return ()
 
@@ -176,11 +178,11 @@ class HasAVPicture p where
 		-> Int           -- ^ right padding
 		-> PlanarColor   -- ^ the color to pad with
 		-> m ()
-	picturePad dst src height width format top bottom left right (PlanarColor fpColor) = liftIO$
+	picturePad dst src height width format top bottom left right (PlanarColor fpColor) =
 		withAVPicturePtr dst $ \pd ->
 		withAVPicturePtr src $ \ps ->
-		withForeignPtr fpColor$ \pc -> do
-			av_picture_pad pd ps
+		liftIO.withForeignPtr fpColor$ \pc -> do
+			av_picture_pad (castPtr pd) (castPtr ps)
 				(fromIntegral height) (fromIntegral width) (fromCEnum format)
 				(fromIntegral top) (fromIntegral bottom)
 				(fromIntegral left) (fromIntegral right) pc
@@ -198,11 +200,14 @@ instance HasAVPicture AVPicture where
 
 -- | Special AVPicture type for subtitles
 data AVSubtitlePicture = AVSubtitlePicture (ForeignPtr ()) Int
+instance ExternalPointer AVSubtitlePicture where
+	type UnderlyingType AVSubtitlePicture = ()
+	withThis (AVSubtitlePicture fp _) = withThis fp
 
 instance HasAVPicture AVSubtitlePicture where
 	mkPicture = do
 		fp <- avMallocz #{size AVPicture}
 		return$ AVSubtitlePicture fp 0
 
-	withAVPicturePtr (AVSubtitlePicture fp off) action = withForeignPtr fp (action.(`plusPtr` off))
+	withAVPicturePtr (AVSubtitlePicture fp off) action = withThis fp (action.(`plusPtr` off))
 

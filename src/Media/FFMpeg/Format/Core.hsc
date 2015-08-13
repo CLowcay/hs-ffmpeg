@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies #-}
 
 {- |
  
@@ -21,7 +22,7 @@ module Media.FFMpeg.Format.Core (
 	AVProgram,
 
 	getStreams,
-	withAVStream,
+	--getPrograms,
 
 	avformatConfiguration,
 	avformatLicense,
@@ -73,31 +74,31 @@ import System.IO.Unsafe
 import Media.FFMpeg.Codec
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util
-
--- | AVFormatContext struct
-newtype AVFormatContext = AVFormatContext (ForeignPtr AVFormatContext)
-instance ExternalPointer AVFormatContext where
-	withThis (AVFormatContext fmt) io = withForeignPtr fmt (io . castPtr)
+import Media.FFMpeg.Util.Classes
 
 -- | AVInputFormat struct
 newtype AVInputFormat = AVInputFormat (Ptr AVInputFormat) -- Ptr is OK because these are never freed
 instance ExternalPointer AVInputFormat where
-	withThis (AVInputFormat ptr) io = io.castPtr$ ptr
+	type UnderlyingType AVInputFormat = AVInputFormat
+	withThis (AVInputFormat ptr) = withThis ptr
 
 -- | AVOutputFormat struct
 newtype AVOutputFormat = AVOutputFormat (Ptr AVOutputFormat) -- Ptr is OK because these are never freed
 instance ExternalPointer AVOutputFormat where
-	withThis (AVOutputFormat ptr) io = io.castPtr$ ptr
+	type UnderlyingType AVOutputFormat = AVOutputFormat
+	withThis (AVOutputFormat ptr) = withThis ptr
 
 -- | AVStream struct
 newtype AVStream = AVStream (Ptr AVStream) -- Not safe.  All access to AVStream needs to be bracketed
 instance ExternalPointer AVStream where
-	withThis (AVStream ptr) io = io.castPtr$ ptr
+	type UnderlyingType AVStream = AVStream
+	withThis (AVStream ptr) = withThis ptr
 
 -- | AVProgram struct
 newtype AVProgram = AVProgram (Ptr AVProgram) -- Not safe.  All access to AVProgram needs to be bracketed
 instance ExternalPointer AVProgram where
-	withThis (AVProgram ptr) io = io.castPtr$ ptr
+	type UnderlyingType AVProgram = AVProgram
+	withThis (AVProgram ptr) = withThis ptr
 
 foreign import ccall "avformat_version" avformat_version :: IO CUInt
 foreign import ccall "avformat_configuration" avformat_configuration :: IO CString
@@ -149,21 +150,12 @@ getStreams ctx = do
 		(#{peek AVFormatContext, nb_streams} pctx :: IO CUInt)
 	return$ (StreamIndex).fromIntegral <$> [0..(nbStreams - 1)]
 
--- | Get an AVStream from a format context
-withAVStream :: (MonadIO m, MonadError String m) =>
-	AVFormatContext -> StreamIndex -> (AVStream -> m b) -> m b
-withAVStream ctx idx action  = do
-	nbStreams <- liftIO.withThis ctx$ \pctx ->
-		(#{peek AVFormatContext, nb_streams} pctx :: IO CUInt)
-
-	when (idx >= (StreamIndex$ fromIntegral nbStreams))$
-		throwError$ "withAVStream: invalid stream index " ++ (show idx)
-
-	let StreamIndex i = idx
-
-	streams <- liftIO.withThis ctx$ #{peek AVFormatContext, streams}
-	pstream <- liftIO.peek$ streams `advancePtr` (fromIntegral i)
-	action$ AVStream pstream
+-- | Get all the programs from a format context
+{-getPrograms :: MonadIO m => AVFormatContext -> m [ProgramID]
+getPrograms ctx = withThis ctx$ \pctx -> liftIO$ do
+	nb_programs <- #{peek AVFormatContext, nb_programs} pctx :: IO CUInt
+	forM [0..(nb_programs - 1)]$ \ppro ->
+		ProgramID <$> (#{peek AVProgram, id} ppro :: IO CInt)-}
 
 -- | The avformat configuration string
 avformatConfiguration :: String
@@ -183,11 +175,11 @@ registerAll = liftIO av_register_all
 
 -- | Register an input format
 registerInputFormat :: MonadIO m => AVInputFormat -> m ()
-registerInputFormat inf = liftIO.withThis inf$ av_register_input_format
+registerInputFormat inf = withThis inf$ liftIO.av_register_input_format
 
 -- | Register an output format
 registerOutputFormat :: MonadIO m => AVOutputFormat -> m ()
-registerOutputFormat ouf = liftIO.withThis ouf$ av_register_output_format
+registerOutputFormat ouf = withThis ouf$ liftIO.av_register_output_format
 
 -- | Init networking
 networkInit :: MonadIO m => m ()

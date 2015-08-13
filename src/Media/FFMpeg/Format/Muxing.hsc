@@ -45,7 +45,7 @@ import Media.FFMpeg.Format.Core
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util
 
-foreign import ccall "avformat_write_header" avformat_write_header :: Ptr AVFormatContext -> Ptr (Ptr ()) -> IO CInt
+foreign import ccall "avformat_write_header" avformat_write_header :: Ptr AVFormatContext -> Ptr (Ptr AVDictionary) -> IO CInt
 foreign import ccall "av_write_frame" av_write_frame :: Ptr AVFormatContext -> Ptr AVPacket -> IO CInt
 foreign import ccall "av_interleaved_write_frame" av_interleaved_write_frame :: Ptr AVFormatContext -> Ptr AVPacket -> IO CInt
 foreign import ccall "av_write_uncoded_frame" av_write_uncoded_frame :: Ptr AVFormatContext -> CInt -> Ptr AVFrame -> IO CInt
@@ -60,12 +60,12 @@ foreign import ccall "av_get_output_timestamp" av_get_output_timestamp :: Ptr AV
 -- for the muxer.  On return it will contain only the options that were not
 -- found.
 writeHeader :: (MonadIO m, MonadError String m) => AVFormatContext -> AVDictionary -> m ()
-writeHeader ctx dict = do
-	r <- liftIO$
-		withThis ctx$ \pctx ->
-		withThis dict$ \ppdict -> avformat_write_header pctx ppdict
-	when (r /= 0)$ throwError$
-		"writeHeader: avformat_write_header failed with error code " ++ (show r)
+writeHeader ctx dict =
+	withThis ctx$ \pctx ->
+	withThis dict$ \ppdict -> do
+		r <- liftIO$ avformat_write_header pctx ppdict
+		when (r /= 0)$ throwError$
+			"writeHeader: avformat_write_header failed with error code " ++ (show r)
 
 -- | Write a packet to the output file.
 writeFrame :: (MonadIO m, MonadError String m) => AVFormatContext -> AVPacket -> StreamIndex -> m ()

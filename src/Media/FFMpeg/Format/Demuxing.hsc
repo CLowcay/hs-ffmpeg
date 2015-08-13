@@ -39,6 +39,7 @@ import Foreign.C.String
 import Foreign.C.Types
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
+import Foreign.Marshal.Utils
 import Foreign.Ptr
 import Foreign.Storable
 import qualified Data.Map as M
@@ -50,8 +51,8 @@ import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util
 
 foreign import ccall "av_find_input_format" av_find_input_format :: CString -> IO (Ptr AVInputFormat)
-foreign import ccall "avformat_open_input" avformat_open_input :: Ptr (Ptr AVFormatContext) -> CString -> Ptr AVInputFormat -> Ptr (Ptr ()) -> IO CInt
-foreign import ccall "avformat_find_stream_info" avformat_find_stream_info :: Ptr AVFormatContext -> Ptr (Ptr ()) -> IO CInt
+foreign import ccall "avformat_open_input" avformat_open_input :: Ptr (Ptr AVFormatContext) -> CString -> Ptr AVInputFormat -> Ptr (Ptr AVDictionary) -> IO CInt
+foreign import ccall "avformat_find_stream_info" avformat_find_stream_info :: Ptr AVFormatContext -> Ptr (Ptr AVDictionary) -> IO CInt
 foreign import ccall "av_find_program_from_stream" av_find_program_from_stream :: Ptr AVFormatContext -> Ptr AVProgram -> CInt -> IO (Ptr AVProgram)
 foreign import ccall "av_find_best_stream" av_find_best_stream :: Ptr AVFormatContext -> CInt -> CInt -> CInt -> Ptr (Ptr AVCodec) -> CInt -> IO CInt
 foreign import ccall "av_read_frame" av_read_frame :: Ptr AVFormatContext -> Ptr AVPacket -> IO CInt
@@ -73,24 +74,24 @@ findInputFormat name = do
 openInput :: (MonadIO m, MonadError String m) =>
 	FilePath -> Maybe AVInputFormat -> Maybe AVDictionary -> m (AVFormatContext, AVDictionary)
 openInput path mif mdict = do
-	(r, ctx, dict) <- liftIO$
+	(r, ctx, dict) <- 
 		withOrNull mif$ \pif ->
 		withOrNull mdict$ \ppdict0 ->
-		alloca$ \ppdict ->
-		alloca$ \pctx ->
-		withCString path$ \ppath -> do
-			pdict0 <- peek ppdict0
-			av_dict_copy ppdict pdict0 0
-			r <- avformat_open_input pctx ppath pif ppdict
-			ctx <- peek pctx
-			dict <- peek ppdict
-			return (r, ctx, dict)
+		withThis path$ \ppath -> liftIO$
+			alloca$ \ppdict ->
+			alloca$ \pctx -> do
+				pdict0 <- peek ppdict0
+				av_dict_copy ppdict pdict0 0
+				r <- avformat_open_input pctx ppath pif ppdict
+				ctx <- peek pctx
+				dict <- peek ppdict
+				return (r, ctx, dict)
 
 	when (r /= 0)$ throwError$
 		"openInput: avformat_open_input failed with error code " ++ (show r)
 
 	rdict <- unsafeDictCopyFromPtr dict []
-	liftIO$ av_dict_free dict
+	liftIO$ with dict av_dict_free
 	rctx <- mkAVFormatContextFromPtr ctx (Just pavformat_close_input)
 	return (rctx, rdict)
 
