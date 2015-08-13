@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies #-}
 
 {- |
 
@@ -78,152 +79,154 @@ import Media.FFMpeg.Util.Dict
 import Media.FFMpeg.Util.Enums
 import Media.FFMpeg.Util.AVFrameSideData
 
-foreign import ccall "av_frame_get_best_effort_timestamp" av_frame_get_best_effort_timestamp :: Ptr () -> IO Int64
-foreign import ccall "av_frame_set_best_effort_timestamp" av_frame_set_best_effort_timestamp :: Ptr () -> Int64 -> IO ()
-foreign import ccall "av_frame_get_pkt_duration" av_frame_get_pkt_duration :: Ptr () -> IO Int64
-foreign import ccall "av_frame_set_pkt_duration" av_frame_set_pkt_duration :: Ptr () -> Int64 -> IO ()
-foreign import ccall "av_frame_get_pkt_pos" av_frame_get_pkt_pos :: Ptr () -> IO Int64
-foreign import ccall "av_frame_set_pkt_pos" av_frame_set_pkt_pos :: Ptr () -> Int64 -> IO ()
-foreign import ccall "av_frame_get_channel_layout" av_frame_get_channel_layout :: Ptr () -> IO Int64
-foreign import ccall "av_frame_set_channel_layout" av_frame_set_channel_layout :: Ptr () -> Int64 -> IO ()
-foreign import ccall "av_frame_get_channels" av_frame_get_channels :: Ptr () -> IO CInt
-foreign import ccall "av_frame_set_channels" av_frame_set_channels :: Ptr () -> CInt -> IO ()
-foreign import ccall "av_frame_get_sample_rate" av_frame_get_sample_rate :: Ptr () -> IO CInt
-foreign import ccall "av_frame_set_sample_rate" av_frame_set_sample_rate :: Ptr () -> CInt -> IO ()
-foreign import ccall "av_frame_get_metadata" av_frame_get_metadata :: Ptr () -> IO (Ptr ())
-foreign import ccall "av_frame_set_metadata" av_frame_set_metadata :: Ptr () -> Ptr () -> IO ()
-foreign import ccall "av_frame_get_decode_error_flags" av_frame_get_decode_error_flags :: Ptr () -> IO CInt
-foreign import ccall "av_frame_set_decode_error_flags" av_frame_set_decode_error_flags :: Ptr () -> CInt -> IO ()
-foreign import ccall "av_frame_get_pkt_size" av_frame_get_pkt_size :: Ptr () -> IO CInt
-foreign import ccall "av_frame_set_pkt_size" av_frame_set_pkt_size :: Ptr () -> CInt -> IO ()
-foreign import ccall "av_frame_get_qp_table" av_frame_get_qp_table :: Ptr () -> Ptr CInt -> Ptr CInt -> IO (Ptr Int8)
-foreign import ccall "av_frame_set_qp_table" av_frame_set_qp_table :: Ptr () -> Ptr () -> CInt -> CInt -> IO CInt
-foreign import ccall "av_frame_get_colorspace" av_frame_get_colorspace :: Ptr () -> IO CInt
-foreign import ccall "av_frame_set_colorspace" av_frame_set_colorspace :: Ptr () -> CInt -> IO ()
-foreign import ccall "av_frame_get_color_range" av_frame_get_color_range :: Ptr () -> IO CInt
-foreign import ccall "av_frame_set_color_range" av_frame_set_color_range :: Ptr () -> CInt -> IO ()
+foreign import ccall "av_frame_get_best_effort_timestamp" av_frame_get_best_effort_timestamp :: Ptr AVFrame -> IO Int64
+foreign import ccall "av_frame_set_best_effort_timestamp" av_frame_set_best_effort_timestamp :: Ptr AVFrame -> Int64 -> IO ()
+foreign import ccall "av_frame_get_pkt_duration" av_frame_get_pkt_duration :: Ptr AVFrame -> IO Int64
+foreign import ccall "av_frame_set_pkt_duration" av_frame_set_pkt_duration :: Ptr AVFrame -> Int64 -> IO ()
+foreign import ccall "av_frame_get_pkt_pos" av_frame_get_pkt_pos :: Ptr AVFrame -> IO Int64
+foreign import ccall "av_frame_set_pkt_pos" av_frame_set_pkt_pos :: Ptr AVFrame -> Int64 -> IO ()
+foreign import ccall "av_frame_get_channel_layout" av_frame_get_channel_layout :: Ptr AVFrame -> IO Int64
+foreign import ccall "av_frame_set_channel_layout" av_frame_set_channel_layout :: Ptr AVFrame -> Int64 -> IO ()
+foreign import ccall "av_frame_get_channels" av_frame_get_channels :: Ptr AVFrame -> IO CInt
+foreign import ccall "av_frame_set_channels" av_frame_set_channels :: Ptr AVFrame -> CInt -> IO ()
+foreign import ccall "av_frame_get_sample_rate" av_frame_get_sample_rate :: Ptr AVFrame -> IO CInt
+foreign import ccall "av_frame_set_sample_rate" av_frame_set_sample_rate :: Ptr AVFrame -> CInt -> IO ()
+foreign import ccall "av_frame_get_metadata" av_frame_get_metadata :: Ptr AVFrame -> IO (Ptr ())
+foreign import ccall "av_frame_set_metadata" av_frame_set_metadata :: Ptr AVFrame -> Ptr () -> IO ()
+foreign import ccall "av_frame_get_decode_error_flags" av_frame_get_decode_error_flags :: Ptr AVFrame -> IO CInt
+foreign import ccall "av_frame_set_decode_error_flags" av_frame_set_decode_error_flags :: Ptr AVFrame -> CInt -> IO ()
+foreign import ccall "av_frame_get_pkt_size" av_frame_get_pkt_size :: Ptr AVFrame -> IO CInt
+foreign import ccall "av_frame_set_pkt_size" av_frame_set_pkt_size :: Ptr AVFrame -> CInt -> IO ()
+foreign import ccall "av_frame_get_qp_table" av_frame_get_qp_table :: Ptr AVFrame -> Ptr CInt -> Ptr CInt -> IO (Ptr Int8)
+foreign import ccall "av_frame_set_qp_table" av_frame_set_qp_table :: Ptr AVFrame -> Ptr () -> CInt -> CInt -> IO CInt
+foreign import ccall "av_frame_get_colorspace" av_frame_get_colorspace :: Ptr AVFrame -> IO CInt
+foreign import ccall "av_frame_set_colorspace" av_frame_set_colorspace :: Ptr AVFrame -> CInt -> IO ()
+foreign import ccall "av_frame_get_color_range" av_frame_get_color_range :: Ptr AVFrame -> IO CInt
+foreign import ccall "av_frame_set_color_range" av_frame_set_color_range :: Ptr AVFrame -> CInt -> IO ()
 
 foreign import ccall "av_get_colorspace_name" av_get_colorspace_name :: CInt -> CString
 foreign import ccall "avcodec_frame_alloc" avcodec_frame_alloc :: IO (Ptr ())
 foreign import ccall "avcodec_frame_free" avcodec_frame_free :: Ptr () -> IO ()
 foreign import ccall "&avcodec_frame_free" pavcodec_frame_free :: FunPtr (Ptr () -> IO ())
 
-foreign import ccall "av_frame_ref" av_frame_ref :: Ptr () -> Ptr() -> IO CInt
-foreign import ccall "av_frame_clone" av_frame_clone :: Ptr () -> IO (Ptr())
-foreign import ccall "av_frame_unref" av_frame_unref :: Ptr () -> IO ()
-foreign import ccall "av_frame_move_ref" av_frame_move_ref :: Ptr () -> Ptr() -> IO ()
-foreign import ccall "av_frame_get_buffer" av_frame_get_buffer :: Ptr () -> CInt -> IO CInt
-foreign import ccall "av_frame_is_writable" av_frame_is_writable :: Ptr () -> IO CInt
-foreign import ccall "av_frame_make_writable" av_frame_make_writable :: Ptr () -> IO CInt
-foreign import ccall "av_frame_copy" av_frame_copy :: Ptr () -> Ptr() -> IO CInt
-foreign import ccall "av_frame_copy_props" av_frame_copy_props :: Ptr () -> Ptr () -> IO CInt
-foreign import ccall "av_frame_get_plane_buffer" av_frame_get_plane_buffer :: Ptr () -> CInt -> Ptr ()
-foreign import ccall "av_frame_new_side_data" av_frame_new_side_data :: Ptr () -> CInt -> CInt -> IO (Ptr ())
-foreign import ccall "av_frame_get_side_data" av_frame_get_side_data :: Ptr () -> CInt -> IO (Ptr ())
-foreign import ccall "av_frame_remove_side_data" av_frame_remove_side_data :: Ptr () -> CInt -> IO ()
+foreign import ccall "av_frame_ref" av_frame_ref :: Ptr AVFrame -> Ptr AVFrame -> IO CInt
+foreign import ccall "av_frame_clone" av_frame_clone :: Ptr AVFrame -> IO (Ptr())
+foreign import ccall "av_frame_unref" av_frame_unref :: Ptr AVFrame -> IO ()
+foreign import ccall "av_frame_move_ref" av_frame_move_ref :: Ptr AVFrame -> Ptr AVFrame -> IO ()
+foreign import ccall "av_frame_get_buffer" av_frame_get_buffer :: Ptr AVFrame -> CInt -> IO CInt
+foreign import ccall "av_frame_is_writable" av_frame_is_writable :: Ptr AVFrame -> IO CInt
+foreign import ccall "av_frame_make_writable" av_frame_make_writable :: Ptr AVFrame -> IO CInt
+foreign import ccall "av_frame_copy" av_frame_copy :: Ptr AVFrame -> Ptr AVFrame -> IO CInt
+foreign import ccall "av_frame_copy_props" av_frame_copy_props :: Ptr AVFrame -> Ptr AVFrame -> IO CInt
+foreign import ccall "av_frame_get_plane_buffer" av_frame_get_plane_buffer :: Ptr AVFrame -> CInt -> Ptr ()
+foreign import ccall "av_frame_new_side_data" av_frame_new_side_data :: Ptr AVFrame -> CInt -> CInt -> IO (Ptr ())
+foreign import ccall "av_frame_get_side_data" av_frame_get_side_data :: Ptr AVFrame -> CInt -> IO (Ptr ())
+foreign import ccall "av_frame_remove_side_data" av_frame_remove_side_data :: Ptr AVFrame -> CInt -> IO ()
 foreign import ccall "av_frame_side_data_name" av_frame_side_data_name :: CInt -> CString
 
+-- | AVFrame struct
 newtype AVFrame = AVFrame (ForeignPtr AVFrame)
-
 instance ExternalPointer AVFrame where
-	withThis (AVFrame f) io = withForeignPtr f (io.castPtr)
+	type UnderlyingType AVFrame = AVFrame
+	withThis (AVFrame f) = withThis f
 
 frameGetBestEffortTimestamp :: MonadIO m => AVFrame -> m Int64
 frameGetBestEffortTimestamp frame =
-	liftIO.withThis frame$ \ptr -> av_frame_get_best_effort_timestamp ptr
+	withThis frame$ \ptr -> liftIO$ av_frame_get_best_effort_timestamp ptr
 
 frameSetBestEffortTimestamp :: MonadIO m => AVFrame -> Int64 -> m ()
 frameSetBestEffortTimestamp frame val =
-	liftIO.withThis frame$ \ptr -> av_frame_set_best_effort_timestamp ptr val
+	withThis frame$ \ptr -> liftIO$ av_frame_set_best_effort_timestamp ptr val
 
 frameGetPktDuration :: MonadIO m => AVFrame -> m Int64
 frameGetPktDuration frame =
-	liftIO.withThis frame$ \ptr -> av_frame_get_pkt_duration ptr
+	withThis frame$ \ptr -> liftIO$ av_frame_get_pkt_duration ptr
 
 frameSetPktDuration :: MonadIO m => AVFrame -> Int64 -> m ()
 frameSetPktDuration frame val =
-	liftIO.withThis frame$ \ptr -> av_frame_set_pkt_duration ptr val
+	withThis frame$ \ptr -> liftIO$ av_frame_set_pkt_duration ptr val
 
 frameGetPktPos :: MonadIO m => AVFrame -> m Int64
 frameGetPktPos frame =
-	liftIO.withThis frame$ \ptr -> av_frame_get_pkt_pos ptr
+	withThis frame$ \ptr -> liftIO$ av_frame_get_pkt_pos ptr
 
 frameSetPktPos :: MonadIO m => AVFrame -> Int64 -> m ()
 frameSetPktPos frame val =
-	liftIO.withThis frame$ \ptr -> av_frame_set_pkt_pos ptr val
+	withThis frame$ \ptr -> liftIO$ av_frame_set_pkt_pos ptr val
 
 frameGetChannelLayout :: MonadIO m => AVFrame -> m Int64
 frameGetChannelLayout frame =
-	liftIO.withThis frame$ \ptr -> av_frame_get_channel_layout ptr
+	liftIO.withThis frame$ \ptr -> liftIO$ av_frame_get_channel_layout ptr
 
 frameSetChannelLayout :: MonadIO m => AVFrame -> Int64 -> m ()
 frameSetChannelLayout frame val =
-	liftIO.withThis frame$ \ptr -> av_frame_set_channel_layout ptr val
+	liftIO.withThis frame$ \ptr -> liftIO$ av_frame_set_channel_layout ptr val
 
 frameGetChannels :: MonadIO m => AVFrame -> m Int
 frameGetChannels frame =
-	liftIO.withThis frame$ \ptr -> fromIntegral <$> av_frame_get_channels ptr
+	withThis frame$ \ptr -> liftIO$ fromIntegral <$> av_frame_get_channels ptr
 
 frameSetChannels :: MonadIO m => AVFrame -> Int -> m ()
 frameSetChannels frame val =
-	liftIO.withThis frame$ \ptr -> av_frame_set_channels ptr (fromIntegral val)
+	withThis frame$ \ptr -> liftIO$ av_frame_set_channels ptr (fromIntegral val)
 
 frameGetSampleRate :: MonadIO m => AVFrame -> m Int
 frameGetSampleRate frame =
-	liftIO.withThis frame$ \ptr -> fromIntegral <$> av_frame_get_sample_rate ptr
+	withThis frame$ \ptr -> liftIO$ fromIntegral <$> av_frame_get_sample_rate ptr
 
 frameSetSampleRate :: MonadIO m => AVFrame -> Int -> m ()
 frameSetSampleRate frame val =
-	liftIO.withThis frame$ \ptr -> av_frame_set_sample_rate ptr (fromIntegral val)
+	withThis frame$ \ptr -> liftIO$ av_frame_set_sample_rate ptr (fromIntegral val)
 
 -- | Get a /copy/ of the metadata associated with an AVFrame.  This differs
 -- from the raw function, which does not copy the data.
 frameGetMetadata :: MonadIO m => AVFrame -> m AVDictionary
 frameGetMetadata frame = do
-	rptr <- liftIO.withThis frame$ \ptr -> av_frame_get_metadata ptr
-	unsafeDictCopyFromPtr rptr []
+	withThis frame$ \ptr -> do
+		rptr <- liftIO$ av_frame_get_metadata ptr
+		unsafeDictCopyFromPtr (castPtr rptr) []
 
 frameSetMetadata :: MonadIO m => AVFrame -> AVDictionary -> m ()
-frameSetMetadata frame dict = liftIO$
+frameSetMetadata frame dict =
 	withThis frame$ \ptr ->
-	withThis dict$ \ppd -> do
+	withThis dict$ \ppd -> liftIO$ do
 		pd <- peek ppd
-		av_frame_set_metadata ptr pd
+		av_frame_set_metadata ptr (castPtr pd)
 
 frameGetDecodeErrorFlags :: MonadIO m => AVFrame -> m Int
 frameGetDecodeErrorFlags frame =
-	liftIO.withThis frame$ \ptr -> fromIntegral <$> av_frame_get_decode_error_flags ptr
+	withThis frame$ \ptr -> liftIO$ fromIntegral <$> av_frame_get_decode_error_flags ptr
 
 frameSetDecodeErrorFlags :: MonadIO m => AVFrame -> Int -> m ()
 frameSetDecodeErrorFlags frame val =
-	liftIO.withThis frame$ \ptr -> av_frame_set_decode_error_flags ptr (fromIntegral val)
+	withThis frame$ \ptr -> liftIO$ av_frame_set_decode_error_flags ptr (fromIntegral val)
 
 frameGetPktSize :: MonadIO m => AVFrame -> m Int
 frameGetPktSize frame =
-	liftIO.withThis frame$ \ptr -> fromIntegral <$> av_frame_get_pkt_size ptr
+	withThis frame$ \ptr -> liftIO$ fromIntegral <$> av_frame_get_pkt_size ptr
 
 frameSetPktSize :: MonadIO m => AVFrame -> Int -> m ()
 frameSetPktSize frame val =
-	liftIO.withThis frame$ \ptr -> av_frame_set_pkt_size ptr (fromIntegral val)
+	withThis frame$ \ptr -> liftIO$ av_frame_set_pkt_size ptr (fromIntegral val)
 
 --frameGetQpTable :: AVFrame -> Ptr CInt -> Ptr CInt -> IO (Ptr Int8)
 --frameSetQpTable :: AVFrame -> Ptr () -> CInt -> CInt -> IO CInt
 
 frameGetColorspace :: MonadIO m => AVFrame -> m AVColorSpace
 frameGetColorspace frame =
-	liftIO.withThis frame$ \ptr -> toCEnum <$> av_frame_get_colorspace ptr
+	withThis frame$ \ptr -> liftIO$ toCEnum <$> av_frame_get_colorspace ptr
 
 frameSetColorspace :: MonadIO m => AVFrame -> AVColorSpace -> m ()
 frameSetColorspace frame val =
-	liftIO.withThis frame$ \ptr -> av_frame_set_colorspace ptr (fromCEnum val)
+	withThis frame$ \ptr -> liftIO$ av_frame_set_colorspace ptr (fromCEnum val)
 
 frameGetColorRange :: MonadIO m => AVFrame -> m AVColorRange
 frameGetColorRange frame =
-	liftIO.withThis frame$ \ptr -> toCEnum <$> av_frame_get_color_range ptr
+	withThis frame$ \ptr -> liftIO$ toCEnum <$> av_frame_get_color_range ptr
 
 frameSetColorRange :: MonadIO m => AVFrame -> AVColorRange -> m ()
 frameSetColorRange frame val =
-	liftIO.withThis frame$ \ptr -> av_frame_set_color_range ptr (fromCEnum val)
+	withThis frame$ \ptr -> liftIO$ av_frame_set_color_range ptr (fromCEnum val)
 
 -- | Get a String representation of an AVColorSpace
 getColorspaceName :: AVColorSpace -> String
@@ -249,9 +252,9 @@ frameRef :: (MonadIO m, MonadError String m) =>
 	-> AVFrame       -- ^ source frame
 	-> m ()
 frameRef dst src = do
-	r <- liftIO$
+	r <-
 		withThis dst$ \pd ->
-		withThis src$ \ps -> av_frame_ref pd ps
+		withThis src$ \ps -> liftIO$ av_frame_ref pd ps
 	when (r /= 0)$
 		throwError$ "frameRef: failed with error code " ++ (show r)
 
@@ -315,7 +318,7 @@ frameCopyProps dst src = liftIO$
 
 -- | Class of valid AVFrameSideData types
 class AVFrameSideDataPayload a where
-	peekAVFrameSideDataPtr :: Ptr () -> IO (Ptr a)
+	peekAVFrameSideDataPtr :: Ptr AVFrame -> IO (Ptr a)
 	getPayloadType :: a -> AVFrameSideDataType
 	getPayloadSize :: a -> CInt
 	peekPayload :: Ptr a -> Int -> IO a
@@ -423,7 +426,9 @@ frameSetSideData frame sd = do
 	liftIO$ pokePayload pdata payload
 
 	let pmetadata = psd `plusPtr` #{offset AVFrameSideData, metadata}
-	liftIO.withThis metadata$ \psrc -> av_dict_copy pmetadata psrc 0
+	withThis metadata$ \ppsrc -> liftIO$ do
+		psrc <- peek ppsrc
+		av_dict_copy pmetadata psrc 0
 
 -- | Get the side data associated with an AVFrame
 frameGetSideData :: forall a m. (MonadIO m, AVFrameSideDataPayload a) =>
@@ -433,7 +438,7 @@ frameGetSideData frame = liftIO.withThis frame$ \ptr -> do
 	if psd == nullPtr then return Nothing else do
 		pdata <- #{peek AVFrameSideData, data} psd :: IO (Ptr a)
 		dsize <- #{peek AVFrameSideData, size} psd :: IO CInt
-		metadata <- #{peek AVFrameSideData, metadata} psd :: IO (Ptr ())
+		metadata <- #{peek AVFrameSideData, metadata} psd :: IO (Ptr AVDictionary)
 		if (pdata == nullPtr) then return Nothing else do
 			m <- unsafeDictCopyFromPtr metadata []
 			p <- peekPayload pdata (fromIntegral dsize)

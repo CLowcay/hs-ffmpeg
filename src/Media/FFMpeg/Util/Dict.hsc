@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TypeFamilies #-}
 
 {- |
 
@@ -55,15 +56,15 @@ import Foreign.Storable
 
 import Media.FFMpeg.Internal.Common
 
-foreign import ccall "&b_free_dictionary" pb_free_dictionary :: FunPtr (Ptr (Ptr ()) -> IO ())
+foreign import ccall "&b_free_dictionary" pb_free_dictionary :: FunPtr (Ptr (Ptr AVDictionary) -> IO ())
 
-foreign import ccall "av_dict_get" av_dict_get :: Ptr () -> CString -> Ptr () -> CInt -> IO (Ptr ())
-foreign import ccall "av_dict_count" av_dict_count :: Ptr () -> IO CInt
-foreign import ccall "av_dict_set" av_dict_set :: Ptr (Ptr ()) -> CString -> CString -> CInt -> IO CInt
-foreign import ccall "av_dict_set_int" av_dict_set_int :: Ptr (Ptr ()) -> CString -> Int64 -> CInt -> IO CInt
-foreign import ccall "av_dict_copy" av_dict_copy :: Ptr (Ptr ()) -> Ptr () -> CInt -> IO ()
-foreign import ccall "av_dict_get_string" av_dict_get_string :: Ptr () -> Ptr CString -> CChar -> CChar -> IO CInt
-foreign import ccall "av_dict_free" av_dict_free :: Ptr () -> IO ()
+foreign import ccall "av_dict_get" av_dict_get :: Ptr AVDictionary -> CString -> Ptr () -> CInt -> IO (Ptr ())
+foreign import ccall "av_dict_count" av_dict_count :: Ptr AVDictionary -> IO CInt
+foreign import ccall "av_dict_set" av_dict_set :: Ptr (Ptr AVDictionary) -> CString -> CString -> CInt -> IO CInt
+foreign import ccall "av_dict_set_int" av_dict_set_int :: Ptr (Ptr AVDictionary) -> CString -> Int64 -> CInt -> IO CInt
+foreign import ccall "av_dict_copy" av_dict_copy :: Ptr (Ptr AVDictionary) -> Ptr AVDictionary -> CInt -> IO ()
+foreign import ccall "av_dict_get_string" av_dict_get_string :: Ptr AVDictionary -> Ptr CString -> CChar -> CChar -> IO CInt
+foreign import ccall "av_dict_free" av_dict_free :: Ptr (Ptr AVDictionary) -> IO ()
 
 -- re-imported for local use
 foreign import ccall "av_freep" av_freep :: Ptr a -> IO ()
@@ -78,10 +79,10 @@ newtype DictFlag = DictFlag CInt deriving (Eq, Show, CEnum, CFlags)
 }
 
 -- | AVDictionary type
-newtype AVDictionary = AVDictionary (ForeignPtr (Ptr ()))
-
+newtype AVDictionary = AVDictionary (ForeignPtr (Ptr AVDictionary))
 instance ExternalPointer AVDictionary where
-	withThis (AVDictionary d) io = withForeignPtr d (io . castPtr)
+	type UnderlyingType AVDictionary = Ptr AVDictionary
+	withThis (AVDictionary x) = withThis x
 
 -- | Allocate a new AVDictionary
 newAVDictionary :: MonadIO m => m AVDictionary
@@ -198,7 +199,7 @@ dictGetString dict keyValSep pairsSep = do
 
 -- | Copy a dictionary from an arbitrary pointer
 unsafeDictCopyFromPtr :: MonadIO m =>
-	Ptr ()
+	Ptr AVDictionary
 	-> [DictFlag]
 	-> m AVDictionary
 unsafeDictCopyFromPtr src flags = do

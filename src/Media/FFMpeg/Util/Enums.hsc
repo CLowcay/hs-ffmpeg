@@ -158,10 +158,44 @@ module Media.FFMpeg.Util.Enums (
 	av_downmix_type_unknown,
 	av_downmix_type_loro,
 	av_downmix_type_ltrt,
-	av_downmix_type_dplii
+	av_downmix_type_dplii,
+
+	AVOptType,
+	av_opt_type_flags,
+	av_opt_type_int,
+	av_opt_type_int64,
+	av_opt_type_double,
+	av_opt_type_float,
+	av_opt_type_string,
+	av_opt_type_rational,
+	av_opt_type_binary,
+	av_opt_type_dict,
+	av_opt_type_const,
+	av_opt_type_image_size,
+	av_opt_type_pixel_fmt,
+	av_opt_type_sample_fmt,
+	av_opt_type_video_rate,
+	av_opt_type_duration,
+	av_opt_type_color,
+	av_opt_type_channel_layout,
+
+	AVOptionFlags,
+	av_opt_flag_encoding_param,
+	av_opt_flag_decoding_param,
+	av_opt_flag_audio_param,
+	av_opt_flag_video_param,
+	av_opt_flag_subtitle_param,
+	av_opt_flag_export,
+	av_opt_flag_readonly,
+	av_opt_flag_filtering_param,
+
+	AVOptionSearchFlags,
+	av_opt_search_children,
+	av_opt_search_fake_obj
 ) where
 
 import Foreign.C.Types
+import Foreign.Storable
 import Media.FFMpeg.Internal.Common
 
 #include "ffmpeg.h"
@@ -198,7 +232,7 @@ newtype AVActiveFormatDescription = AVActiveFormatDescription CInt deriving (Eq,
 }
 
 -- | PixelFormat enumeration
-newtype PixelFormat = PixelFormat CInt deriving (Eq, Show, CEnum)
+newtype PixelFormat = PixelFormat CInt deriving (Eq, Show, CEnum, Storable)
 #{enum PixelFormat, PixelFormat,
 	pix_fmt_none = PIX_FMT_NONE,
 	pix_fmt_yuv420p = PIX_FMT_YUV420P,
@@ -367,5 +401,47 @@ newtype AVDownmixType = AVDownmixType CInt deriving (Eq, Show, CEnum)
 	av_downmix_type_loro = AV_DOWNMIX_TYPE_LORO,
 	av_downmix_type_ltrt = AV_DOWNMIX_TYPE_LTRT,
 	av_downmix_type_dplii = AV_DOWNMIX_TYPE_DPLII
+}
+
+-- | AVOptType enum
+newtype AVOptType = AVOptType CInt deriving (Eq, Show, CEnum, Storable)
+#{enum AVOptType, AVOptType,
+	av_opt_type_flags = AV_OPT_TYPE_FLAGS,
+	av_opt_type_int = AV_OPT_TYPE_INT,
+	av_opt_type_int64 = AV_OPT_TYPE_INT64,
+	av_opt_type_double = AV_OPT_TYPE_DOUBLE,
+	av_opt_type_float = AV_OPT_TYPE_FLOAT,
+	av_opt_type_string = AV_OPT_TYPE_STRING,
+	av_opt_type_rational = AV_OPT_TYPE_RATIONAL,
+	av_opt_type_binary = AV_OPT_TYPE_BINARY,
+	av_opt_type_dict = AV_OPT_TYPE_DICT,
+	av_opt_type_const = AV_OPT_TYPE_CONST,
+	av_opt_type_image_size = AV_OPT_TYPE_IMAGE_SIZE,
+	av_opt_type_pixel_fmt = AV_OPT_TYPE_PIXEL_FMT,
+	av_opt_type_sample_fmt = AV_OPT_TYPE_SAMPLE_FMT,
+	av_opt_type_video_rate = AV_OPT_TYPE_VIDEO_RATE,
+	av_opt_type_duration = AV_OPT_TYPE_DURATION,
+	av_opt_type_color = AV_OPT_TYPE_COLOR,
+	av_opt_type_channel_layout = AV_OPT_TYPE_CHANNEL_LAYOUT
+}
+
+-- | AVOptionFlags enum
+newtype AVOptionFlags = AVOptionFlags CInt deriving (Eq, Show, CEnum, CFlags, Storable)
+#{enum AVOptionFlags, AVOptionFlags,
+	av_opt_flag_encoding_param = AV_OPT_FLAG_ENCODING_PARAM,
+	av_opt_flag_decoding_param = AV_OPT_FLAG_DECODING_PARAM,
+	av_opt_flag_audio_param = AV_OPT_FLAG_AUDIO_PARAM,
+	av_opt_flag_video_param = AV_OPT_FLAG_VIDEO_PARAM,
+	av_opt_flag_subtitle_param = AV_OPT_FLAG_SUBTITLE_PARAM,
+	av_opt_flag_export = AV_OPT_FLAG_EXPORT,
+	av_opt_flag_readonly = AV_OPT_FLAG_READONLY,
+	av_opt_flag_filtering_param = AV_OPT_FLAG_FILTERING_PARAM
+}
+
+-- | AV_OPT_SEARCH_ flags
+newtype AVOptionSearchFlags = AVOptionSearchFlags CInt deriving (Eq, Show, CEnum, CFlags)
+#{enum AVOptionSearchFlags, AVOptionSearchFlags,
+	av_opt_search_children = AV_OPT_SEARCH_CHILDREN,
+	av_opt_search_fake_obj = AV_OPT_SEARCH_FAKE_OBJ
 }
 

@@ -31,12 +31,14 @@
 #include "ffmpeg/downmix_info.h"
 #include "ffmpeg/replaygain.h"
 #include "ffmpeg/motion_vector.h"
+#include "ffmpeg/opt.h"
 #elif (HAVE_LIBAVUTIL_AVUTIL_H == 1)
 #include "libavutil/avutil.h"
 #include "libavutil/stereo3d.h"
 #include "libavutil/downmix_info.h"
 #include "libavutil/replaygain.h"
 #include "libavutil/motion_vector.h"
+#include "libavutil/opt.h"
 #else
 #error "Can't find avutil.h file"
 #endif

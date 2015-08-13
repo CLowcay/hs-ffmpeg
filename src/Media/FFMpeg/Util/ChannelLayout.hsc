@@ -41,7 +41,7 @@ module Media.FFMpeg.Util.ChannelLayout (
 	av_ch_surround_direct_right,
 	av_ch_low_frequency_2,
 
-	AVChannelLayout,
+	AVChannelLayout(..),
 	av_ch_layout_native,
 	av_ch_layout_mono,
 	av_ch_layout_stereo,

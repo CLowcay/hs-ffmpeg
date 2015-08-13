@@ -62,3 +62,25 @@ void b_avformat_close_input(AVFormatContext *ctx) {
 	avformat_close_input(s);
 }
 
+int b_av_opt_set_q(void *obj, const char *name, int num, int den, int search_flags) {
+	AVRational r;
+	r.num = num;
+	r.den = den;
+	return av_opt_set_q(obj, name, r, search_flags);
+}
+
+int b_av_opt_set_video_rate(void *obj, const char *name, int num, int den, int search_flags) {
+	AVRational r;
+	r.num = num;
+	r.den = den;
+	return av_opt_set_video_rate(obj, name, r, search_flags);
+}
+
+int b_av_opt_get_video_rate(void *obj, const char *name, int search_flags, int *num, int *den) {
+	AVRational r;
+	int ret = av_opt_get_video_rate(obj, name, search_flags, &r);
+	*num = r.num;
+	*den = r.den;
+	return ret;
+}
+
