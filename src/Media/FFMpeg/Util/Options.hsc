@@ -54,6 +54,7 @@ import Data.Word
 import Foreign.C.String
 import Foreign.C.Types
 import Foreign.Marshal.Alloc
+import Foreign.Marshal.Utils
 import Foreign.Ptr
 import Foreign.Storable
 import qualified Data.ByteString as B
@@ -97,6 +98,9 @@ foreign import ccall "av_opt_get_dict_val" av_opt_get_dict_val :: Ptr () -> CStr
 
 -- | AVClass struct
 newtype AVClass a = AVClass (Ptr (AVClass a))
+instance ExternalPointer (AVClass a) where
+	type UnderlyingType (AVClass a) = AVClass a
+	withThis (AVClass p) = withThis p
 
 -- | Type for option names
 newtype OptionName a t = OptionName {unOptionName :: String} deriving (Eq, Show)
@@ -224,7 +228,7 @@ data AVOptionValue =
 
 -- | Class of objects that have options
 class ExternalPointer a => HasOptions a where
-	withClass :: MonadIO m => a -> (Ptr (Ptr (AVClass a)) -> m b) -> m b
+	withClass :: MonadIO m => a -> (Ptr (AVClass a) -> m b) -> m b
 
 -- | Enumerate the options of an object
 getAVOptions :: (MonadIO m, HasOptions a) => a -> m [AVOption a AVOptionValue]
@@ -235,12 +239,12 @@ getAVOptionConsts :: (MonadIO m, HasOptions a) => a -> AVOption a t -> m [AVOpti
 getAVOptionConsts obj opt = withClass obj$ \pclass -> getClassAVOptionConsts pclass opt
 
 -- | Enumerate the options of a class
-getClassAVOptions :: MonadIO m => Ptr (Ptr (AVClass a)) -> m [AVOption a AVOptionValue]
+getClassAVOptions :: MonadIO m => Ptr (AVClass a) -> m [AVOption a AVOptionValue]
 getClassAVOptions pclass = mapM decodeAVOption =<< (allAVOptions pclass)
 
 -- | Enumerate the constants of a class
 getClassAVOptionConsts :: forall a t m. MonadIO m =>
-	Ptr (Ptr (AVClass a)) -> AVOption a t -> m [AVOptionConst a AVOptionValue]
+	Ptr (AVClass a) -> AVOption a t -> m [AVOptionConst a AVOptionValue]
 getClassAVOptionConsts pclass opt = do
 	(return.catMaybes) =<< mapM (decodeAVConst opt) =<< filterM isConstOfOpt =<< allAVOptions pclass
 
@@ -253,27 +257,32 @@ getClassAVOptionConsts pclass opt = do
 				return$ unit == (unOptionName$ option_name opt)
 
 -- | Get pointers to all the AVOptions associated with a class
-allAVOptions :: MonadIO m => Ptr (Ptr (AVClass a)) -> m [Ptr (AVOption a AVOptionValue)]
-allAVOptions pclass = liftIO$ allAVOptions nullPtr
-	where allAVOptions' prev = do
-		next <- av_opt_next pclass prev
-		if next == nullPtr then return [] else (next:) <$> allAVOptions' next
+allAVOptions :: MonadIO m => Ptr (AVClass a) -> m [Ptr (AVOption a AVOptionValue)]
+allAVOptions pclass =
+	liftIO.with pclass$ \ppclass ->
+		let allAVOptions' prev = do
+			next <- av_opt_next ppclass prev
+			if next == nullPtr then return [] else (next:) <$> allAVOptions' next
+		in allAVOptions' nullPtr
 
 -- | Execute an action on a pointer to a named field
 withOptionPtr :: (MonadIO m, HasOptions a) => OptionName a t -> a -> (Maybe (Ptr t) -> m b) -> m b
-withOptionPtr (OptionName name) obj action = do
-	pfield <- liftIO$
-		withClass obj$ \pclass ->
-		withThis obj$ \pobj ->
-		withCString name$ \pname ->
-			av_opt_ptr pclass pobj pname
-	
-	if pfield == nullPtr then action Nothing else action$ Just pfield
+withOptionPtr (OptionName name) obj action =
+	withClass obj$ \pclass ->
+	withThis obj$ \pobj ->
+	withThis name$ \pname -> do
+		pfield <- liftIO.with pclass$ \ppclass ->
+			av_opt_ptr ppclass pobj pname
+
+		if pfield == nullPtr then action Nothing else action$ Just pfield
 
 instance HasOptions AVCodecContext where
 	withClass obj action = withThis obj$ \pobj -> action (castPtr pobj)
 
 instance HasOptions AVFormatContext where
+	withClass obj action = withThis obj$ \pobj -> action (castPtr pobj)
+
+instance HasOptions SwsContext where
 	withClass obj action = withThis obj$ \pobj -> action (castPtr pobj)
 
 class AVOptionType t where

@@ -12,7 +12,8 @@ Bindings to libavutil.
 
 module Media.FFMpeg.Util.Classes (
 	AVCodecContext(..),
-	AVFormatContext(..)
+	AVFormatContext(..),
+	SwsContext(..)
 ) where
 
 #include "ffmpeg.h"
@@ -35,4 +36,10 @@ newtype AVFormatContext = AVFormatContext (ForeignPtr AVFormatContext)
 instance ExternalPointer AVFormatContext where
 	type UnderlyingType AVFormatContext = AVFormatContext
 	withThis (AVFormatContext fp) = withThis fp
+
+-- | SwsContext struct
+newtype SwsContext = SwsContext (ForeignPtr SwsContext)
+instance ExternalPointer SwsContext where
+	type UnderlyingType SwsContext = SwsContext
+	withThis (SwsContext fp) = withThis fp
 
