@@ -78,7 +78,6 @@ import Media.FFMpeg.Codec.Enums
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.SWScale.Enums
 import Media.FFMpeg.Util
-import Media.FFMpeg.Util.Classes
 
 -- | Which version of libswscale are we using?
 libSWScaleVersion :: Version
@@ -127,7 +126,18 @@ foreign import ccall "sws_getCachedContext" sws_getCachedContext ::
 	CInt -> Ptr SwsFilter -> Ptr SwsFilter -> Ptr Double -> IO (Ptr SwsContext)
 foreign import ccall "sws_convertPalette8ToPacked32" sws_convertPalette8ToPacked32 :: Ptr Word8 -> Ptr Word8 -> CInt -> Ptr Word8 -> IO ()
 foreign import ccall "sws_convertPalette8ToPacked24" sws_convertPalette8ToPacked24 :: Ptr Word8 -> Ptr Word8 -> CInt -> Ptr Word8 -> IO ()
-foreign import ccall "sws_get_class" sws_get_class :: IO (Ptr (AVClass SwsContext))
+foreign import ccall "sws_get_class" sws_get_class :: Ptr (AVClass SwsContext)
+
+-- | SwsContext struct
+newtype SwsContext = SwsContext (ForeignPtr SwsContext)
+instance ExternalPointer SwsContext where
+	type UnderlyingType SwsContext = SwsContext
+	withThis (SwsContext fp) = withThis fp
+instance ReflectClass SwsContext where
+	withClass ctx action = withThis ctx$ \pctx ->
+		action =<< (liftIO$ avClassFromPtr <$> peek (castPtr pctx))
+instance HasClass SwsContext where
+	getClass = avClassFromPtr sws_get_class
 
 -- | SwsVector struct
 newtype SwsVector = SwsVector (ForeignPtr SwsVector)

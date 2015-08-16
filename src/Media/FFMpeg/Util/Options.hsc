@@ -17,6 +17,9 @@ Bindings to libavutil.
 
 module Media.FFMpeg.Util.Options (
 	AVClass,
+	avClassFromPtr,
+	ReflectClass(..),
+	HasClass(..),
 	OptionName,
 	AVOption(..),
 	AVOptionConst(..),
@@ -27,7 +30,6 @@ module Media.FFMpeg.Util.Options (
 	decodeAVConst,
 	parseDefaultValue,
 	AVOptionValue(..),
-	HasOptions(..),
 	getAVOptions,
 	getAVOptionConsts,
 	getClassAVOptions,
@@ -62,7 +64,6 @@ import qualified Data.ByteString as B
 import Media.FFMpeg.Codec.Enums
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util.ChannelLayout
-import Media.FFMpeg.Util.Classes
 import Media.FFMpeg.Util.Dict
 import Media.FFMpeg.Util.Enums
 import Media.FFMpeg.Util.Error
@@ -102,6 +103,18 @@ instance ExternalPointer (AVClass a) where
 	type UnderlyingType (AVClass a) = AVClass a
 	withThis (AVClass p) = withThis p
 
+-- | Wrap an AVClass pointer
+avClassFromPtr :: Ptr (AVClass a) -> AVClass a
+avClassFromPtr ptr = AVClass ptr
+
+-- | Class of objects that maintain a pointer to their class
+class ExternalPointer a => ReflectClass a where
+	withClass :: MonadIO m => a -> (AVClass a -> m b) -> m b
+
+-- | Class of objects where we can get a reference to their class
+class HasClass a where
+	getClass :: AVClass a
+
 -- | Type for option names
 newtype OptionName a t = OptionName {unOptionName :: String} deriving (Eq, Show)
 instance ExternalPointer (OptionName a t) where
@@ -128,7 +141,7 @@ data AVOptionConst a t = AVOptionConst {
 	}
 
 -- | Get the named AVOption from an object
-getAVOption :: (MonadIO m, HasOptions a) =>
+getAVOption :: (MonadIO m, ReflectClass a) =>
 	OptionName a t                 -- ^ Name of the option to search for
 	-> Bool                        -- ^ True to search children
 	-> a                           -- ^ Object to search
@@ -226,26 +239,22 @@ data AVOptionValue =
 	AVOptionColor String |         -- what is the proper type for this option?
 	AVOptionChannelLayout AVChannelLayout
 
--- | Class of objects that have options
-class ExternalPointer a => HasOptions a where
-	withClass :: MonadIO m => a -> (Ptr (AVClass a) -> m b) -> m b
-
 -- | Enumerate the options of an object
-getAVOptions :: (MonadIO m, HasOptions a) => a -> m [AVOption a AVOptionValue]
+getAVOptions :: (MonadIO m, ReflectClass a) => a -> m [AVOption a AVOptionValue]
 getAVOptions obj = withClass obj getClassAVOptions
 
 -- | Enumerate the constants of an option
-getAVOptionConsts :: (MonadIO m, HasOptions a) => a -> AVOption a t -> m [AVOptionConst a AVOptionValue]
+getAVOptionConsts :: (MonadIO m, ReflectClass a) => a -> AVOption a t -> m [AVOptionConst a AVOptionValue]
 getAVOptionConsts obj opt = withClass obj$ \pclass -> getClassAVOptionConsts pclass opt
 
 -- | Enumerate the options of a class
-getClassAVOptions :: MonadIO m => Ptr (AVClass a) -> m [AVOption a AVOptionValue]
-getClassAVOptions pclass = mapM decodeAVOption =<< (allAVOptions pclass)
+getClassAVOptions :: MonadIO m => AVClass a -> m [AVOption a AVOptionValue]
+getClassAVOptions (AVClass pclass) = mapM decodeAVOption =<< (allAVOptions pclass)
 
 -- | Enumerate the constants of a class
 getClassAVOptionConsts :: forall a t m. MonadIO m =>
-	Ptr (AVClass a) -> AVOption a t -> m [AVOptionConst a AVOptionValue]
-getClassAVOptionConsts pclass opt = do
+	AVClass a -> AVOption a t -> m [AVOptionConst a AVOptionValue]
+getClassAVOptionConsts (AVClass pclass) opt = do
 	(return.catMaybes) =<< mapM (decodeAVConst opt) =<< filterM isConstOfOpt =<< allAVOptions pclass
 
 	where
@@ -266,9 +275,9 @@ allAVOptions pclass =
 		in allAVOptions' nullPtr
 
 -- | Execute an action on a pointer to a named field
-withOptionPtr :: (MonadIO m, HasOptions a) => OptionName a t -> a -> (Maybe (Ptr t) -> m b) -> m b
+withOptionPtr :: (MonadIO m, ReflectClass a) => OptionName a t -> a -> (Maybe (Ptr t) -> m b) -> m b
 withOptionPtr (OptionName name) obj action =
-	withClass obj$ \pclass ->
+	withClass obj$ \(AVClass pclass) ->
 	withThis obj$ \pobj ->
 	withThis name$ \pname -> do
 		pfield <- liftIO.with pclass$ \ppclass ->
@@ -276,20 +285,11 @@ withOptionPtr (OptionName name) obj action =
 
 		if pfield == nullPtr then action Nothing else action$ Just pfield
 
-instance HasOptions AVCodecContext where
-	withClass obj action = withThis obj$ \pobj -> action (castPtr pobj)
-
-instance HasOptions AVFormatContext where
-	withClass obj action = withThis obj$ \pobj -> action (castPtr pobj)
-
-instance HasOptions SwsContext where
-	withClass obj action = withThis obj$ \pobj -> action (castPtr pobj)
-
 class AVOptionType t where
-	getOption0 :: (MonadIO m, Applicative m, HasOptions a) => a -> CString -> AVOptionSearchFlags -> m (Either CInt t)
-	setOption0 :: (MonadIO m, Applicative m, HasOptions a) => a -> CString -> t -> AVOptionSearchFlags -> m CInt
+	getOption0 :: (MonadIO m, Applicative m, ReflectClass a) => a -> CString -> AVOptionSearchFlags -> m (Either CInt t)
+	setOption0 :: (MonadIO m, Applicative m, ReflectClass a) => a -> CString -> t -> AVOptionSearchFlags -> m CInt
 
-getOptionType :: (MonadIO m, Applicative m, HasOptions a) => a -> CString -> AVOptionSearchFlags -> m (Maybe AVOptType)
+getOptionType :: (MonadIO m, Applicative m, ReflectClass a) => a -> CString -> AVOptionSearchFlags -> m (Maybe AVOptType)
 getOptionType obj pname flags =
 	withThis obj$ \pobj -> do
 		r <- liftIO$ av_opt_find (castPtr pobj) pname nullPtr 0 (fromCEnum flags)
@@ -524,7 +524,7 @@ instance AVOptionType AVChannelLayout where
 		liftIO$ av_opt_set_channel_layout (castPtr pobj) pname v (fromCEnum flags)
 
 -- | Get the value of an option
-getOption :: (MonadIO m, Applicative m, MonadError String m, HasOptions a, AVOptionType t) =>
+getOption :: (MonadIO m, Applicative m, MonadError String m, ReflectClass a, AVOptionType t) =>
 	AVOption a t -> a -> m t
 getOption option obj = do
 	r <- withThis (option_name option)$ \pname ->
@@ -536,7 +536,7 @@ getOption option obj = do
 		Right v -> return v
 
 -- | Get the value of an option as a string
-getOptionString :: (MonadIO m, MonadError String m, HasOptions a) => AVOption a t -> a -> m String
+getOptionString :: (MonadIO m, MonadError String m, ReflectClass a) => AVOption a t -> a -> m String
 getOptionString opt obj =	do
 	(r, s) <-
 		withThis (option_name opt)$ \pname ->
@@ -554,7 +554,7 @@ getOptionString opt obj =	do
 	return s
 
 -- | Set the value of an option
-setOption :: (MonadIO m, MonadError String m, Applicative m, HasOptions a, AVOptionType t) =>
+setOption :: (MonadIO m, MonadError String m, Applicative m, ReflectClass a, AVOptionType t) =>
 	AVOption a t -> a -> t -> m ()
 setOption option obj val =
 	withThis (option_name option)$ \pname -> do
@@ -564,7 +564,7 @@ setOption option obj val =
 			"setOption: av_opt_set_ failed with error code " ++ (show r)
 
 -- | Set the value of a string
-setOptionString :: (MonadIO m, MonadError String m, HasOptions a) => AVOption a t -> a -> String -> m ()
+setOptionString :: (MonadIO m, MonadError String m, ReflectClass a) => AVOption a t -> a -> String -> m ()
 setOptionString opt obj v =
 	withThis (option_name opt)$ \pname ->
 	withThis v$ \pval ->

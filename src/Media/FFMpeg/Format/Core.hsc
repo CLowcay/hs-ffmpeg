@@ -74,7 +74,17 @@ import System.IO.Unsafe
 import Media.FFMpeg.Codec
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util
-import Media.FFMpeg.Util.Classes
+
+-- | AVFormatContext struct
+newtype AVFormatContext = AVFormatContext (ForeignPtr AVFormatContext)
+instance ExternalPointer AVFormatContext where
+	type UnderlyingType AVFormatContext = AVFormatContext
+	withThis (AVFormatContext fp) = withThis fp
+instance ReflectClass AVFormatContext where
+	withClass ctx action = withThis ctx$ \pctx ->
+		action =<< (liftIO$ avClassFromPtr <$> #{peek AVFormatContext, av_class} pctx)
+instance HasClass AVFormatContext where
+	getClass = avClassFromPtr avformat_get_class
 
 -- | AVInputFormat struct
 newtype AVInputFormat = AVInputFormat (Ptr AVInputFormat) -- Ptr is OK because these are never freed
@@ -113,7 +123,7 @@ foreign import ccall "av_oformat_next" av_oformat_next :: Ptr AVOutputFormat -> 
 foreign import ccall "avformat_alloc_context" avformat_alloc_context :: IO (Ptr AVFormatContext)
 foreign import ccall "avformat_free_context" avformat_free_context :: Ptr AVFormatContext -> IO ()
 foreign import ccall "&avformat_free_context" pavformat_free_context :: FunPtr (Ptr AVFormatContext -> IO ())
---foreign import ccall "avformat_get_class" avformat_get_class :: IO (Ptr AVClass)
+foreign import ccall "avformat_get_class" avformat_get_class :: Ptr (AVClass AVFormatContext)
 foreign import ccall "avformat_new_stream" avformat_new_stream :: Ptr AVFormatContext -> Ptr AVCodec -> IO (Ptr AVStream)
 foreign import ccall "av_stream_get_side_data" av_stream_get_side_data :: Ptr AVStream -> CInt -> Ptr CInt -> IO (Ptr Word8)
 foreign import ccall "av_new_program" av_new_program :: Ptr AVFormatContext -> CInt -> IO (Ptr AVProgram)

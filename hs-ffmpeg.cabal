@@ -46,7 +46,6 @@ library
                          Media.FFMpeg.Util.AVFrameSideData
                          Media.FFMpeg.Util.Buffer
                          Media.FFMpeg.Util.ChannelLayout
-                         Media.FFMpeg.Util.Classes
                          Media.FFMpeg.Util.Dict
                          Media.FFMpeg.Util.Enums
                          Media.FFMpeg.Util.Error

@@ -84,7 +84,6 @@ import Media.FFMpeg.Codec.AVPicture
 import Media.FFMpeg.Codec.Enums
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util
-import Media.FFMpeg.Util.Classes
 
 foreign import ccall "b_av_codec_get_pkt_timebase" av_codec_get_pkt_timebase :: Ptr AVCodecContext -> Ptr CInt -> Ptr CInt -> IO ()
 foreign import ccall "b_av_codec_set_pkt_timebase" av_codec_set_pkt_timebase :: Ptr AVCodecContext -> CInt -> CInt -> IO ()
@@ -108,9 +107,8 @@ foreign import ccall "avcodec_alloc_context3" avcodec_alloc_context3 :: Ptr AVCo
 foreign import ccall "avcodec_free_context" avcodec_free_context :: Ptr (Ptr AVCodecContext) -> IO ()
 foreign import ccall "&avcodec_free_context" pavcodec_free_context :: FunPtr (Ptr (Ptr AVCodecContext) -> IO ())
 foreign import ccall "avcodec_get_context_defaults3" avcodec_get_context_defaults3 :: Ptr AVCodecContext -> Ptr AVCodec -> IO CInt
--- foreign import ccall "avcodec_get_class" avcodec_get_class :: Ptr AVClass
--- foreign import ccall "avcodec_get_frame_class" avcodec_get_frame_class :: Ptr AVClass
--- foreign import ccall "avcodec_get_subtitle_rect_class" avcodec_get_subtitle_rect_class :: Ptr AVClass
+foreign import ccall "avcodec_get_class" avcodec_get_class :: Ptr (AVClass AVCodecContext)
+foreign import ccall "avcodec_get_subtitle_rect_class" avcodec_get_subtitle_rect_class :: Ptr (AVClass AVSubtitleRect)
 foreign import ccall "avcodec_copy_context" avcodec_copy_context :: Ptr AVCodecContext -> Ptr AVCodecContext -> IO CInt
 foreign import ccall "avcodec_open2" avcodec_open2 :: Ptr AVCodecContext -> Ptr AVCodec -> Ptr (UnderlyingType AVDictionary) -> IO CInt
 foreign import ccall "avcodec_close" avcodec_close :: Ptr AVCodecContext -> IO CInt
@@ -139,13 +137,22 @@ foreign import ccall "avcodec_descriptor_get" avcodec_descriptor_get :: CInt -> 
 foreign import ccall "avcodec_descriptor_next" avcodec_descriptor_next :: Ptr () -> Ptr ()
 foreign import ccall "avcodec_descriptor_get_by_name" avcodec_descriptor_get_by_name :: CString -> Ptr ()
 
+-- | AVCodecContext struct
+newtype AVCodecContext = AVCodecContext (ForeignPtr (Ptr (AVCodecContext)))
+instance ExternalPointer AVCodecContext where
+	type UnderlyingType AVCodecContext = AVCodecContext
+	withThis (AVCodecContext fp) action = withThis fp$ \p -> action =<< (liftIO$ peek p)
+instance ReflectClass AVCodecContext where
+	withClass ctx action = withThis ctx$ \pctx ->
+		action =<< (liftIO$ avClassFromPtr <$> #{peek AVCodecContext, av_class} pctx)
+instance HasClass AVCodecContext where
+	getClass = avClassFromPtr avcodec_get_class
+
 -- | AVCodec struct
-newtype AVCodec = AVCodec (Ptr AVCodec)
+newtype AVCodec = AVCodec (Ptr AVCodec)   -- Ptr is OK because codecs are never freed
 instance ExternalPointer AVCodec where
 	type UnderlyingType AVCodec = AVCodec
 	withThis (AVCodec p) = withThis p
-
--- Ptr is OK because codecs are never freed
 
 -- | AVSubtitle struct
 data AVSubtitle = AVSubtitle {
@@ -170,6 +177,9 @@ data AVSubtitleRect = forall avpicture. HasAVPicture avpicture =>
 		avSubtitleRect_ass :: Maybe String,
 		avSubtitleRect_flags :: AVSubtitleFlag
 	}
+
+instance HasClass AVSubtitleRect where
+	getClass = avClassFromPtr avcodec_get_subtitle_rect_class
 
 instance Storable AVSubtitleRect where
 	sizeOf _ = #{size AVSubtitleRect}

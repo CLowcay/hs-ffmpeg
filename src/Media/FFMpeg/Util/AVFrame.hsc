@@ -75,9 +75,10 @@ import qualified Data.ByteString.Unsafe as B
 import System.IO.Unsafe
 
 import Media.FFMpeg.Internal.Common
+import Media.FFMpeg.Util.AVFrameSideData
 import Media.FFMpeg.Util.Dict
 import Media.FFMpeg.Util.Enums
-import Media.FFMpeg.Util.AVFrameSideData
+import Media.FFMpeg.Util.Options
 
 foreign import ccall "av_frame_get_best_effort_timestamp" av_frame_get_best_effort_timestamp :: Ptr AVFrame -> IO Int64
 foreign import ccall "av_frame_set_best_effort_timestamp" av_frame_set_best_effort_timestamp :: Ptr AVFrame -> Int64 -> IO ()
@@ -124,11 +125,15 @@ foreign import ccall "av_frame_get_side_data" av_frame_get_side_data :: Ptr AVFr
 foreign import ccall "av_frame_remove_side_data" av_frame_remove_side_data :: Ptr AVFrame -> CInt -> IO ()
 foreign import ccall "av_frame_side_data_name" av_frame_side_data_name :: CInt -> CString
 
+foreign import ccall "avcodec_get_frame_class" avcodec_get_frame_class :: Ptr (AVClass AVFrame)
+
 -- | AVFrame struct
 newtype AVFrame = AVFrame (ForeignPtr AVFrame)
 instance ExternalPointer AVFrame where
 	type UnderlyingType AVFrame = AVFrame
 	withThis (AVFrame f) = withThis f
+instance HasClass AVFrame where
+	getClass = avClassFromPtr avcodec_get_frame_class
 
 frameGetBestEffortTimestamp :: MonadIO m => AVFrame -> m Int64
 frameGetBestEffortTimestamp frame =
