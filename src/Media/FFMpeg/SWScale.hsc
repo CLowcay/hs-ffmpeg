@@ -15,14 +15,49 @@ Bindings to libswscale.
 
 module Media.FFMpeg.SWScale (
 	module Media.FFMpeg.SWScale.Enums,
-	SwsContext
+	SwsContext,
 
+	SwsVector,
+	swsVectorFromList,
+	swsVectorToList,
+	SwsFilter,
+
+	swscaleConfiguration,
+	swscaleLicense,
+	isSupportedInput,
+	isSupportedOutput,
+	isSupportedEndiannessConversion,
+
+	getCoefficients,
+	newSwsContext,
+	getSwsContext,
+	scale,
+	convertPalette8ToPacked32,
+	convertPalette8ToPacked24,
+	ColorSpaceDetails,
+	tableToList,
+	setColorSpaceDetails,
+	getColorSpaceDetails,
+
+	newGaussianVector,
+	newConstantVector,
+	newIdentityVector,
+	scaleVector,
+	normalizeVector,
+	convolveVector,
+	addVector,
+	subVector,
+	shiftVector,
+	cloneVector,
+	getDefaultFilter
 ) where
 
 #include "ffmpeg.h"
 
 import Control.Applicative
 import Control.Monad.Except
+import Data.Bits
+import Data.ByteString.Unsafe
 import Data.Int
 import Data.Monoid
 import Data.Version
@@ -30,10 +65,16 @@ import Data.Word
 import Foreign.C.String
 import Foreign.C.Types
 import Foreign.ForeignPtr
+import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
+import Foreign.Marshal.Utils
 import Foreign.Ptr
 import Foreign.Storable
+import qualified Data.ByteString as B
+import System.IO.Unsafe
 
+import Media.FFMpeg.Codec.AVPicture
+import Media.FFMpeg.Codec.Enums
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.SWScale.Enums
 import Media.FFMpeg.Util
@@ -46,9 +87,9 @@ libSWScaleVersion = fromVersionNum #{const LIBSWSCALE_VERSION_INT}
 foreign import ccall "swscale_configuration" swscale_configuration :: IO CString
 foreign import ccall "swscale_license" swscale_license :: IO CString
 foreign import ccall "sws_getCoefficients" sws_getCoefficients :: CInt -> IO (Ptr CInt)
-foreign import ccall "sws_isSupportedInput" sws_isSupportedInput :: CInt -> IO CInt
-foreign import ccall "sws_isSupportedOutput" sws_isSupportedOutput :: CInt -> IO CInt
-foreign import ccall "sws_isSupportedEndiannessConversion" sws_isSupportedEndiannessConversion :: CInt -> IO CInt
+foreign import ccall "sws_isSupportedInput" sws_isSupportedInput :: CInt -> CInt
+foreign import ccall "sws_isSupportedOutput" sws_isSupportedOutput :: CInt -> CInt
+foreign import ccall "sws_isSupportedEndiannessConversion" sws_isSupportedEndiannessConversion :: CInt -> CInt
 foreign import ccall "sws_alloc_context" sws_alloc_context :: IO (Ptr SwsContext)
 foreign import ccall "sws_init_context" sws_init_context :: Ptr SwsContext -> Ptr SwsFilter -> Ptr SwsFilter -> IO CInt
 foreign import ccall "sws_getContext" sws_getContext ::
@@ -76,7 +117,7 @@ foreign import ccall "sws_shiftVec" sws_shiftVec :: Ptr SwsVector -> CInt -> IO 
 foreign import ccall "sws_cloneVec" sws_cloneVec :: Ptr SwsVector -> IO (Ptr SwsVector)
 foreign import ccall "sws_freeVec" sws_freeVec :: Ptr SwsVector -> IO ()
 foreign import ccall "&sws_freeVec" psws_freeVec :: FunPtr (Ptr SwsVector -> IO ())
-foreign import ccall "sws_getDefaultFilter" sws_getDefaultFilter :: Float -> Float -> Float -> Float -> Float -> Float -> CInt -> Ptr SwsFilter
+foreign import ccall "sws_getDefaultFilter" sws_getDefaultFilter :: Float -> Float -> Float -> Float -> Float -> Float -> CInt -> IO (Ptr SwsFilter)
 foreign import ccall "sws_freeFilter" sws_freeFilter :: Ptr SwsFilter -> IO ()
 foreign import ccall "&sws_freeFilter" psws_freeFilter :: FunPtr (Ptr SwsFilter -> IO ())
 foreign import ccall "sws_getCachedContext" sws_getCachedContext ::
@@ -88,26 +129,28 @@ foreign import ccall "sws_convertPalette8ToPacked32" sws_convertPalette8ToPacked
 foreign import ccall "sws_convertPalette8ToPacked24" sws_convertPalette8ToPacked24 :: Ptr Word8 -> Ptr Word8 -> CInt -> Ptr Word8 -> IO ()
 foreign import ccall "sws_get_class" sws_get_class :: IO (Ptr (AVClass SwsContext))
 
--- | Get SWScale context
-getContext :: (MonadIO m, MonadError String m) =>
-	(Int, Int, PixelFormat)       -- ^ source (width, height, pixel format)
-	-> (Int, Int, PixelFormat)    -- ^ destination (width, height, pixel format)
-	-> [ScaleAlgorithm]           -- ^ the algorithm to use and its options
-	-> m SwsContext
-getContext  (srcW, srcH, srcPf) (dstW, dstH, dstPf) flags = do
-	r <- liftIO$ sws_getContext
-		(fromIntegral srcW) (fromIntegral srcH) (fromCEnum srcPf)
-		(fromIntegral dstW) (fromIntegral dstH) (fromCEnum dstPf)
-		(fromCEnum.mconcat$ flags) nullPtr nullPtr nullPtr
-	if (r == nullPtr)
-		then throwError "getContext: sws_getContext returned a null pointer"
-		else liftIO$ (SwsContext . castForeignPtr) <$> newForeignPtr psws_freeContext r
-
 -- | SwsVector struct
 newtype SwsVector = SwsVector (ForeignPtr SwsVector)
 instance ExternalPointer SwsVector where
 	type UnderlyingType SwsVector = SwsVector
 	withThis (SwsVector fp) = withThis fp
+
+-- | Copy a vector from a pointer.  Frees the original vector.
+swsVectorFromPtr :: MonadIO m => Ptr SwsVector -> m SwsVector
+swsVectorFromPtr pv = liftIO$ do
+	pdata <- #{peek SwsVector, coeff} pv :: IO (Ptr Double)
+	len <- #{peek SwsVector, length} pv :: IO CInt
+	let cBytes = #{size double} * (fromIntegral len)
+
+	pv' <- castPtr <$> av_malloc #{size SwsVector}
+	pdata' <- castPtr <$> av_malloc cBytes
+	#{poke SwsVector, coeff} pv pdata
+	#{poke SwsVector, length} pv len
+	moveBytes pdata' pdata (fromIntegral cBytes)
+
+	sws_freeVec pv
+
+	SwsVector <$> newForeignPtr psws_freeVec pv'
 
 -- | Create an SwsVector from a list
 swsVectorFromList :: MonadIO m => [Double] -> m SwsVector
@@ -154,4 +197,264 @@ instance ExternalPointer SwsFilter where
 			r <- action pf
 			liftIO$ sws_freeFilter pf
 			return r
+
+-- | Get the libswscale configuration string
+swscaleConfiguration :: String
+swscaleConfiguration =
+	-- safe because swscale_configuration returns const char*
+	unsafePerformIO$ peekCString =<< swscale_configuration
+
+-- | Get the libswscale license string
+swscaleLicense :: String
+swscaleLicense =
+	-- safe because swscale_license returns const char*
+	unsafePerformIO$ peekCString =<< swscale_license
+
+-- | Determine if a pixel format is supported for input
+isSupportedInput :: PixelFormat -> Bool
+isSupportedInput pf = sws_isSupportedInput (fromCEnum pf) /= 0
+
+-- | Determine if a pixel format is supported for output
+isSupportedOutput :: PixelFormat -> Bool
+isSupportedOutput pf = sws_isSupportedOutput (fromCEnum pf) /= 0
+
+-- | Determine if a pixel format is supported for endianness conversion
+isSupportedEndiannessConversion :: PixelFormat -> Bool
+isSupportedEndiannessConversion pf =
+	sws_isSupportedEndiannessConversion (fromCEnum pf) /= 0
+
+-- | Get the coefficient table associated with a color space
+getCoefficients :: SwsColorSpace -> (CInt, CInt, CInt, CInt)
+getCoefficients cs = unsafePerformIO$ do
+	-- safe because sws_getCoefficients returns a const pointer
+	p <- sws_getCoefficients (fromCEnum cs)
+	if p == nullPtr then error "sws_getCoefficients returned a null pointer.  This cannot happen"
+	else tableFromList <$> peekArray 4 p
+
+-- | Allocate a new SwsContext with the given source and destination filters
+newSwsContext :: (MonadIO m, MonadError String m) =>
+	SwsFilter        -- ^ source filter
+	-> SwsFilter     -- ^ destination filter
+	-> m SwsContext
+newSwsContext srcFilter dstFilter = do
+	pctx <- liftIO$ sws_alloc_context
+
+	when (pctx == nullPtr)$ throwError$ "newSwsContext: sws_alloc_context returned a null pointer"
+
+	withThis srcFilter$ \psrc ->
+		withThis dstFilter$ \pdst ->
+			liftIO$ sws_init_context pctx psrc pdst
+	
+	liftIO$ SwsContext <$> newForeignPtr psws_freeContext pctx
+
+-- | Initialise a new SwsContext with the given options
+getSwsContext :: (MonadIO m, MonadError String m) =>
+	(Int, Int, PixelFormat)          -- ^ Source (width, height, format)
+	-> (Int, Int, PixelFormat)       -- ^ Destination (width, height, format)
+	-> ScaleAlgorithm                  -- ^ Scaling algorithm
+	-> ([ScaleFlag], ChromaDrop)        -- ^ Scaling options
+	-> SwsFilter                       -- ^ Source filter
+	-> SwsFilter                       -- ^ Destination filter
+	-> Maybe (Double, Double)          -- ^ Optional parameters for the scaling algorithm
+	-> m SwsContext
+getSwsContext
+	(srcW, srcH, srcPF) (dstW, dstH, dstPF)
+	alg (flags, cdrop) srcFilter dstFilter mparams = do
+		p <-
+			withThis srcFilter$ \psrcFilter ->
+			withThis dstFilter$ \pdstFilter ->
+			liftIO.withParams$ \pparams -> sws_getContext
+				(fromIntegral srcW) (fromIntegral srcH) (fromCEnum srcPF)
+				(fromIntegral dstW) (fromIntegral dstH) (fromCEnum dstPF)
+				cflags psrcFilter pdstFilter pparams
+
+		if p == nullPtr then throwError "getSwsContext: sws_getContext returned a null pointer"
+		else liftIO$ SwsContext <$> newForeignPtr psws_freeContext p
+
+	where
+		cflags = (fromCEnum alg) .|. (fromCEnum (mconcat flags)) .|. case cdrop of
+			Sws_src_v_chr_drop_0 -> 0
+			Sws_src_v_chr_drop_1 -> 1 `unsafeShiftL` #{const SWS_SRC_V_CHR_DROP_SHIFT}
+			Sws_src_v_chr_drop_2 -> 2 `unsafeShiftL` #{const SWS_SRC_V_CHR_DROP_SHIFT}
+			Sws_src_v_chr_drop_3 -> 3 `unsafeShiftL` #{const SWS_SRC_V_CHR_DROP_SHIFT}
+		withParams action = case mparams of
+			Nothing -> action nullPtr
+			Just (x, y) -> withArray [x, y] action
+
+-- | scale an image slice
+scale :: (MonadIO m, HasAVPicture src, HasAVPicture dst) =>
+	SwsContext   -- ^ Scaling context
+	-> src       -- ^ Source picture
+	-> Int       -- ^ Source slice y
+	-> Int       -- ^ Source slice height
+	-> dst       -- ^ Destination picture
+	-> m Int     -- ^ The number of destination lines
+scale ctx src y height dst =
+	withThis ctx$ \pctx ->
+	withAVPicturePtr src$ \psrc ->
+	withAVPicturePtr dst$ \pdst -> liftIO$ do
+		srcSlice <- #{peek AVPicture, data} psrc
+		srcStride <- #{peek AVPicture, linesize} psrc
+		dstSlice <- #{peek AVPicture, data} pdst
+		dstStride <- #{peek AVPicture, linesize} pdst
+		fromIntegral <$> sws_scale pctx srcSlice srcStride
+			(fromIntegral y) (fromIntegral height) dstSlice dstStride
+
+-- | Convert an 8 bit palettized to a 32 bit pixel format
+convertPalette8ToPacked32 :: MonadIO m => Ptr Word8 -> Ptr Word8 -> Int -> B.ByteString -> m ()
+convertPalette8ToPacked32 src dst num_pixels palette =
+	liftIO.unsafeUseAsCString palette$ \ppal ->
+		sws_convertPalette8ToPacked32 src dst (fromIntegral num_pixels) (castPtr ppal)
+
+-- | Convert an 8 bit palettized to a 24 bit pixel format
+convertPalette8ToPacked24 :: MonadIO m => Ptr Word8 -> Ptr Word8 -> Int -> B.ByteString -> m ()
+convertPalette8ToPacked24 src dst num_pixels palette =
+	liftIO.unsafeUseAsCString palette$ \ppal ->
+		sws_convertPalette8ToPacked24 src dst (fromIntegral num_pixels) (castPtr ppal)
+
+-- | Description of a color space
+data ColorSpaceDetails = ColorSpaceDetails {
+		csd_inv_table :: (CInt, CInt, CInt, CInt),
+		csd_srcRange :: CInt,
+		csd_table :: (CInt, CInt, CInt, CInt),
+		csd_dstRange :: CInt,
+		csd_brightness :: CInt,
+		csd_contrast :: CInt,
+		csd_saturation :: CInt
+	}
+
+tableFromList :: [CInt] -> (CInt, CInt, CInt, CInt)
+tableFromList [a, b, c, d] = (a, b, c, d)
+tableFromList _ = error "Conversion table was the wrong size.  This cannot happen"
+
+-- | Convert the color space tables to lists
+tableToList :: (CInt, CInt, CInt, CInt) -> [CInt]
+tableToList (a, b, c, d) = [a, b, c, d]
+
+-- | Set SwsContext fields relating to the colorspace
+setColorSpaceDetails :: (MonadIO m, MonadError String m) => SwsContext -> ColorSpaceDetails -> m ()
+setColorSpaceDetails ctx csd =
+	withThis ctx$ \pctx -> do
+		r <- liftIO$
+			withArray (tableToList.csd_inv_table$ csd)$ \pinv ->
+			withArray (tableToList.csd_table$ csd)$ \ptab ->
+				sws_setColorspaceDetails pctx
+					pinv (csd_srcRange csd) ptab (csd_dstRange csd)
+					(csd_brightness csd) (csd_contrast csd) (csd_saturation csd)
+		when (r == -1)$ throwError "setColorSpaceDetails: sws_setColorspaceDetails failed with error code -1"
+
+-- | Get SwsContext fields relating to the color space
+getColorSpaceDetails :: (MonadIO m, MonadError String m) => SwsContext -> m ColorSpaceDetails
+getColorSpaceDetails ctx = do
+	x <- withThis ctx$ \pctx -> liftIO$
+		alloca$ \pinv_table ->
+		alloca$ \psrcRange ->
+		alloca$ \ptable ->
+		alloca$ \pdstRange ->
+		alloca$ \pbrightness ->
+		alloca$ \pcontrast ->
+		alloca$ \psaturation -> do
+			r <- sws_getColorspaceDetails pctx
+				pinv_table psrcRange
+				ptable pdstRange
+				pbrightness pcontrast psaturation
+			if r == -1 then return$ Left r else do
+				_inv_table <- peekArray 4 =<< peek pinv_table
+				_srcRange <- peek psrcRange
+				_table <- peekArray 4 =<< peek ptable
+				_dstRange <- peek pdstRange
+				_brightness <- peek pbrightness
+				_contrast <- peek pcontrast
+				_saturation <- peek psaturation
+
+				return.Right$ ColorSpaceDetails
+					(tableFromList _inv_table) _srcRange
+					(tableFromList _table) _dstRange
+					_brightness _contrast _saturation
+
+	case x of
+		Left e -> throwError$
+			"getColorSpaceDetails: sws_getColorspaceDetails failed with error code " ++ (show e)
+		Right r -> return r
+
+-- | Allocate a new Guassian vector
+newGaussianVector :: MonadIO m =>
+	Double           -- ^ variance
+	-> Double        -- ^ quality
+	-> m SwsVector
+newGaussianVector variance quality =
+	swsVectorFromPtr =<< (liftIO$ sws_getGaussianVec variance quality)
+
+-- | Create a new constant vector
+newConstantVector :: MonadIO m =>
+	Double           -- ^ constant
+	-> Int           -- ^ length of vector
+	-> m SwsVector
+newConstantVector c len =
+	swsVectorFromPtr =<< (liftIO$ sws_getConstVec c (fromIntegral len))
+
+-- | Create an "identity" vector
+newIdentityVector :: MonadIO m => m SwsVector
+newIdentityVector = swsVectorFromPtr =<< liftIO sws_getIdentityVec
+
+-- | Scale a vector by a scalar value
+scaleVector :: MonadIO m => SwsVector -> Double -> m ()
+scaleVector v scalar = withThis v$ \pv -> liftIO$ sws_scaleVec pv scalar
+
+-- | Normalise a vector so all elements sum to a particular value
+normalizeVector :: MonadIO m =>
+	SwsVector    -- vector to normalise
+	-> Double    -- value that the vector should sum to
+	-> m ()
+normalizeVector v height = withThis v$ \pv -> liftIO$ sws_normalizeVec pv height
+
+-- | Convolve two vectors.  The first vector is updated to contain the result.
+convolveVector :: MonadIO m => SwsVector -> SwsVector -> m ()
+convolveVector vd vs =
+	withThis vd$ \pvd ->
+	withThis vs$ \pvs -> liftIO$ sws_convVec pvd pvs
+
+-- | Add two vectors.  The first vector is updated to contain the result.
+addVector :: MonadIO m => SwsVector -> SwsVector -> m ()
+addVector vd vs =
+	withThis vd$ \pvd ->
+	withThis vs$ \pvs -> liftIO$ sws_convVec pvd pvs
+
+-- | Subtract two vectors.  The first vector is updated to contain the result.
+subVector :: MonadIO m => SwsVector -> SwsVector -> m ()
+subVector vd vs =
+	withThis vd$ \pvd ->
+	withThis vs$ \pvs -> liftIO$ sws_convVec pvd pvs
+
+-- | Shift a vector
+shiftVector :: MonadIO m => SwsVector -> Int -> m ()
+shiftVector v shift = withThis v$ \pv -> liftIO$ sws_shiftVec pv (fromIntegral shift)
+
+-- | Copy a vector
+cloneVector :: MonadIO m => SwsVector -> m SwsVector
+cloneVector v = swsVectorFromPtr =<< withThis v (liftIO.sws_cloneVec)
+
+-- | Construct a filter with the given characteristics
+getDefaultFilter :: (MonadIO m, MonadError String m) =>
+	Float      -- ^ lumaGBlur
+	-> Float   -- ^ chromaGBlur
+	-> Float   -- ^ lumaSharpen
+	-> Float   -- ^ chromaSharpen
+	-> Float   -- ^ chromaHShift
+	-> Float   -- ^ chromaVShift
+	-> m SwsFilter
+getDefaultFilter lumaGBlur chromaGBlur lumaSharpen chromaSharpen chromaHShift chromaVShift = do
+	pf <- liftIO$ sws_getDefaultFilter
+		lumaGBlur chromaGBlur lumaSharpen
+		chromaSharpen chromaHShift chromaVShift 0
+	
+	if pf == nullPtr then throwError$ "getDefaultFilter: sws_getDefaultFilter returned a null pointer"
+	else do
+		lumH <- swsVectorFromPtr =<< (liftIO$ #{peek SwsFilter, lumH} pf)
+		lumV <- swsVectorFromPtr =<< (liftIO$ #{peek SwsFilter, lumV} pf)
+		chrH <- swsVectorFromPtr =<< (liftIO$ #{peek SwsFilter, chrH} pf)
+		chrV <- swsVectorFromPtr =<< (liftIO$ #{peek SwsFilter, chrV} pf)
+		liftIO$ av_free pf
+
+		return$ SwsFilter lumH lumV chrH chrV
 

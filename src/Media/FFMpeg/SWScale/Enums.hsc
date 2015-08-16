@@ -26,6 +26,18 @@ module Media.FFMpeg.SWScale.Enums (
 	sws_lanczos,
 	sws_spline,
 
+	ScaleFlag,
+	sws_print_info,
+	sws_full_chr_h_int,
+	sws_full_chr_h_inp,
+	sws_direct_bgr,
+	sws_accurate_rnd,
+	sws_bitexact,
+	sws_error_diffusion,
+
+	ChromaDrop(..),
+	sws_max_reduce_cutoff,
+
 	SwsColorSpace,
 	sws_cs_itu709,
 	sws_cs_fcc,
@@ -42,8 +54,8 @@ import Media.FFMpeg.Internal.Common
 
 #include "ffmpeg.h"
 
--- | ScaleAlgorithm Enumeration
-newtype ScaleAlgorithm = ScaleAlgorithm CInt deriving (Eq, Show, CEnum, CFlags)
+-- | Scaling algorithm flags
+newtype ScaleAlgorithm = ScaleAlgorithm CInt deriving (Eq, Show, CEnum)
 #{enum ScaleAlgorithm, ScaleAlgorithm,
 	sws_fast_bilinear = SWS_FAST_BILINEAR,
 	sws_bicubic = SWS_BICUBIC,
@@ -57,22 +69,28 @@ newtype ScaleAlgorithm = ScaleAlgorithm CInt deriving (Eq, Show, CEnum, CFlags)
 	sws_spline = SWS_SPLINE
 }
 
-{-
-#define 	SWS_SRC_V_CHR_DROP_MASK   0x30000
-#define 	SWS_SRC_V_CHR_DROP_SHIFT   16
- 
-#define 	SWS_PARAM_DEFAULT   123456
- 
-#define 	SWS_PRINT_INFO          0x1000
-#define 	SWS_FULL_CHR_H_INT      0x2000
-#define 	SWS_FULL_CHR_H_INP      0x4000
-#define 	SWS_DIRECT_BGR          0x8000
-#define 	SWS_ACCURATE_RND       0x40000
-#define 	SWS_BITEXACT           0x80000
-#define 	SWS_ERROR_DIFFUSION   0x800000
- 
-#define 	SWS_MAX_REDUCE_CUTOFF   0.002
--}
+-- | Scaling options flags
+newtype ScaleFlag = ScaleFlag CInt deriving (Eq, Show, CEnum, CFlags)
+#{enum ScaleFlag, ScaleFlag,
+	sws_print_info = SWS_PRINT_INFO,
+	sws_full_chr_h_int = SWS_FULL_CHR_H_INT,
+	sws_full_chr_h_inp = SWS_FULL_CHR_H_INP,
+	sws_direct_bgr = SWS_DIRECT_BGR,
+	sws_accurate_rnd = SWS_ACCURATE_RND,
+	sws_bitexact = SWS_BITEXACT,
+	sws_error_diffusion = SWS_ERROR_DIFFUSION
+}
+
+-- | Chroma drop
+data ChromaDrop =
+	Sws_src_v_chr_drop_0 |
+	Sws_src_v_chr_drop_1 |
+	Sws_src_v_chr_drop_2 |
+	Sws_src_v_chr_drop_3  deriving (Eq, Show, Ord, Enum)
+
+-- | SWS_MAX_REDUCE_CUTOFF constant
+sws_max_reduce_cutoff :: Double
+sws_max_reduce_cutoff = #{const SWS_MAX_REDUCE_CUTOFF}
 
 -- | SWS_CS_ constants
 newtype SwsColorSpace = SwsColorSpace CInt deriving (Eq, Show, CEnum)
