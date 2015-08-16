@@ -17,26 +17,26 @@ Bindings to libavutil.
 
 module Media.FFMpeg.Util.Options (
 	AVClass,
-	avClassFromPtr,
 	ReflectClass(..),
 	HasClass(..),
+	avClassFromPtr,
 	OptionName,
 	AVOption(..),
 	AVOptionConst(..),
 	ImageSize(..),
+	AVOptionValue(..),
 
 	getAVOption,
 	decodeAVOption,
 	decodeAVConst,
 	parseDefaultValue,
-	AVOptionValue(..),
 	getAVOptions,
 	getAVOptionConsts,
 	getClassAVOptions,
 	getClassAVOptionConsts,
 	withOptionPtr,
-	AVOptionType,
 
+	AVOptionType,
 	getOption,
 	getOptionString,
 	setOption,
@@ -103,17 +103,17 @@ instance ExternalPointer (AVClass a) where
 	type UnderlyingType (AVClass a) = AVClass a
 	withThis (AVClass p) = withThis p
 
--- | Wrap an AVClass pointer
-avClassFromPtr :: Ptr (AVClass a) -> AVClass a
-avClassFromPtr ptr = AVClass ptr
-
--- | Class of objects that maintain a pointer to their class
-class ExternalPointer a => ReflectClass a where
-	withClass :: MonadIO m => a -> (AVClass a -> m b) -> m b
-
 -- | Class of objects where we can get a reference to their class
 class HasClass a where
 	getClass :: AVClass a
+
+-- | Class of objects that maintain a pointer to their class
+class (ExternalPointer a, HasClass a) => ReflectClass a where
+	withClass :: MonadIO m => a -> (AVClass a -> m b) -> m b
+
+-- | Wrap an AVClass pointer
+avClassFromPtr :: Ptr (AVClass a) -> AVClass a
+avClassFromPtr ptr = AVClass ptr
 
 -- | Type for option names
 newtype OptionName a t = OptionName {unOptionName :: String} deriving (Eq, Show)
@@ -139,6 +139,37 @@ data AVOptionConst a t = AVOptionConst {
 		const_type :: AVOptType,
 		const_value :: t
 	}
+
+-- | Value for an option where we don't know the type until runtime
+data AVOptionValue =
+	AVOptionFlags CInt |
+	AVOptionInt CInt |
+	AVOptionInt64 Int64 |
+	AVOptionDouble Double |
+	AVOptionFloat Float |
+	AVOptionString String |
+	AVOptionRational Rational |
+	AVOptionBinary B.ByteString |
+	AVOptionDict AVDictionary |
+	AVOptionImageSize ImageSize |
+	AVOptionPixelFormat PixelFormat |
+	AVOptionSampleFormat AVSampleFormat |
+	AVOptionVideoRate Rational |
+	AVOptionDuration Int64 |       -- what is the proper type for this option?
+	AVOptionColor String |         -- what is the proper type for this option?
+	AVOptionChannelLayout AVChannelLayout
+
+data ImageSize = ImageSize Int Int deriving (Eq, Show)
+instance Storable ImageSize where
+	sizeOf _ = #{size int} * 2
+	alignment _ = 8
+	peek ptr = do
+		w <- peek (castPtr ptr) :: IO CInt
+		h <- peek$ ptr `plusPtr` #{size int} :: IO CInt
+		return$ ImageSize (fromIntegral w) (fromIntegral h)
+	poke ptr (ImageSize w h) = do
+		poke (castPtr ptr) (fromIntegral w :: CInt)
+		poke (ptr `plusPtr` #{size int}) (fromIntegral h :: CInt)
 
 -- | Get the named AVOption from an object
 getAVOption :: (MonadIO m, ReflectClass a) =>
@@ -220,25 +251,6 @@ parseDefaultValue pOpt t = liftIO$ case t of
 		Just . AVOptionChannelLayout <$> #{peek AVOption, default_val} pOpt
 	_ -> return Nothing
 
--- | Value for an option where we don't know the type until runtime
-data AVOptionValue =
-	AVOptionFlags CInt |
-	AVOptionInt CInt |
-	AVOptionInt64 Int64 |
-	AVOptionDouble Double |
-	AVOptionFloat Float |
-	AVOptionString String |
-	AVOptionRational Rational |
-	AVOptionBinary B.ByteString |
-	AVOptionDict AVDictionary |
-	AVOptionImageSize ImageSize |
-	AVOptionPixelFormat PixelFormat |
-	AVOptionSampleFormat AVSampleFormat |
-	AVOptionVideoRate Rational |
-	AVOptionDuration Int64 |       -- what is the proper type for this option?
-	AVOptionColor String |         -- what is the proper type for this option?
-	AVOptionChannelLayout AVChannelLayout
-
 -- | Enumerate the options of an object
 getAVOptions :: (MonadIO m, ReflectClass a) => a -> m [AVOption a AVOptionValue]
 getAVOptions obj = withClass obj getClassAVOptions
@@ -275,11 +287,12 @@ allAVOptions pclass =
 		in allAVOptions' nullPtr
 
 -- | Execute an action on a pointer to a named field
-withOptionPtr :: (MonadIO m, ReflectClass a) => OptionName a t -> a -> (Maybe (Ptr t) -> m b) -> m b
+withOptionPtr :: forall a t m b. (MonadIO m, ExternalPointer a, HasClass a) =>
+	OptionName a t -> a -> (Maybe (Ptr t) -> m b) -> m b
 withOptionPtr (OptionName name) obj action =
-	withClass obj$ \(AVClass pclass) ->
 	withThis obj$ \pobj ->
 	withThis name$ \pname -> do
+		let (AVClass pclass) = (getClass :: AVClass a)
 		pfield <- liftIO.with pclass$ \ppclass ->
 			av_opt_ptr ppclass pobj pname
 
@@ -573,16 +586,4 @@ setOptionString opt obj v =
 
 		when (r /= 0)$ throwError$
 			"setOptionString: av_opt_set failed with error code " ++ (show r)
-
-data ImageSize = ImageSize Int Int deriving (Eq, Show)
-instance Storable ImageSize where
-	sizeOf _ = #{size int} * 2
-	alignment _ = 8
-	peek ptr = do
-		w <- peek (castPtr ptr) :: IO CInt
-		h <- peek$ ptr `plusPtr` #{size int} :: IO CInt
-		return$ ImageSize (fromIntegral w) (fromIntegral h)
-	poke ptr (ImageSize w h) = do
-		poke (castPtr ptr) (fromIntegral w :: CInt)
-		poke (ptr `plusPtr` #{size int}) (fromIntegral h :: CInt)
 
