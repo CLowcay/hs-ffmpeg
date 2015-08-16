@@ -27,6 +27,7 @@ module Media.FFMpeg.Util.Options (
 	AVOptionValue(..),
 
 	getAVOption,
+	getClassAVOption,
 	decodeAVOption,
 	decodeAVConst,
 	parseDefaultValue,
@@ -189,6 +190,27 @@ getAVOption (OptionName name) searchChildren obj = do
 
 	where sflags = fromCEnum$
 		if searchChildren then av_opt_search_children else mempty
+
+-- | Get an AVOption for a class
+getClassAVOption :: forall a t m. (MonadIO m, HasClass a) =>
+	OptionName a t
+	-> Bool
+	-> m (Maybe (AVOption a AVOptionValue))
+getClassAVOption (OptionName name) searchChildren = do
+	let (AVClass pclass) = getClass :: AVClass a
+	popt <- liftIO$
+		with pclass$ \ppclass ->
+		withCString name$ \pname ->
+			av_opt_find (castPtr ppclass) pname nullPtr (-1) sflags
+	
+	if popt == nullPtr then return Nothing else do
+		r <- decodeAVOption popt
+		return$ Just r
+
+	where sflags = fromCEnum$
+		av_opt_search_fake_obj <>
+			if searchChildren then av_opt_search_children
+			else mempty
 
 -- | Get an AVOption out of a pointer
 decodeAVOption :: MonadIO m => Ptr (AVOption a t) -> m (AVOption a AVOptionValue)
