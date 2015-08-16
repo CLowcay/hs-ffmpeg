@@ -84,3 +84,10 @@ int b_av_opt_get_video_rate(void *obj, const char *name, int search_flags, int *
 	return ret;
 }
 
+int b_image_check_sar(unsigned int w, unsigned int h, int num, int den) {
+	AVRational sar;
+	sar.num = num;
+	sar.den = den;
+	return av_image_check_sar(w, h, sar);
+}
+

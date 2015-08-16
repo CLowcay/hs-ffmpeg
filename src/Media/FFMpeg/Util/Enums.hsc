@@ -191,7 +191,17 @@ module Media.FFMpeg.Util.Enums (
 
 	AVOptionSearchFlags,
 	av_opt_search_children,
-	av_opt_search_fake_obj
+	av_opt_search_fake_obj,
+
+	AVPictureType,
+	av_picture_type_none,
+	av_picture_type_i,
+	av_picture_type_p,
+	av_picture_type_b,
+	av_picture_type_s,
+	av_picture_type_si,
+	av_picture_type_sp,
+	av_picture_type_bi
 ) where
 
 import Foreign.C.Types
@@ -443,5 +453,17 @@ newtype AVOptionSearchFlags = AVOptionSearchFlags CInt deriving (Eq, Show, CEnum
 #{enum AVOptionSearchFlags, AVOptionSearchFlags,
 	av_opt_search_children = AV_OPT_SEARCH_CHILDREN,
 	av_opt_search_fake_obj = AV_OPT_SEARCH_FAKE_OBJ
+}
+
+newtype AVPictureType = AVPictureType CInt deriving (Eq, Show, CEnum, Storable)
+#{enum AVPictureType, AVPictureType,
+	av_picture_type_none = AV_PICTURE_TYPE_NONE,
+	av_picture_type_i = AV_PICTURE_TYPE_I,
+	av_picture_type_p = AV_PICTURE_TYPE_P,
+	av_picture_type_b = AV_PICTURE_TYPE_B,
+	av_picture_type_s = AV_PICTURE_TYPE_S,
+	av_picture_type_si = AV_PICTURE_TYPE_SI,
+	av_picture_type_sp = AV_PICTURE_TYPE_SP,
+	av_picture_type_bi = AV_PICTURE_TYPE_BI
 }
 

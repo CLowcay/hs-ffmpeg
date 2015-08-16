@@ -27,6 +27,7 @@ module Media.FFMpeg.Codec.AVPicture (
 import Control.Applicative
 import Control.Monad
 import Control.Monad.Except
+import Data.Ratio
 import Data.Word
 import Foreign.C.Types
 import Foreign.ForeignPtr
@@ -44,6 +45,9 @@ foreign import ccall "avpicture_get_size" avpicture_get_size :: CInt -> CInt -> 
 foreign import ccall "av_picture_copy" av_picture_copy :: Ptr () -> Ptr () -> CInt -> CInt -> CInt -> IO ()
 foreign import ccall "av_picture_crop" av_picture_crop :: Ptr () -> Ptr () -> CInt -> CInt -> CInt -> IO CInt
 foreign import ccall "av_picture_pad" av_picture_pad :: Ptr () -> Ptr () -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> Ptr CInt -> IO CInt
+
+foreign import ccall "av_image_check_size" av_image_check_size :: CUInt -> CUInt -> CInt -> Ptr () -> IO CInt
+foreign import ccall "b_av_image_check_sar" av_image_check_sar :: CUInt -> CUInt -> CInt -> CInt -> CInt
 
 -- | A C array of color components.  The number of components, and their
 -- meanings, depends on the pixel format being used.
@@ -210,4 +214,11 @@ instance HasAVPicture AVSubtitlePicture where
 		return$ AVSubtitlePicture fp 0
 
 	withAVPicturePtr (AVSubtitlePicture fp off) action = withThis fp (action.(`plusPtr` off))
+
+-- | Determine if the image sample aspect ration is valid
+imageCheckSAR :: Word -> Word -> AVRational -> Bool
+imageCheckSAR w h (AVRational r) =
+	(av_image_check_sar (fromIntegral w) (fromIntegral h)
+		(fromIntegral$ numerator r)
+		(fromIntegral$ denominator r)) == 0
 

@@ -43,6 +43,7 @@ module Media.FFMpeg.Util.AVFrame (
 	AVFrameSideDataPayload,
 
 	getColorspaceName,
+	getPictureTypeChar,
 	frameAlloc,
 	frameRef,
 	frameClone,
@@ -106,6 +107,7 @@ foreign import ccall "av_frame_get_color_range" av_frame_get_color_range :: Ptr 
 foreign import ccall "av_frame_set_color_range" av_frame_set_color_range :: Ptr AVFrame -> CInt -> IO ()
 
 foreign import ccall "av_get_colorspace_name" av_get_colorspace_name :: CInt -> CString
+foreign import ccall "av_get_picture_type_char" av_get_picture_type_char :: CInt -> CChar
 foreign import ccall "avcodec_frame_alloc" avcodec_frame_alloc :: IO (Ptr ())
 foreign import ccall "avcodec_frame_free" avcodec_frame_free :: Ptr () -> IO ()
 foreign import ccall "&avcodec_frame_free" pavcodec_frame_free :: FunPtr (Ptr () -> IO ())
@@ -238,6 +240,10 @@ getColorspaceName :: AVColorSpace -> String
 getColorspaceName space =
 	-- safe because the c string is immutable
 	unsafePerformIO.peekCString.av_get_colorspace_name$ fromCEnum space
+
+-- | Get a Char representation of a picture type
+getPictureTypeChar :: AVPictureType -> Char
+getPictureTypeChar t = castCCharToChar$ av_get_picture_type_char (fromCEnum t)
 
 -- | Allocate a new AVFrame.  The AVFrame is uninitialised and no buffers are
 -- allocated.
