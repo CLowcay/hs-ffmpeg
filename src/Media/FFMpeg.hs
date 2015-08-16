@@ -1,8 +1,8 @@
--- -*- haskell -*-
 {- |
 
 Description : Bindings to the ffmpeg libraries
 Copyright   : (c) Vasyl Pasternak, 2009
+                  Callum Lowcay, 2015
 License     : BSD3
 Stability   : experimental
 

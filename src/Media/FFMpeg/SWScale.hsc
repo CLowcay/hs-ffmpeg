@@ -6,6 +6,7 @@
 
 Description : Bindings to libswscale
 Copyright   : (c) Vasyl Pasternak, 2009
+                  Callum Lowcay, 2015
 License     : BSD3
 Stability   : experimental
 

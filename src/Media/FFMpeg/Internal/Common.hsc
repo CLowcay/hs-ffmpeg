@@ -8,6 +8,7 @@
 
 Description : Internal utility module for the ffmpeg bindings
 Copyright   : (c) Vasyl Pasternak, 2009
+                  Callum Lowcay, 2015
 License     : BSD3
 Stability   : experimental
 
