@@ -20,7 +20,7 @@ module Media.FFMpeg.Util.Options (
 	ReflectClass(..),
 	HasClass(..),
 	avClassFromPtr,
-	OptionName,
+	OptionName(OptionName),
 	AVOption(..),
 	AVOptionConst(..),
 	ImageSize(..),
@@ -118,12 +118,12 @@ avClassFromPtr :: Ptr (AVClass a) -> AVClass a
 avClassFromPtr ptr = AVClass ptr
 
 -- | Type for option names
-newtype OptionName a t = OptionName {unOptionName :: String} deriving (Eq)
+newtype OptionName a t = OptionName String deriving (Eq)
 instance ExternalPointer (OptionName a t) where
 	type UnderlyingType (OptionName a t) = CChar
 	withThis (OptionName s) = withThis s
 instance Show (OptionName a t) where
-	show = unOptionName
+	show (OptionName x) = x
 
 -- | AVOption struct
 data AVOption a t = AVOption {
@@ -301,7 +301,7 @@ getClassAVOptionConsts (AVClass pclass) opt = do
 			_type <- liftIO$ #{peek AVOption, type} popt
 			if _type /= av_opt_type_const then return False else do
 				unit <- liftIO$ peekCString =<< #{peek AVOption, unit} popt
-				return$ unit == (unOptionName$ option_name opt)
+				return$ unit == (show$ option_name opt)
 
 -- | Get pointers to all the AVOptions associated with a class
 allAVOptions :: MonadIO m => Ptr (AVClass a) -> m [Ptr (AVOption a AVOptionValue)]

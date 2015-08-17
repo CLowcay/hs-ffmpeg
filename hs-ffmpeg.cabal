@@ -33,14 +33,18 @@ library
                          Media.FFMpeg.Codec.Decoding
                          Media.FFMpeg.Codec.Encoding
                          Media.FFMpeg.Codec.Enums
+                         Media.FFMpeg.Codec.Names
                          Media.FFMpeg.Format
                          Media.FFMpeg.Format.Core
                          Media.FFMpeg.Format.Demuxing
                          Media.FFMpeg.Format.Enums
                          Media.FFMpeg.Format.Muxing
+                         Media.FFMpeg.Format.Names
                          Media.FFMpeg.Internal.Common
                          Media.FFMpeg.SWScale
+                         Media.FFMpeg.SWScale.Core
                          Media.FFMpeg.SWScale.Enums
+                         Media.FFMpeg.SWScale.Names
                          Media.FFMpeg.Util
                          Media.FFMpeg.Util.AVFrame
                          Media.FFMpeg.Util.AVFrameSideData

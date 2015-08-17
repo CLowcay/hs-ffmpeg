@@ -44,5 +44,6 @@ import Media.FFMpeg.Codec.Core (AVCodec)
 import Media.FFMpeg.Codec.Decoding
 import Media.FFMpeg.Codec.Encoding
 import Media.FFMpeg.Codec.Enums
+import Media.FFMpeg.Codec.Names
 import Media.FFMpeg.Internal.Common
 
