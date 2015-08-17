@@ -53,6 +53,7 @@ import Data.Int
 import Data.Maybe
 import Data.Monoid
 import Data.Ratio
+import Data.Traversable hiding (mapM)
 import Data.Word
 import Foreign.C.String
 import Foreign.C.Types
@@ -117,19 +118,21 @@ avClassFromPtr :: Ptr (AVClass a) -> AVClass a
 avClassFromPtr ptr = AVClass ptr
 
 -- | Type for option names
-newtype OptionName a t = OptionName {unOptionName :: String} deriving (Eq, Show)
+newtype OptionName a t = OptionName {unOptionName :: String} deriving (Eq)
 instance ExternalPointer (OptionName a t) where
 	type UnderlyingType (OptionName a t) = CChar
 	withThis (OptionName s) = withThis s
+instance Show (OptionName a t) where
+	show = unOptionName
 
 -- | AVOption struct
 data AVOption a t = AVOption {
 		option_name :: OptionName a t,
-		option_help :: String,
+		option_help :: Maybe String,
 		option_type :: AVOptType,
 		option_default :: Maybe t,
 		option_flags :: AVOptionFlags,
-		option_unit :: String
+		option_unit :: Maybe String
 	}
 
 -- | Constants encoded in an AVOption struct
@@ -159,6 +162,7 @@ data AVOptionValue =
 	AVOptionDuration Int64 |       -- what is the proper type for this option?
 	AVOptionColor String |         -- what is the proper type for this option?
 	AVOptionChannelLayout AVChannelLayout
+	deriving Show
 
 data ImageSize = ImageSize Int Int deriving (Eq, Show)
 instance Storable ImageSize where
@@ -216,10 +220,10 @@ getClassAVOption (OptionName name) searchChildren = do
 decodeAVOption :: MonadIO m => Ptr (AVOption a t) -> m (AVOption a AVOptionValue)
 decodeAVOption po = liftIO$ do
 	_name <- OptionName <$> (peekCString =<< #{peek AVOption, name} po)
-	_help <- peekCString =<< #{peek AVOption, help} po
+	_help <- ((traverse peekCString).justPtr) =<< #{peek AVOption, help} po
 	_type <- #{peek AVOption, type} po
 	_flags <- #{peek AVOption, flags} po
-	_unit <- peekCString =<< #{peek AVOption, unit} po
+	_unit <- ((traverse peekCString).justPtr) =<< #{peek AVOption, unit} po
 
 	_default <- parseDefaultValue po _type
 

@@ -24,16 +24,6 @@ PKG_CHECK_MODULES(avcodec, [libavcodec >= 56 libavcodec < 57],
         AC_MSG_ERROR([Could not find AVCodec library])
  ])
 
-PKG_CHECK_MODULES(avutil, [libavutil >= 54 libavutil < 55],
- [
-        CFLAGS="${CFLAGS} ${avutil_CFLAGS}"
-        LDFLAGS="${LDFLAGS} ${avutil_LIBS}"
-        AC_CHECK_HEADERS(libavutil/avutil.h ffmpeg/avutil.h)
- ],
- [
-        AC_MSG_ERROR([Could not find AVUtil library])
- ])
-
 PKG_CHECK_MODULES(swscale, [libswscale >= 3 libswscale < 4],
  [
         CFLAGS="${CFLAGS} ${swscale_CFLAGS}"
@@ -42,6 +32,16 @@ PKG_CHECK_MODULES(swscale, [libswscale >= 3 libswscale < 4],
  ],
  [
         AC_MSG_ERROR([Could not find SWScale library])
+ ])
+
+PKG_CHECK_MODULES(avutil, [libavutil >= 54 libavutil < 55],
+ [
+        CFLAGS="${CFLAGS} ${avutil_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${avutil_LIBS}"
+        AC_CHECK_HEADERS(libavutil/avutil.h ffmpeg/avutil.h)
+ ],
+ [
+        AC_MSG_ERROR([Could not find AVUtil library])
  ])
 
 dnl

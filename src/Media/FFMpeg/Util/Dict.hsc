@@ -83,6 +83,8 @@ newtype AVDictionary = AVDictionary (ForeignPtr (Ptr AVDictionary))
 instance ExternalPointer AVDictionary where
 	type UnderlyingType AVDictionary = Ptr AVDictionary
 	withThis (AVDictionary x) = withThis x
+instance Show AVDictionary where
+	show _ = "{AVDictionary}"
 
 -- | Allocate a new AVDictionary
 newAVDictionary :: MonadIO m => m AVDictionary

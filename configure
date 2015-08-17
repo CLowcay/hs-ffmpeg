@@ -631,10 +631,10 @@ vorbis_LIBS
 vorbis_CFLAGS
 vorbisfile_LIBS
 vorbisfile_CFLAGS
-swscale_LIBS
-swscale_CFLAGS
 avutil_LIBS
 avutil_CFLAGS
+swscale_LIBS
+swscale_CFLAGS
 avcodec_LIBS
 avcodec_CFLAGS
 EGREP
@@ -710,10 +710,10 @@ CPPFLAGS
 CPP
 avcodec_CFLAGS
 avcodec_LIBS
-avutil_CFLAGS
-avutil_LIBS
 swscale_CFLAGS
 swscale_LIBS
+avutil_CFLAGS
+avutil_LIBS
 vorbisfile_CFLAGS
 vorbisfile_LIBS
 vorbis_CFLAGS
@@ -1352,13 +1352,13 @@ Some influential environment variables:
               C compiler flags for avcodec, overriding pkg-config
   avcodec_LIBS
               linker flags for avcodec, overriding pkg-config
-  avutil_CFLAGS
-              C compiler flags for avutil, overriding pkg-config
-  avutil_LIBS linker flags for avutil, overriding pkg-config
   swscale_CFLAGS
               C compiler flags for swscale, overriding pkg-config
   swscale_LIBS
               linker flags for swscale, overriding pkg-config
+  avutil_CFLAGS
+              C compiler flags for avutil, overriding pkg-config
+  avutil_LIBS linker flags for avutil, overriding pkg-config
   vorbisfile_CFLAGS
               C compiler flags for vorbisfile, overriding pkg-config
   vorbisfile_LIBS
@@ -3589,98 +3589,6 @@ fi
 
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for avutil" >&5
-$as_echo_n "checking for avutil... " >&6; }
-
-if test -n "$avutil_CFLAGS"; then
-    pkg_cv_avutil_CFLAGS="$avutil_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavutil >= 54 libavutil < 55\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libavutil >= 54 libavutil < 55") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_avutil_CFLAGS=`$PKG_CONFIG --cflags "libavutil >= 54 libavutil < 55" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$avutil_LIBS"; then
-    pkg_cv_avutil_LIBS="$avutil_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavutil >= 54 libavutil < 55\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libavutil >= 54 libavutil < 55") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_avutil_LIBS=`$PKG_CONFIG --libs "libavutil >= 54 libavutil < 55" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-	        avutil_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libavutil >= 54 libavutil < 55" 2>&1`
-        else
-	        avutil_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libavutil >= 54 libavutil < 55" 2>&1`
-        fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$avutil_PKG_ERRORS" >&5
-
-
-        as_fn_error $? "Could not find AVUtil library" "$LINENO" 5
-
-elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-
-        as_fn_error $? "Could not find AVUtil library" "$LINENO" 5
-
-else
-	avutil_CFLAGS=$pkg_cv_avutil_CFLAGS
-	avutil_LIBS=$pkg_cv_avutil_LIBS
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-
-        CFLAGS="${CFLAGS} ${avutil_CFLAGS}"
-        LDFLAGS="${LDFLAGS} ${avutil_LIBS}"
-        for ac_header in libavutil/avutil.h ffmpeg/avutil.h
-do :
-  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-
-done
-
-
-fi
-
-
-pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for swscale" >&5
 $as_echo_n "checking for swscale... " >&6; }
 
@@ -3756,6 +3664,98 @@ $as_echo "yes" >&6; }
         CFLAGS="${CFLAGS} ${swscale_CFLAGS}"
         LDFLAGS="${LDFLAGS} ${swscale_LIBS}"
         for ac_header in libswscale/swscale.h ffmpeg/swscale.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+
+fi
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for avutil" >&5
+$as_echo_n "checking for avutil... " >&6; }
+
+if test -n "$avutil_CFLAGS"; then
+    pkg_cv_avutil_CFLAGS="$avutil_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavutil >= 54 libavutil < 55\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libavutil >= 54 libavutil < 55") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_avutil_CFLAGS=`$PKG_CONFIG --cflags "libavutil >= 54 libavutil < 55" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$avutil_LIBS"; then
+    pkg_cv_avutil_LIBS="$avutil_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libavutil >= 54 libavutil < 55\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libavutil >= 54 libavutil < 55") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_avutil_LIBS=`$PKG_CONFIG --libs "libavutil >= 54 libavutil < 55" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        avutil_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libavutil >= 54 libavutil < 55" 2>&1`
+        else
+	        avutil_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libavutil >= 54 libavutil < 55" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$avutil_PKG_ERRORS" >&5
+
+
+        as_fn_error $? "Could not find AVUtil library" "$LINENO" 5
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+        as_fn_error $? "Could not find AVUtil library" "$LINENO" 5
+
+else
+	avutil_CFLAGS=$pkg_cv_avutil_CFLAGS
+	avutil_LIBS=$pkg_cv_avutil_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+        CFLAGS="${CFLAGS} ${avutil_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${avutil_LIBS}"
+        for ac_header in libavutil/avutil.h ffmpeg/avutil.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"

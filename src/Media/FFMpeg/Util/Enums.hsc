@@ -414,7 +414,7 @@ newtype AVDownmixType = AVDownmixType CInt deriving (Eq, Show, CEnum)
 }
 
 -- | AVOptType enum
-newtype AVOptType = AVOptType CInt deriving (Eq, Show, CEnum, Storable)
+newtype AVOptType = AVOptType CInt deriving (Eq, CEnum, Storable)
 #{enum AVOptType, AVOptType,
 	av_opt_type_flags = AV_OPT_TYPE_FLAGS,
 	av_opt_type_int = AV_OPT_TYPE_INT,
@@ -434,6 +434,26 @@ newtype AVOptType = AVOptType CInt deriving (Eq, Show, CEnum, Storable)
 	av_opt_type_color = AV_OPT_TYPE_COLOR,
 	av_opt_type_channel_layout = AV_OPT_TYPE_CHANNEL_LAYOUT
 }
+instance Show AVOptType where
+	show x = case x of
+		av_opt_type_flags -> "av_opt_type_flags"
+		av_opt_type_int -> "av_opt_type_int"
+		av_opt_type_int64 -> "av_opt_type_int64"
+		av_opt_type_double -> "av_opt_type_double"
+		av_opt_type_float -> "av_opt_type_float"
+		av_opt_type_string -> "av_opt_type_string"
+		av_opt_type_rational -> "av_opt_type_rational"
+		av_opt_type_binary -> "av_opt_type_binary"
+		av_opt_type_dict -> "av_opt_type_dict"
+		av_opt_type_const -> "av_opt_type_const"
+		av_opt_type_image_size -> "av_opt_type_image_size"
+		av_opt_type_pixel_fmt -> "av_opt_type_pixel_fmt"
+		av_opt_type_sample_fmt -> "av_opt_type_sample_fmt"
+		av_opt_type_video_rate -> "av_opt_type_video_rate"
+		av_opt_type_duration -> "av_opt_type_duration"
+		av_opt_type_color -> "av_opt_type_color"
+		av_opt_type_channel_layout -> "av_opt_type_channel_layout"
+		_ -> "av_opt_type_unknown"
 
 -- | AVOptionFlags enum
 newtype AVOptionFlags = AVOptionFlags CInt deriving (Eq, Show, CEnum, CFlags, Storable)

@@ -14,11 +14,13 @@ module Media.FFMpeg (
 	module Media.FFMpeg.Codec,
 	module Media.FFMpeg.Format,
 	module Media.FFMpeg.Internal.Common,
+	module Media.FFMpeg.SWScale,
 	module Media.FFMpeg.Util
 ) where
 
 import Media.FFMpeg.Codec
 import Media.FFMpeg.Format
 import Media.FFMpeg.Internal.Common
+import Media.FFMpeg.SWScale
 import Media.FFMpeg.Util
 
