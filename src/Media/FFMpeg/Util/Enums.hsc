@@ -1,5 +1,6 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 {- |
 
@@ -161,23 +162,23 @@ module Media.FFMpeg.Util.Enums (
 	av_downmix_type_dplii,
 
 	AVOptType,
-	av_opt_type_flags,
-	av_opt_type_int,
-	av_opt_type_int64,
-	av_opt_type_double,
-	av_opt_type_float,
-	av_opt_type_string,
-	av_opt_type_rational,
-	av_opt_type_binary,
-	av_opt_type_dict,
-	av_opt_type_const,
-	av_opt_type_image_size,
-	av_opt_type_pixel_fmt,
-	av_opt_type_sample_fmt,
-	av_opt_type_video_rate,
-	av_opt_type_duration,
-	av_opt_type_color,
-	av_opt_type_channel_layout,
+	pattern AVOptTypeFlags,
+	pattern AVOptTypeInt,
+	pattern AVOptTypeInt64,
+	pattern AVOptTypeDouble,
+	pattern AVOptTypeFloat,
+	pattern AVOptTypeString,
+	pattern AVOptTypeRational,
+	pattern AVOptTypeBinary,
+	pattern AVOptTypeDict,
+	pattern AVOptTypeConst,
+	pattern AVOptTypeImageSize,
+	pattern AVOptTypePixelFmt,
+	pattern AVOptTypeSampleFmt,
+	pattern AVOptTypeVideoRate,
+	pattern AVOptTypeDuration,
+	pattern AVOptTypeColor,
+	pattern AVOptTypeChannelLayout,
 
 	AVOptionFlags,
 	av_opt_flag_encoding_param,
@@ -203,6 +204,9 @@ module Media.FFMpeg.Util.Enums (
 	av_picture_type_sp,
 	av_picture_type_bi
 ) where
+
+import Control.Applicative
+import Foreign.Ptr
 
 import Foreign.C.Types
 import Foreign.Storable
@@ -415,45 +419,44 @@ newtype AVDownmixType = AVDownmixType CInt deriving (Eq, Show, CEnum)
 
 -- | AVOptType enum
 newtype AVOptType = AVOptType CInt deriving (Eq, CEnum, Storable)
-#{enum AVOptType, AVOptType,
-	av_opt_type_flags = AV_OPT_TYPE_FLAGS,
-	av_opt_type_int = AV_OPT_TYPE_INT,
-	av_opt_type_int64 = AV_OPT_TYPE_INT64,
-	av_opt_type_double = AV_OPT_TYPE_DOUBLE,
-	av_opt_type_float = AV_OPT_TYPE_FLOAT,
-	av_opt_type_string = AV_OPT_TYPE_STRING,
-	av_opt_type_rational = AV_OPT_TYPE_RATIONAL,
-	av_opt_type_binary = AV_OPT_TYPE_BINARY,
-	av_opt_type_dict = AV_OPT_TYPE_DICT,
-	av_opt_type_const = AV_OPT_TYPE_CONST,
-	av_opt_type_image_size = AV_OPT_TYPE_IMAGE_SIZE,
-	av_opt_type_pixel_fmt = AV_OPT_TYPE_PIXEL_FMT,
-	av_opt_type_sample_fmt = AV_OPT_TYPE_SAMPLE_FMT,
-	av_opt_type_video_rate = AV_OPT_TYPE_VIDEO_RATE,
-	av_opt_type_duration = AV_OPT_TYPE_DURATION,
-	av_opt_type_color = AV_OPT_TYPE_COLOR,
-	av_opt_type_channel_layout = AV_OPT_TYPE_CHANNEL_LAYOUT
-}
+pattern AVOptTypeFlags = AVOptType #{const AV_OPT_TYPE_FLAGS}
+pattern AVOptTypeInt = AVOptType #{const AV_OPT_TYPE_INT}
+pattern AVOptTypeInt64 = AVOptType #{const AV_OPT_TYPE_INT64}
+pattern AVOptTypeDouble = AVOptType #{const AV_OPT_TYPE_DOUBLE}
+pattern AVOptTypeFloat = AVOptType #{const AV_OPT_TYPE_FLOAT}
+pattern AVOptTypeString = AVOptType #{const AV_OPT_TYPE_STRING}
+pattern AVOptTypeRational = AVOptType #{const AV_OPT_TYPE_RATIONAL}
+pattern AVOptTypeBinary = AVOptType #{const AV_OPT_TYPE_BINARY}
+pattern AVOptTypeDict = AVOptType #{const AV_OPT_TYPE_DICT}
+pattern AVOptTypeConst = AVOptType #{const AV_OPT_TYPE_CONST}
+pattern AVOptTypeImageSize = AVOptType #{const AV_OPT_TYPE_IMAGE_SIZE}
+pattern AVOptTypePixelFmt = AVOptType #{const AV_OPT_TYPE_PIXEL_FMT}
+pattern AVOptTypeSampleFmt = AVOptType #{const AV_OPT_TYPE_SAMPLE_FMT}
+pattern AVOptTypeVideoRate = AVOptType #{const AV_OPT_TYPE_VIDEO_RATE}
+pattern AVOptTypeDuration = AVOptType #{const AV_OPT_TYPE_DURATION}
+pattern AVOptTypeColor = AVOptType #{const AV_OPT_TYPE_COLOR}
+pattern AVOptTypeChannelLayout = AVOptType #{const AV_OPT_TYPE_CHANNEL_LAYOUT}
+
 instance Show AVOptType where
 	show x = case x of
-		av_opt_type_flags -> "av_opt_type_flags"
-		av_opt_type_int -> "av_opt_type_int"
-		av_opt_type_int64 -> "av_opt_type_int64"
-		av_opt_type_double -> "av_opt_type_double"
-		av_opt_type_float -> "av_opt_type_float"
-		av_opt_type_string -> "av_opt_type_string"
-		av_opt_type_rational -> "av_opt_type_rational"
-		av_opt_type_binary -> "av_opt_type_binary"
-		av_opt_type_dict -> "av_opt_type_dict"
-		av_opt_type_const -> "av_opt_type_const"
-		av_opt_type_image_size -> "av_opt_type_image_size"
-		av_opt_type_pixel_fmt -> "av_opt_type_pixel_fmt"
-		av_opt_type_sample_fmt -> "av_opt_type_sample_fmt"
-		av_opt_type_video_rate -> "av_opt_type_video_rate"
-		av_opt_type_duration -> "av_opt_type_duration"
-		av_opt_type_color -> "av_opt_type_color"
-		av_opt_type_channel_layout -> "av_opt_type_channel_layout"
-		_ -> "av_opt_type_unknown"
+		AVOptTypeFlags -> "AVOptTypeFlags"
+		AVOptTypeInt -> "AVOptTypeInt"
+		AVOptTypeInt64 -> "AVOptTypeInt64"
+		AVOptTypeDouble -> "AVOptTypeDouble"
+		AVOptTypeFloat -> "AVOptTypeFloat"
+		AVOptTypeString -> "AVOptTypeString"
+		AVOptTypeRational -> "AVOptTypeRational"
+		AVOptTypeBinary -> "AVOptTypeBinary"
+		AVOptTypeDict -> "AVOptTypeDict"
+		AVOptTypeConst -> "AVOptTypeConst"
+		AVOptTypeImageSize -> "AVOptTypeImageSize"
+		AVOptTypePixelFmt -> "AVOptTypePixelFmt"
+		AVOptTypeSampleFmt -> "AVOptTypeSampleFmt"
+		AVOptTypeVideoRate -> "AVOptTypeVideoRate"
+		AVOptTypeDuration -> "AVOptTypeDuration"
+		AVOptTypeColor -> "AVOptTypeColor"
+		AVOptTypeChannelLayout -> "AVOptTypeChannelLayout"
+		_ -> "AVOptTypeUnknown"
 
 -- | AVOptionFlags enum
 newtype AVOptionFlags = AVOptionFlags CInt deriving (Eq, Show, CEnum, CFlags, Storable)

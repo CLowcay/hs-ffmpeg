@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
 
@@ -91,7 +92,7 @@ foreign import ccall "av_opt_set_dict_val" av_opt_set_dict_val :: Ptr () -> CStr
 
 foreign import ccall "av_opt_get_int" av_opt_get_int :: Ptr () -> CString -> CInt -> Ptr Int64 -> IO CInt
 foreign import ccall "av_opt_get_double" av_opt_get_double :: Ptr () -> CString -> CInt -> Ptr Double -> IO CInt
-foreign import ccall "av_opt_get_q" av_opt_get_q :: Ptr () -> CString -> CInt -> Ptr AVRational -> IO CInt
+foreign import ccall "av_opt_get_q" av_opt_get_q :: Ptr () -> CString -> CInt -> Ptr (Maybe AVRational) -> IO CInt
 foreign import ccall "av_opt_get_image_size" av_opt_get_image_size :: Ptr () -> CString -> CInt -> Ptr CInt -> Ptr CInt -> IO CInt
 foreign import ccall "av_opt_get_pixel_fmt" av_opt_get_pixel_fmt :: Ptr () -> CString -> CInt -> Ptr CInt -> IO CInt
 foreign import ccall "av_opt_get_sample_fmt" av_opt_get_sample_fmt :: Ptr () -> CString -> CInt -> Ptr CInt -> IO CInt
@@ -236,7 +237,7 @@ decodeAVOption po = liftIO$ do
 decodeAVConst :: MonadIO m => AVOption a t -> Ptr (AVOption a AVOptionValue) -> m (Maybe (AVOptionConst a AVOptionValue))
 decodeAVConst opt po = do
 	_type <- liftIO$ #{peek AVOption, type} po
-	if _type /= av_opt_type_const then return Nothing
+	if _type /= AVOptTypeConst then return Nothing
 	else liftIO$ do
 		_name <- peekCString =<< #{peek AVOption, name} po
 		_help <- peekCString =<< #{peek AVOption, help} po
@@ -253,29 +254,29 @@ decodeAVConst opt po = do
 -- | Parse the default value field
 parseDefaultValue :: MonadIO m => Ptr (AVOption a t) -> AVOptType -> m (Maybe AVOptionValue)
 parseDefaultValue pOpt t = liftIO$ case t of
-	av_opt_type_flags ->
-		Just . AVOptionFlags <$> #{peek AVOption, default_val} pOpt
-	av_opt_type_int ->
-		Just . AVOptionInt <$> #{peek AVOption, default_val} pOpt
-	av_opt_type_int64 ->
-		Just . AVOptionInt64 <$> #{peek AVOption, default_val} pOpt
-	av_opt_type_double ->
-		Just . AVOptionDouble <$> #{peek AVOption, default_val} pOpt
-	av_opt_type_float ->
-		Just . AVOptionFloat <$> #{peek AVOption, default_val} pOpt
-	av_opt_type_string ->
-		Just . AVOptionString <$> (peekCString =<< #{peek AVOption, default_val} pOpt)
-	av_opt_type_rational ->
-		Just . AVOptionRational . fromAVRational <$> #{peek AVOption, default_val} pOpt
-	av_opt_type_pixel_fmt ->
-		Just . AVOptionPixelFormat <$> #{peek AVOption, default_val} pOpt
-	av_opt_type_sample_fmt ->
-		Just . AVOptionSampleFormat <$> #{peek AVOption, default_val} pOpt
-	av_opt_type_video_rate ->
-		Just . AVOptionVideoRate . fromAVRational <$> #{peek AVOption, default_val} pOpt
-	av_opt_type_channel_layout ->
-		Just . AVOptionChannelLayout <$> #{peek AVOption, default_val} pOpt
-	_ -> return Nothing
+		AVOptTypeFlags ->
+			Just . AVOptionFlags <$> #{peek AVOption, default_val} pOpt
+		AVOptTypeInt ->
+			Just . AVOptionInt <$> #{peek AVOption, default_val} pOpt
+		AVOptTypeInt64 ->
+			Just . AVOptionInt64 <$> #{peek AVOption, default_val} pOpt
+		AVOptTypeDouble ->
+			Just . AVOptionDouble <$> #{peek AVOption, default_val} pOpt
+		AVOptTypeFloat ->
+			Just . AVOptionFloat <$> #{peek AVOption, default_val} pOpt
+		AVOptTypeString ->
+			fmap AVOptionString <$> (((traverse peekCString).justPtr) =<< #{peek AVOption, default_val} pOpt)
+		AVOptTypeRational ->
+			fmap (AVOptionRational . fromAVRational) <$> #{peek AVOption, default_val} pOpt
+		AVOptTypePixelFmt ->
+			Just . AVOptionPixelFormat <$> #{peek AVOption, default_val} pOpt
+		AVOptTypeSampleFmt ->
+			Just . AVOptionSampleFormat <$> #{peek AVOption, default_val} pOpt
+		AVOptTypeVideoRate ->
+			fmap (AVOptionVideoRate . fromAVRational) <$> #{peek AVOption, default_val} pOpt
+		AVOptTypeChannelLayout ->
+			Just . AVOptionChannelLayout <$> #{peek AVOption, default_val} pOpt
+		_ -> return Nothing
 
 -- | Enumerate the options of an object
 getAVOptions :: (MonadIO m, ReflectClass a) => a -> m [AVOption a AVOptionValue]
@@ -286,20 +287,25 @@ getAVOptionConsts :: (MonadIO m, ReflectClass a) => a -> AVOption a t -> m [AVOp
 getAVOptionConsts obj opt = withClass obj$ \pclass -> getClassAVOptionConsts pclass opt
 
 -- | Enumerate the options of a class
-getClassAVOptions :: MonadIO m => AVClass a -> m [AVOption a AVOptionValue]
-getClassAVOptions (AVClass pclass) = mapM decodeAVOption =<< (allAVOptions pclass)
+getClassAVOptions :: forall a m. MonadIO m => AVClass a -> m [AVOption a AVOptionValue]
+getClassAVOptions (AVClass pclass) =
+	mapM decodeAVOption =<< filterM isNotConst =<< allAVOptions pclass
+	where
+		isNotConst :: Ptr (AVOption a t) -> m Bool
+		isNotConst popt = do
+			_type <- liftIO$ #{peek AVOption, type} popt
+			return$ _type /= AVOptTypeConst 
 
 -- | Enumerate the constants of a class
 getClassAVOptionConsts :: forall a t m. MonadIO m =>
 	AVClass a -> AVOption a t -> m [AVOptionConst a AVOptionValue]
-getClassAVOptionConsts (AVClass pclass) opt = do
+getClassAVOptionConsts (AVClass pclass) opt =
 	(return.catMaybes) =<< mapM (decodeAVConst opt) =<< filterM isConstOfOpt =<< allAVOptions pclass
-
 	where
 		isConstOfOpt :: Ptr (AVOption a t2) -> m Bool
 		isConstOfOpt popt = do
 			_type <- liftIO$ #{peek AVOption, type} popt
-			if _type /= av_opt_type_const then return False else do
+			if _type /= AVOptTypeConst then return False else do
 				unit <- liftIO$ peekCString =<< #{peek AVOption, unit} popt
 				return$ unit == (show$ option_name opt)
 
@@ -340,37 +346,37 @@ instance AVOptionType AVOptionValue where
 		case mt of
 			Nothing -> return.(Left).fromCEnum$ averror_option_not_found
 			Just t -> case t of
-				av_opt_type_flags ->
+				AVOptTypeFlags ->
 					fmap AVOptionFlags <$> getOption0 obj pname flags
-				av_opt_type_int ->
+				AVOptTypeInt ->
 					fmap AVOptionInt <$> getOption0 obj pname flags
-				av_opt_type_int64 ->
+				AVOptTypeInt64 ->
 					fmap AVOptionInt64 <$> getOption0 obj pname flags
-				av_opt_type_double ->
+				AVOptTypeDouble ->
 					fmap AVOptionDouble <$> getOption0 obj pname flags
-				av_opt_type_float ->
+				AVOptTypeFloat ->
 					fmap AVOptionFloat <$> getOption0 obj pname flags
-				av_opt_type_string ->
+				AVOptTypeString ->
 					fmap AVOptionString <$> getOption0 obj pname flags
-				av_opt_type_rational ->
+				AVOptTypeRational ->
 					fmap (AVOptionRational . fromAVRational) <$> getOption0 obj pname flags
-				av_opt_type_binary ->
+				AVOptTypeBinary ->
 					fmap AVOptionBinary <$> getOption0 obj pname flags
-				av_opt_type_dict ->
+				AVOptTypeDict ->
 					fmap AVOptionDict <$> getOption0 obj pname flags
-				av_opt_type_image_size ->
+				AVOptTypeImageSize ->
 					fmap AVOptionImageSize <$> getOption0 obj pname flags
-				av_opt_type_pixel_fmt ->
+				AVOptTypePixelFmt ->
 					fmap AVOptionPixelFormat <$> getOption0 obj pname flags
-				av_opt_type_sample_fmt ->
+				AVOptTypeSampleFmt ->
 					fmap AVOptionSampleFormat <$> getOption0 obj pname flags
-				av_opt_type_video_rate ->
+				AVOptTypeVideoRate ->
 					fmap (AVOptionVideoRate . fromAVRational) <$> getOption0 obj pname flags
-				av_opt_type_duration ->
+				AVOptTypeDuration ->
 					fmap AVOptionDuration <$> getOption0 obj pname flags
-				av_opt_type_color ->
+				AVOptTypeColor ->
 					fmap AVOptionColor <$> getOption0 obj pname flags
-				av_opt_type_channel_layout ->
+				AVOptTypeChannelLayout ->
 					fmap AVOptionChannelLayout <$> getOption0 obj pname flags
 				_ -> return.(Left).fromCEnum$ averror_option_not_found
 	
@@ -452,8 +458,8 @@ instance AVOptionType [Char] where
 			r <- av_opt_get (castPtr pobj) pname (fromCEnum flags) pout
 			if r /= 0 then return$ Left r else do
 				ps <- peek pout
-				s <- peekCString ps
-				av_free ps
+				s <- if ps == nullPtr then return "" else peekCString ps
+				when (ps /= nullPtr)$ av_free ps
 				return$ Right s
 
 	setOption0 obj pname v flags = withThis obj$ \pobj ->
@@ -466,7 +472,9 @@ instance AVOptionType AVRational where
 			r <- av_opt_get_q (castPtr pobj) pname (fromCEnum flags) pout
 			if r /= 0 then return$ Left r else do
 				out <- peek pout
-				return$ Right out
+				return.Right$ case out of
+					Just o -> o
+					Nothing -> AVRational$ 0 % 1
 		
 	setOption0 obj pname v flags =
 		let
@@ -483,8 +491,8 @@ instance AVOptionType B.ByteString where
 			r <- av_opt_get (castPtr pobj) pname (fromCEnum flags) pout
 			if r /= 0 then return$ Left r else do
 				ps <- peek pout
-				s <- B.packCString ps
-				av_free ps
+				s <- if ps == nullPtr then return B.empty else B.packCString ps
+				when (ps /= nullPtr)$ av_free ps
 				return$ Right s
 
 	setOption0 obj pname v flags =
@@ -499,8 +507,9 @@ instance AVOptionType AVDictionary where
 			r <- av_opt_get_dict_val (castPtr pobj) pname (fromCEnum flags) ppdict
 			if r /= 0 then return$ Left r else do
 				pdict <- peek ppdict
-				s <- unsafeDictCopyFromPtr pdict []
-				av_dict_free ppdict
+				s <- if pdict == nullPtr then newAVDictionary
+					else unsafeDictCopyFromPtr pdict []
+				when (pdict /= nullPtr)$ av_dict_free ppdict
 				return$ Right s
 
 	setOption0 obj pname d flags =

@@ -43,16 +43,18 @@ import Foreign.Storable
 newtype AVRational = AVRational {fromAVRational :: Rational}
 	deriving (Eq, Show, Ord, Num, Fractional, RealFrac, Real)
 
-instance Storable AVRational where
+instance Storable (Maybe AVRational) where
 	sizeOf _ = #{size int} * 2
 	alignment _ = 8
 	peek ptr = do
 		num <- peek (castPtr ptr) :: IO CInt
 		den <- peek (ptr `plusPtr` #{size int}) :: IO CInt
-		return.AVRational$ fromIntegral num % fromIntegral den
-	poke ptr (AVRational v) = do
+		if (den == 0) then return Nothing
+			else return . Just . AVRational$ fromIntegral num % fromIntegral den
+	poke ptr (Just (AVRational v)) = do
 		poke (castPtr ptr) (fromIntegral$ numerator v :: CInt)
 		poke (ptr `plusPtr` #{size int}) (fromIntegral$ denominator v :: CInt)
+	poke ptr Nothing = return ()
 
 -- | Similar to 'Foreign.Marshal.Utils.with' but without needing the Storable
 -- constraint (and also more generic)
