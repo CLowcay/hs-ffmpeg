@@ -47,6 +47,7 @@ module Media.FFMpeg.Format.Names (
 import Data.Int
 import Foreign.C.Types
 import Media.FFMpeg.Format.Core
+import Media.FFMpeg.Format.Enums
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util
 import qualified Data.ByteString as B
@@ -56,7 +57,7 @@ import qualified Data.ByteString as B
 
 -- | Option "avioflags" for AVFormatContext of type AVOptTypeFlags-avioflags.
 -- default value is AVOptionFlags 0.
-format_avioflags :: OptionName AVFormatContext CInt
+format_avioflags :: OptionName AVFormatContext AVIOFlag
 format_avioflags = OptionName "avioflags"
 
 -- | Option "probesize" for AVFormatContext of type AVOptTypeInt64.

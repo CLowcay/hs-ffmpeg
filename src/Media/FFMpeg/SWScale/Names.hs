@@ -31,6 +31,7 @@ import Data.Int
 import Foreign.C.Types
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.SWScale.Core
+import Media.FFMpeg.SWScale.Enums
 import Media.FFMpeg.Util
 
 -- SwsContext:
@@ -69,13 +70,13 @@ sws_dsth = OptionName "dsth"
 -- | Option "src_format" for SwsContext of type AVOptTypeInt.
 -- source format
 -- default value is AVOptionInt 0.
-sws_src_format :: OptionName SwsContext CInt
+sws_src_format :: OptionName SwsContext PixelFormat
 sws_src_format = OptionName "src_format"
 
 -- | Option "dst_format" for SwsContext of type AVOptTypeInt.
 -- destination format
 -- default value is AVOptionInt 0.
-sws_dst_format :: OptionName SwsContext CInt
+sws_dst_format :: OptionName SwsContext PixelFormat
 sws_dst_format = OptionName "dst_format"
 
 -- | Option "src_range" for SwsContext of type AVOptTypeInt.

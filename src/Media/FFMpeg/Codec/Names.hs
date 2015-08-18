@@ -217,7 +217,7 @@ codec_bt = OptionName "bt"
 
 -- | Option "flags" for AVCodecContext of type AVOptTypeFlags-flags.
 -- default value is AVOptionFlags 0.
-codec_flags :: OptionName AVCodecContext CInt
+codec_flags :: OptionName AVCodecContext AVCodecFlag
 codec_flags = OptionName "flags"
 
 -- | Option "me_method" for AVCodecContext of type AVOptTypeInt-me_method.
@@ -725,7 +725,7 @@ codec_rc_init_occupancy = OptionName "rc_init_occupancy"
 
 -- | Option "flags2" for AVCodecContext of type AVOptTypeFlags-flags2.
 -- default value is AVOptionFlags 0.
-codec_flags2 :: OptionName AVCodecContext CInt
+codec_flags2 :: OptionName AVCodecContext AVCodecFlag2
 codec_flags2 = OptionName "flags2"
 
 -- | Option "error" for AVCodecContext of type AVOptTypeInt.
