@@ -1,3 +1,13 @@
+{- |
+ 
+Description : Named options for livavformat
+Copyright   : (c) Callum Lowcay, 2015
+License     : BSD3
+Stability   : experimental
+
+Named options for livavformat
+
+-}
 module Media.FFMpeg.Format.Names (
 	format_avioflags,
 	format_probesize,

@@ -1,3 +1,14 @@
+{- |
+ 
+Description : Named options for libavcodec
+Copyright   : (c) Callum Lowcay, 2015
+License     : BSD3
+Stability   : experimental
+
+Named options for libavcodec
+
+-}
+
 module Media.FFMpeg.Codec.Names (
 	codec_b,
 	codec_ab,

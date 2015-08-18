@@ -1,3 +1,13 @@
+{- |
+ 
+Description : Named options for libswscale
+Copyright   : (c) Callum Lowcay, 2015
+License     : BSD3
+Stability   : experimental
+
+Named options for libswscale
+
+-}
 module Media.FFMpeg.SWScale.Names (
 	sws_sws_flags,
 	sws_srcw,
