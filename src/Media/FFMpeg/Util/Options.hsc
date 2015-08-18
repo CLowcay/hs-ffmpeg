@@ -194,7 +194,7 @@ getAVOption (OptionName name) searchChildren obj = do
 		return$ Just r
 
 	where sflags = fromCEnum$
-		if searchChildren then av_opt_search_children else mempty
+		if searchChildren then AVOptSearchChildren else mempty
 
 -- | Get an AVOption for a class
 getClassAVOption :: forall a t m. (MonadIO m, HasClass a) =>
@@ -213,8 +213,8 @@ getClassAVOption (OptionName name) searchChildren = do
 		return$ Just r
 
 	where sflags = fromCEnum$
-		av_opt_search_fake_obj <>
-			if searchChildren then av_opt_search_children
+		AVOptSearchFakeObj <>
+			if searchChildren then AVOptSearchChildren
 			else mempty
 
 -- | Get an AVOption out of a pointer
@@ -576,7 +576,7 @@ getOption :: (MonadIO m, Applicative m, MonadError String m, ReflectClass a, AVO
 	AVOption a t -> a -> m t
 getOption option obj = do
 	r <- withThis (option_name option)$ \pname ->
-		getOption0 obj pname av_opt_search_children
+		getOption0 obj pname AVOptSearchChildren
 
 	case r of
 		Left err -> throwError$
@@ -590,7 +590,7 @@ getOptionString opt obj =	do
 		withThis (option_name opt)$ \pname ->
 		withThis obj$ \pobj ->
 		liftIO.alloca$ \ppout -> do
-			r <- av_opt_get (castPtr pobj) pname (fromCEnum av_opt_search_children) ppout
+			r <- av_opt_get (castPtr pobj) pname (fromCEnum AVOptSearchChildren) ppout
 			if (r /= 0) then return (r, "") else do
 				pout <- peek ppout
 				outs <- peekCString pout
@@ -606,7 +606,7 @@ setOption :: (MonadIO m, MonadError String m, Applicative m, ReflectClass a, AVO
 	AVOption a t -> a -> t -> m ()
 setOption option obj val =
 	withThis (option_name option)$ \pname -> do
-		r <- setOption0 obj pname val av_opt_search_children
+		r <- setOption0 obj pname val AVOptSearchChildren
 
 		when (r /= 0)$ throwError$
 			"setOption: av_opt_set_ failed with error code " ++ (show r)
@@ -617,7 +617,7 @@ setOptionString opt obj v =
 	withThis (option_name opt)$ \pname ->
 	withThis v$ \pval ->
 	withThis obj$ \pobj -> do
-		r <- liftIO$ av_opt_set (castPtr pobj) pname pval (fromCEnum av_opt_search_children)
+		r <- liftIO$ av_opt_set (castPtr pobj) pname pval (fromCEnum AVOptSearchChildren)
 
 		when (r /= 0)$ throwError$
 			"setOptionString: av_opt_set failed with error code " ++ (show r)

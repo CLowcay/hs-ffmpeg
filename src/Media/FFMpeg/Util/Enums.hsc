@@ -17,149 +17,149 @@ Enumerations from libavutil.
 
 module Media.FFMpeg.Util.Enums (
 	AVFrameSideDataType,
-	av_frame_data_panscan,
-	av_frame_data_a53_cc,
-	av_frame_data_stereo3d,
-	av_frame_data_matrixencoding,
-	av_frame_data_downmix_info,
-	av_frame_data_replaygain,
-	av_frame_data_displaymatrix,
-	av_frame_data_afd,
-	av_frame_data_motion_vectors,
-	av_frame_data_skip_samples,
+	pattern AVFrameDataTypePanscan,
+	pattern AVFrameDataTypeA53CC,
+	pattern AVFrameDataTypeStereo3d,
+	pattern AVFrameDataTypeMatrixEncoding,
+	pattern AVFrameDataTypeDownmixInfo,
+	pattern AVFrameDataTypeReplayGain,
+	pattern AVFrameDataTypeDisplayMatrix,
+	pattern AVFrameDataTypeAfd,
+	pattern AVFrameDataTypeMotionVectors,
+	pattern AVFrameDataTypeSkipSamples,
 
-	av_num_data_pointers,
+	pattern AVNumDataPointers,
 
 	AVActiveFormatDescription,
-	av_afd_same,
-	av_afd_4_3,
-	av_afd_16_9,
-	av_afd_14_9,
-	av_afd_4_3_sp_14_9,
-	av_afd_16_9_sp_14_9,
-	av_afd_sp_4_3,
+	pattern AVAfdSame,
+	pattern AVAfd4_3,
+	pattern AVAfd16_9,
+	pattern AVAfd14_9,
+	pattern AVAfd4_3_SP_14_9,
+	pattern AVAfd16_9_SP_14_9,
+	pattern AVAfdSp_4_3,
 
 	PixelFormat,
-	pix_fmt_none,
-	pix_fmt_yuv420p,
-	pix_fmt_yuyv422,
-	pix_fmt_rgb24,
-	pix_fmt_bgr24,
-	pix_fmt_yuv422p,
-	pix_fmt_yuv444p,
-	pix_fmt_yuv410p,
-	pix_fmt_yuv411p,
-	pix_fmt_gray8,
-	pix_fmt_monowhite,
-	pix_fmt_monoblack,
-	pix_fmt_pal8,
-	pix_fmt_yuvj420p,
-	pix_fmt_yuvj422p,
-	pix_fmt_yuvj444p,
-	pix_fmt_xvmc_mpeg2_mc,
-	pix_fmt_xvmc_mpeg2_idct,
-	pix_fmt_uyvy422,
-	pix_fmt_uyyvyy411,
-	pix_fmt_bgr8,
-	pix_fmt_bgr4,
-	pix_fmt_bgr4_byte,
-	pix_fmt_rgb8,
-	pix_fmt_rgb4,
-	pix_fmt_rgb4_byte,
-	pix_fmt_nv12,
-	pix_fmt_nv21,
-	pix_fmt_argb,
-	pix_fmt_rgba,
-	pix_fmt_abgr,
-	pix_fmt_bgra,
-	pix_fmt_gray16be,
-	pix_fmt_gray16le,
-	pix_fmt_rgb32,
-	pix_fmt_rgb32_1,
-	pix_fmt_bgr32,
-	pix_fmt_bgr32_1,
-	pix_fmt_gray16,
-	pix_fmt_rgb565,
-	pix_fmt_rgb555,
-	pix_fmt_bgr565,
-	pix_fmt_bgr555,
+	pattern PixFmtNone,
+	pattern PixFmtYuv420p,
+	pattern PixFmtYuyv422,
+	pattern PixFmtRgb24,
+	pattern PixFmtBgr24,
+	pattern PixFmtYuv422p,
+	pattern PixFmtYuv444p,
+	pattern PixFmtYuv410p,
+	pattern PixFmtYuv411p,
+	pattern PixFmtGray8,
+	pattern PixFmtMonowhite,
+	pattern PixFmtMonoblack,
+	pattern PixFmtPal8,
+	pattern PixFmtYuvj420p,
+	pattern PixFmtYuvj422p,
+	pattern PixFmtYuvj444p,
+	pattern PixFmtXvmcMpeg2Mc,
+	pattern PixFmtXvmcMpeg2Idct,
+	pattern PixFmtUyvy422,
+	pattern PixFmtUyyvyy411,
+	pattern PixFmtBgr8,
+	pattern PixFmtBgr4,
+	pattern PixFmtBgr4Byte,
+	pattern PixFmtRgb8,
+	pattern PixFmtRgb4,
+	pattern PixFmtRgb4Byte,
+	pattern PixFmtNv12,
+	pattern PixFmtNv21,
+	pattern PixFmtArgb,
+	pattern PixFmtRgba,
+	pattern PixFmtAbgr,
+	pattern PixFmtBgra,
+	pattern PixFmtGray16be,
+	pattern PixFmtGray16le,
+	pattern PixFmtRgb32,
+	pattern PixFmtRgb32_1,
+	pattern PixFmtBgr32,
+	pattern PixFmtBgr32_1,
+	pattern PixFmtGray16,
+	pattern PixFmtRgb565,
+	pattern PixFmtRgb555,
+	pattern PixFmtBgr565,
+	pattern PixFmtBgr555,
 
 	AVColorPrimaries,
-	avcol_pri_reserved0,
-	avcol_pri_bt709,
-	avcol_pri_unspecified,
-	avcol_pri_reserved,
-	avcol_pri_bt470m,
-	avcol_pri_bt470bg,
-	avcol_pri_smpte170m,
-	avcol_pri_smpte240m,
-	avcol_pri_film,
-	avcol_pri_bt2020,
+	pattern AVColPriReserved0,
+	pattern AVColPriBt709,
+	pattern AVColPriUnspecified,
+	pattern AVColPriReserved,
+	pattern AVColPriBt470m,
+	pattern AVColPriBt470bg,
+	pattern AVColPriSmpte170m,
+	pattern AVColPriSmpte240m,
+	pattern AVColPriFilm,
+	pattern AVColPriBt2020,
 
 	AVColorTransferCharacteristic,
-	avcol_trc_reserved0,
-	avcol_trc_bt709,
-	avcol_trc_unspecified,
-	avcol_trc_reserved,
-	avcol_trc_gamma22,
-	avcol_trc_gamma28,
-	avcol_trc_smpte170m,
-	avcol_trc_smpte240m,
-	avcol_trc_linear,
-	avcol_trc_log,
-	avcol_trc_log_sqrt,
-	avcol_trc_iec61966_2_4,
-	avcol_trc_bt1361_ecg,
-	avcol_trc_iec61966_2_1,
-	avcol_trc_bt2020_10,
-	avcol_trc_bt2020_12,
+	pattern AVColTrcReserved0,
+	pattern AVColTrcBt709,
+	pattern AVColTrcUnspecified,
+	pattern AVColTrcReserved,
+	pattern AVColTrcGamma22,
+	pattern AVColTrcGamma28,
+	pattern AVColTrcSmpte170m,
+	pattern AVColTrcSmpte240m,
+	pattern AVColTrcLinear,
+	pattern AVColTrcLog,
+	pattern AVColTrcLog_sqrt,
+	pattern AVColTrcIec61966_2_4,
+	pattern AVColTrcBt1361Ecg,
+	pattern AVColTrcIec61966_2_1,
+	pattern AVColTrcBt2020_10,
+	pattern AVColTrcBt2020_12,
 
 	AVColorSpace,
-	avcol_spc_rgb,
-	avcol_spc_bt709,
-	avcol_spc_unspecified,
-	avcol_spc_reserved,
-	avcol_spc_fcc,
-	avcol_spc_bt470bg,
-	avcol_spc_smpte170m,
-	avcol_spc_smpte240m,
-	avcol_spc_ycocg,
-	avcol_spc_bt2020_ncl,
-	avcol_spc_bt2020_cl,
-	avcol_spc_ycgco,
+	pattern AVColSpcRgb,
+	pattern AVColSpcBt709,
+	pattern AVColSpcUnspecified,
+	pattern AVColSpcReserved,
+	pattern AVColSpcFcc,
+	pattern AVColSpcBt470bg,
+	pattern AVColSpcSmpte170m,
+	pattern AVColSpcSmpte240m,
+	pattern AVColSpcYcocg,
+	pattern AVColSpcBt2020_ncl,
+	pattern AVColSpcBt2020_cl,
+	pattern AVColSpcYcgco,
 
 	AVColorRange,
-	avcol_range_unspecified,
-	avcol_range_mpeg,
-	avcol_range_jpeg,
+	pattern AVColRangeUnspecified,
+	pattern AVColRangeMpeg,
+	pattern AVColRangeJpeg,
 
 	AVChromaLocation,
-	avchroma_loc_unspecified,
-	avchroma_loc_left,
-	avchroma_loc_center,
-	avchroma_loc_topleft,
-	avchroma_loc_top,
-	avchroma_loc_bottomleft,
-	avchroma_loc_bottom,
+	pattern AVChromaLocUnspecified,
+	pattern AVChromaLocLeft,
+	pattern AVChromaLocCenter,
+	pattern AVChromaLocTopleft,
+	pattern AVChromaLocTop,
+	pattern AVChromaLocBottomleft,
+	pattern AVChromaLocBottom,
 
 	AVStereo3DType,
-	av_stereo3d_2d,
-	av_stereo3d_sidebyside,
-	av_stereo3d_topbottom,
-	av_stereo3d_framesequence,
-	av_stereo3d_checkerboard,
-	av_stereo3d_sidebyside_quincunx,
-	av_stereo3d_lines,
-	av_stereo3d_columns,
+	pattern AVStereo3d2d,
+	pattern AVStereo3dSidebyside,
+	pattern AVStereo3dTopbottom,
+	pattern AVStereo3dFramesequence,
+	pattern AVStereo3dCheckerboard,
+	pattern AVStereo3dSidebysideQuincunx,
+	pattern AVStereo3dLines,
+	pattern AVStereo3dColumns,
 
 	AVStereo3DFlags,
-	av_stereo3d_flag_invert,
+	pattern AVStereo3dFlagInvert,
 
 	AVDownmixType,
-	av_downmix_type_unknown,
-	av_downmix_type_loro,
-	av_downmix_type_ltrt,
-	av_downmix_type_dplii,
+	pattern AVDownmixTypeUnknown,
+	pattern AVDownmixTypeLoro,
+	pattern AVDownmixTypeLtrt,
+	pattern AVDownmixTypeDplii,
 
 	AVOptType,
 	pattern AVOptTypeFlags,
@@ -181,28 +181,28 @@ module Media.FFMpeg.Util.Enums (
 	pattern AVOptTypeChannelLayout,
 
 	AVOptionFlags,
-	av_opt_flag_encoding_param,
-	av_opt_flag_decoding_param,
-	av_opt_flag_audio_param,
-	av_opt_flag_video_param,
-	av_opt_flag_subtitle_param,
-	av_opt_flag_export,
-	av_opt_flag_readonly,
-	av_opt_flag_filtering_param,
+	pattern AVOptFlagEncodingParam,
+	pattern AVOptFlagDecodingParam,
+	pattern AVOptFlagAudioParam,
+	pattern AVOptFlagVideoParam,
+	pattern AVOptFlagSubtitleParam,
+	pattern AVOptFlagExport,
+	pattern AVOptFlagReadonly,
+	pattern AVOptFlagFilteringParam,
 
 	AVOptionSearchFlags,
-	av_opt_search_children,
-	av_opt_search_fake_obj,
+	pattern AVOptSearchChildren,
+	pattern AVOptSearchFakeObj,
 
 	AVPictureType,
-	av_picture_type_none,
-	av_picture_type_i,
-	av_picture_type_p,
-	av_picture_type_b,
-	av_picture_type_s,
-	av_picture_type_si,
-	av_picture_type_sp,
-	av_picture_type_bi
+	pattern AVPictureTypeNone,
+	pattern AVPictureTypeI,
+	pattern AVPictureTypeP,
+	pattern AVPictureTypeB,
+	pattern AVPictureTypeS,
+	pattern AVPictureTypeSi,
+	pattern AVPictureTypeSp,
+	pattern AVPictureTypeBi
 ) where
 
 import Control.Applicative
@@ -216,82 +216,75 @@ import Media.FFMpeg.Internal.Common
 
 -- | AVFrameSideDataType enum
 newtype AVFrameSideDataType = AVFrameSideDataType CInt deriving (Eq, Show, CEnum)
-#{enum AVFrameSideDataType, AVFrameSideDataType,
-	av_frame_data_panscan = AV_FRAME_DATA_PANSCAN,
-	av_frame_data_a53_cc = AV_FRAME_DATA_A53_CC,
-	av_frame_data_stereo3d = AV_FRAME_DATA_STEREO3D,
-	av_frame_data_matrixencoding = AV_FRAME_DATA_MATRIXENCODING,
-	av_frame_data_downmix_info = AV_FRAME_DATA_DOWNMIX_INFO,
-	av_frame_data_replaygain = AV_FRAME_DATA_REPLAYGAIN,
-	av_frame_data_displaymatrix = AV_FRAME_DATA_DISPLAYMATRIX,
-	av_frame_data_afd = AV_FRAME_DATA_AFD,
-	av_frame_data_motion_vectors = AV_FRAME_DATA_MOTION_VECTORS,
-	av_frame_data_skip_samples = AV_FRAME_DATA_SKIP_SAMPLES
-}
+pattern AVFrameDataTypePanscan = AVFrameSideDataType (#{const AV_FRAME_DATA_PANSCAN})
+pattern AVFrameDataTypeA53CC = AVFrameSideDataType (#{const AV_FRAME_DATA_A53_CC})
+pattern AVFrameDataTypeStereo3d = AVFrameSideDataType (#{const AV_FRAME_DATA_STEREO3D})
+pattern AVFrameDataTypeMatrixEncoding = AVFrameSideDataType (#{const AV_FRAME_DATA_MATRIXENCODING})
+pattern AVFrameDataTypeDownmixInfo = AVFrameSideDataType (#{const AV_FRAME_DATA_DOWNMIX_INFO})
+pattern AVFrameDataTypeReplayGain = AVFrameSideDataType (#{const AV_FRAME_DATA_REPLAYGAIN})
+pattern AVFrameDataTypeDisplayMatrix = AVFrameSideDataType (#{const AV_FRAME_DATA_DISPLAYMATRIX})
+pattern AVFrameDataTypeAfd = AVFrameSideDataType (#{const AV_FRAME_DATA_AFD})
+pattern AVFrameDataTypeMotionVectors = AVFrameSideDataType (#{const AV_FRAME_DATA_MOTION_VECTORS})
+pattern AVFrameDataTypeSkipSamples = AVFrameSideDataType (#{const AV_FRAME_DATA_SKIP_SAMPLES})
 
 -- | AV_NUM_DATA_POINTERS
-av_num_data_pointers :: Int
-av_num_data_pointers = #{const AV_NUM_DATA_POINTERS}
+pattern AVNumDataPointers = #{const AV_NUM_DATA_POINTERS}
 
 -- | AVActiveFormatDescription
 newtype AVActiveFormatDescription = AVActiveFormatDescription CInt deriving (Eq, Show, CEnum)
-#{enum AVActiveFormatDescription, AVActiveFormatDescription,
-	av_afd_same = AV_AFD_SAME,
-	av_afd_4_3 = AV_AFD_4_3,
-	av_afd_16_9 = AV_AFD_16_9,
-	av_afd_14_9 = AV_AFD_14_9,
-	av_afd_4_3_sp_14_9 = AV_AFD_4_3_SP_14_9,
-	av_afd_16_9_sp_14_9 = AV_AFD_16_9_SP_14_9,
-	av_afd_sp_4_3 = AV_AFD_SP_4_3
-}
+pattern AVAfdSame = AVActiveFormatDescription (#{const AV_AFD_SAME})
+pattern AVAfd4_3 = AVActiveFormatDescription (#{const AV_AFD_4_3})
+pattern AVAfd16_9 = AVActiveFormatDescription (#{const AV_AFD_16_9})
+pattern AVAfd14_9 = AVActiveFormatDescription (#{const AV_AFD_14_9})
+pattern AVAfd4_3_SP_14_9 = AVActiveFormatDescription (#{const AV_AFD_4_3_SP_14_9})
+pattern AVAfd16_9_SP_14_9 = AVActiveFormatDescription (#{const AV_AFD_16_9_SP_14_9})
+pattern AVAfdSp_4_3 = AVActiveFormatDescription (#{const AV_AFD_SP_4_3})
 
 -- | PixelFormat enumeration
 newtype PixelFormat = PixelFormat CInt deriving (Eq, Show, CEnum, Storable)
-#{enum PixelFormat, PixelFormat,
-	pix_fmt_none = PIX_FMT_NONE,
-	pix_fmt_yuv420p = PIX_FMT_YUV420P,
-	pix_fmt_yuyv422 = PIX_FMT_YUYV422,
-	pix_fmt_rgb24 = PIX_FMT_RGB24,
-	pix_fmt_bgr24 = PIX_FMT_BGR24,
-	pix_fmt_yuv422p = PIX_FMT_YUV422P,
-	pix_fmt_yuv444p = PIX_FMT_YUV444P,
-	pix_fmt_yuv410p = PIX_FMT_YUV410P,
-	pix_fmt_yuv411p = PIX_FMT_YUV411P,
-	pix_fmt_gray8 = PIX_FMT_GRAY8,
-	pix_fmt_monowhite = PIX_FMT_MONOWHITE,
-	pix_fmt_monoblack = PIX_FMT_MONOBLACK,
-	pix_fmt_pal8 = PIX_FMT_PAL8,
-	pix_fmt_yuvj420p = PIX_FMT_YUVJ420P,
-	pix_fmt_yuvj422p = PIX_FMT_YUVJ422P,
-	pix_fmt_yuvj444p = PIX_FMT_YUVJ444P,
-	pix_fmt_xvmc_mpeg2_mc = PIX_FMT_XVMC_MPEG2_MC,
-	pix_fmt_xvmc_mpeg2_idct = PIX_FMT_XVMC_MPEG2_IDCT,
-	pix_fmt_uyvy422 = PIX_FMT_UYVY422,
-	pix_fmt_uyyvyy411 = PIX_FMT_UYYVYY411,
-	pix_fmt_bgr8 = PIX_FMT_BGR8,
-	pix_fmt_bgr4 = PIX_FMT_BGR4,
-	pix_fmt_bgr4_byte = PIX_FMT_BGR4_BYTE,
-	pix_fmt_rgb8 = PIX_FMT_RGB8,
-	pix_fmt_rgb4 = PIX_FMT_RGB4,
-	pix_fmt_rgb4_byte = PIX_FMT_RGB4_BYTE,
-	pix_fmt_nv12 = PIX_FMT_NV12,
-	pix_fmt_nv21 = PIX_FMT_NV21,
-	pix_fmt_argb = PIX_FMT_ARGB,
-	pix_fmt_rgba = PIX_FMT_RGBA,
-	pix_fmt_abgr = PIX_FMT_ABGR,
-	pix_fmt_bgra = PIX_FMT_BGRA,
-	pix_fmt_gray16be = PIX_FMT_GRAY16BE,
-	pix_fmt_gray16le = PIX_FMT_GRAY16LE,
-	pix_fmt_rgb32 = PIX_FMT_RGB32,
-	pix_fmt_rgb32_1 = PIX_FMT_RGB32_1,
-	pix_fmt_bgr32 = PIX_FMT_BGR32,
-	pix_fmt_bgr32_1 = PIX_FMT_BGR32_1,
-	pix_fmt_gray16 = PIX_FMT_GRAY16,
-	pix_fmt_rgb565 = PIX_FMT_RGB565,
-	pix_fmt_rgb555 = PIX_FMT_RGB555,
-	pix_fmt_bgr565 = PIX_FMT_BGR565,
-	pix_fmt_bgr555 = PIX_FMT_BGR555
-}
+pattern PixFmtNone = PixelFormat (#{const PIX_FMT_NONE})
+pattern PixFmtYuv420p = PixelFormat (#{const PIX_FMT_YUV420P})
+pattern PixFmtYuyv422 = PixelFormat (#{const PIX_FMT_YUYV422})
+pattern PixFmtRgb24 = PixelFormat (#{const PIX_FMT_RGB24})
+pattern PixFmtBgr24 = PixelFormat (#{const PIX_FMT_BGR24})
+pattern PixFmtYuv422p = PixelFormat (#{const PIX_FMT_YUV422P})
+pattern PixFmtYuv444p = PixelFormat (#{const PIX_FMT_YUV444P})
+pattern PixFmtYuv410p = PixelFormat (#{const PIX_FMT_YUV410P})
+pattern PixFmtYuv411p = PixelFormat (#{const PIX_FMT_YUV411P})
+pattern PixFmtGray8 = PixelFormat (#{const PIX_FMT_GRAY8})
+pattern PixFmtMonowhite = PixelFormat (#{const PIX_FMT_MONOWHITE})
+pattern PixFmtMonoblack = PixelFormat (#{const PIX_FMT_MONOBLACK})
+pattern PixFmtPal8 = PixelFormat (#{const PIX_FMT_PAL8})
+pattern PixFmtYuvj420p = PixelFormat (#{const PIX_FMT_YUVJ420P})
+pattern PixFmtYuvj422p = PixelFormat (#{const PIX_FMT_YUVJ422P})
+pattern PixFmtYuvj444p = PixelFormat (#{const PIX_FMT_YUVJ444P})
+pattern PixFmtXvmcMpeg2Mc = PixelFormat (#{const PIX_FMT_XVMC_MPEG2_MC})
+pattern PixFmtXvmcMpeg2Idct = PixelFormat (#{const PIX_FMT_XVMC_MPEG2_IDCT})
+pattern PixFmtUyvy422 = PixelFormat (#{const PIX_FMT_UYVY422})
+pattern PixFmtUyyvyy411 = PixelFormat (#{const PIX_FMT_UYYVYY411})
+pattern PixFmtBgr8 = PixelFormat (#{const PIX_FMT_BGR8})
+pattern PixFmtBgr4 = PixelFormat (#{const PIX_FMT_BGR4})
+pattern PixFmtBgr4Byte = PixelFormat (#{const PIX_FMT_BGR4_BYTE})
+pattern PixFmtRgb8 = PixelFormat (#{const PIX_FMT_RGB8})
+pattern PixFmtRgb4 = PixelFormat (#{const PIX_FMT_RGB4})
+pattern PixFmtRgb4Byte = PixelFormat (#{const PIX_FMT_RGB4_BYTE})
+pattern PixFmtNv12 = PixelFormat (#{const PIX_FMT_NV12})
+pattern PixFmtNv21 = PixelFormat (#{const PIX_FMT_NV21})
+pattern PixFmtArgb = PixelFormat (#{const PIX_FMT_ARGB})
+pattern PixFmtRgba = PixelFormat (#{const PIX_FMT_RGBA})
+pattern PixFmtAbgr = PixelFormat (#{const PIX_FMT_ABGR})
+pattern PixFmtBgra = PixelFormat (#{const PIX_FMT_BGRA})
+pattern PixFmtGray16be = PixelFormat (#{const PIX_FMT_GRAY16BE})
+pattern PixFmtGray16le = PixelFormat (#{const PIX_FMT_GRAY16LE})
+pattern PixFmtRgb32 = PixelFormat (#{const PIX_FMT_RGB32})
+pattern PixFmtRgb32_1 = PixelFormat (#{const PIX_FMT_RGB32_1})
+pattern PixFmtBgr32 = PixelFormat (#{const PIX_FMT_BGR32})
+pattern PixFmtBgr32_1 = PixelFormat (#{const PIX_FMT_BGR32_1})
+pattern PixFmtGray16 = PixelFormat (#{const PIX_FMT_GRAY16})
+pattern PixFmtRgb565 = PixelFormat (#{const PIX_FMT_RGB565})
+pattern PixFmtRgb555 = PixelFormat (#{const PIX_FMT_RGB555})
+pattern PixFmtBgr565 = PixelFormat (#{const PIX_FMT_BGR565})
+pattern PixFmtBgr555 = PixelFormat (#{const PIX_FMT_BGR555})
 
 -- PIX_FMT_YUV440P
 -- PIX_FMT_YUVJ440P
@@ -318,104 +311,88 @@ newtype PixelFormat = PixelFormat CInt deriving (Eq, Show, CEnum, Storable)
 
 -- | AVColorPrimaries enum
 newtype AVColorPrimaries = AVColorPrimaries CInt deriving (Eq, Show, CEnum)
-#{enum AVColorPrimaries, AVColorPrimaries,
-	avcol_pri_reserved0 = AVCOL_PRI_RESERVED0,
-	avcol_pri_bt709 = AVCOL_PRI_BT709,
-	avcol_pri_unspecified = AVCOL_PRI_UNSPECIFIED,
-	avcol_pri_reserved = AVCOL_PRI_RESERVED,
-	avcol_pri_bt470m = AVCOL_PRI_BT470M,
-	avcol_pri_bt470bg = AVCOL_PRI_BT470BG,
-	avcol_pri_smpte170m = AVCOL_PRI_SMPTE170M,
-	avcol_pri_smpte240m = AVCOL_PRI_SMPTE240M,
-	avcol_pri_film = AVCOL_PRI_FILM,
-	avcol_pri_bt2020 = AVCOL_PRI_BT2020
-}
+pattern AVColPriReserved0 = AVColorPrimaries (#{const AVCOL_PRI_RESERVED0})
+pattern AVColPriBt709 = AVColorPrimaries (#{const AVCOL_PRI_BT709})
+pattern AVColPriUnspecified = AVColorPrimaries (#{const AVCOL_PRI_UNSPECIFIED})
+pattern AVColPriReserved = AVColorPrimaries (#{const AVCOL_PRI_RESERVED})
+pattern AVColPriBt470m = AVColorPrimaries (#{const AVCOL_PRI_BT470M})
+pattern AVColPriBt470bg = AVColorPrimaries (#{const AVCOL_PRI_BT470BG})
+pattern AVColPriSmpte170m = AVColorPrimaries (#{const AVCOL_PRI_SMPTE170M})
+pattern AVColPriSmpte240m = AVColorPrimaries (#{const AVCOL_PRI_SMPTE240M})
+pattern AVColPriFilm = AVColorPrimaries (#{const AVCOL_PRI_FILM})
+pattern AVColPriBt2020 = AVColorPrimaries (#{const AVCOL_PRI_BT2020})
 
 -- | AVColorTransferCharacteristic enum
 newtype AVColorTransferCharacteristic = AVColorTransferCharacteristic CInt deriving (Eq, Show, CEnum)
-#{enum AVColorTransferCharacteristic, AVColorTransferCharacteristic,
-	avcol_trc_reserved0 = AVCOL_TRC_RESERVED0,
-	avcol_trc_bt709 = AVCOL_TRC_BT709,
-	avcol_trc_unspecified = AVCOL_TRC_UNSPECIFIED,
-	avcol_trc_reserved = AVCOL_TRC_RESERVED,
-	avcol_trc_gamma22 = AVCOL_TRC_GAMMA22,
-	avcol_trc_gamma28 = AVCOL_TRC_GAMMA28,
-	avcol_trc_smpte170m = AVCOL_TRC_SMPTE170M,
-	avcol_trc_smpte240m = AVCOL_TRC_SMPTE240M,
-	avcol_trc_linear = AVCOL_TRC_LINEAR,
-	avcol_trc_log = AVCOL_TRC_LOG,
-	avcol_trc_log_sqrt = AVCOL_TRC_LOG_SQRT,
-	avcol_trc_iec61966_2_4 = AVCOL_TRC_IEC61966_2_4,
-	avcol_trc_bt1361_ecg = AVCOL_TRC_BT1361_ECG,
-	avcol_trc_iec61966_2_1 = AVCOL_TRC_IEC61966_2_1,
-	avcol_trc_bt2020_10 = AVCOL_TRC_BT2020_10,
-	avcol_trc_bt2020_12 = AVCOL_TRC_BT2020_12
-}
+pattern AVColTrcReserved0 = AVColorTransferCharacteristic (#{const AVCOL_TRC_RESERVED0})
+pattern AVColTrcBt709 = AVColorTransferCharacteristic (#{const AVCOL_TRC_BT709})
+pattern AVColTrcUnspecified = AVColorTransferCharacteristic (#{const AVCOL_TRC_UNSPECIFIED})
+pattern AVColTrcReserved = AVColorTransferCharacteristic (#{const AVCOL_TRC_RESERVED})
+pattern AVColTrcGamma22 = AVColorTransferCharacteristic (#{const AVCOL_TRC_GAMMA22})
+pattern AVColTrcGamma28 = AVColorTransferCharacteristic (#{const AVCOL_TRC_GAMMA28})
+pattern AVColTrcSmpte170m = AVColorTransferCharacteristic (#{const AVCOL_TRC_SMPTE170M})
+pattern AVColTrcSmpte240m = AVColorTransferCharacteristic (#{const AVCOL_TRC_SMPTE240M})
+pattern AVColTrcLinear = AVColorTransferCharacteristic (#{const AVCOL_TRC_LINEAR})
+pattern AVColTrcLog = AVColorTransferCharacteristic (#{const AVCOL_TRC_LOG})
+pattern AVColTrcLog_sqrt = AVColorTransferCharacteristic (#{const AVCOL_TRC_LOG_SQRT})
+pattern AVColTrcIec61966_2_4 = AVColorTransferCharacteristic (#{const AVCOL_TRC_IEC61966_2_4})
+pattern AVColTrcBt1361Ecg = AVColorTransferCharacteristic (#{const AVCOL_TRC_BT1361_ECG})
+pattern AVColTrcIec61966_2_1 = AVColorTransferCharacteristic (#{const AVCOL_TRC_IEC61966_2_1})
+pattern AVColTrcBt2020_10 = AVColorTransferCharacteristic (#{const AVCOL_TRC_BT2020_10})
+pattern AVColTrcBt2020_12 = AVColorTransferCharacteristic (#{const AVCOL_TRC_BT2020_12})
 
 -- | AVColorSpace enum
 newtype AVColorSpace = AVColorSpace CInt deriving (Eq, Show, CEnum)
-#{enum AVColorSpace, AVColorSpace,
-	avcol_spc_rgb = AVCOL_SPC_RGB,
-	avcol_spc_bt709 = AVCOL_SPC_BT709,
-	avcol_spc_unspecified = AVCOL_SPC_UNSPECIFIED,
-	avcol_spc_reserved = AVCOL_SPC_RESERVED,
-	avcol_spc_fcc = AVCOL_SPC_FCC,
-	avcol_spc_bt470bg = AVCOL_SPC_BT470BG,
-	avcol_spc_smpte170m = AVCOL_SPC_SMPTE170M,
-	avcol_spc_smpte240m = AVCOL_SPC_SMPTE240M,
-	avcol_spc_ycocg = AVCOL_SPC_YCOCG,
-	avcol_spc_bt2020_ncl = AVCOL_SPC_BT2020_NCL,
-	avcol_spc_bt2020_cl = AVCOL_SPC_BT2020_CL,
-	avcol_spc_ycgco = AVCOL_SPC_YCGCO
-}
+pattern AVColSpcRgb = AVColorSpace (#{const AVCOL_SPC_RGB})
+pattern AVColSpcBt709 = AVColorSpace (#{const AVCOL_SPC_BT709})
+pattern AVColSpcUnspecified = AVColorSpace (#{const AVCOL_SPC_UNSPECIFIED})
+pattern AVColSpcReserved = AVColorSpace (#{const AVCOL_SPC_RESERVED})
+pattern AVColSpcFcc = AVColorSpace (#{const AVCOL_SPC_FCC})
+pattern AVColSpcBt470bg = AVColorSpace (#{const AVCOL_SPC_BT470BG})
+pattern AVColSpcSmpte170m = AVColorSpace (#{const AVCOL_SPC_SMPTE170M})
+pattern AVColSpcSmpte240m = AVColorSpace (#{const AVCOL_SPC_SMPTE240M})
+pattern AVColSpcYcocg = AVColorSpace (#{const AVCOL_SPC_YCOCG})
+pattern AVColSpcBt2020_ncl = AVColorSpace (#{const AVCOL_SPC_BT2020_NCL})
+pattern AVColSpcBt2020_cl = AVColorSpace (#{const AVCOL_SPC_BT2020_CL})
+pattern AVColSpcYcgco = AVColorSpace (#{const AVCOL_SPC_YCGCO})
 
 -- | AVColorRange enum
 newtype AVColorRange = AVColorRange CInt deriving (Eq, Show, CEnum)
-#{enum AVColorRange, AVColorRange,
-	avcol_range_unspecified = AVCOL_RANGE_UNSPECIFIED,
-	avcol_range_mpeg = AVCOL_RANGE_MPEG,
-	avcol_range_jpeg = AVCOL_RANGE_JPEG
-}
+pattern AVColRangeUnspecified = AVColorRange (#{const AVCOL_RANGE_UNSPECIFIED})
+pattern AVColRangeMpeg = AVColorSpace (#{const AVCOL_RANGE_MPEG})
+pattern AVColRangeJpeg = AVColorSpace (#{const AVCOL_RANGE_JPEG})
 
 -- | AVChromaLocation enum
 newtype AVChromaLocation = AVChromaLocation CInt deriving (Eq, Show, CEnum)
-#{enum AVChromaLocation, AVChromaLocation,
-	avchroma_loc_unspecified = AVCHROMA_LOC_UNSPECIFIED,
-	avchroma_loc_left = AVCHROMA_LOC_LEFT,
-	avchroma_loc_center = AVCHROMA_LOC_CENTER,
-	avchroma_loc_topleft = AVCHROMA_LOC_TOPLEFT,
-	avchroma_loc_top = AVCHROMA_LOC_TOP,
-	avchroma_loc_bottomleft = AVCHROMA_LOC_BOTTOMLEFT,
-	avchroma_loc_bottom = AVCHROMA_LOC_BOTTOM
-}
+pattern AVChromaLocUnspecified = AVChromaLocation (#{const AVCHROMA_LOC_UNSPECIFIED})
+pattern AVChromaLocLeft = AVChromaLocation (#{const AVCHROMA_LOC_LEFT})
+pattern AVChromaLocCenter = AVChromaLocation (#{const AVCHROMA_LOC_CENTER})
+pattern AVChromaLocTopleft = AVChromaLocation (#{const AVCHROMA_LOC_TOPLEFT})
+pattern AVChromaLocTop = AVChromaLocation (#{const AVCHROMA_LOC_TOP})
+pattern AVChromaLocBottomleft = AVChromaLocation (#{const AVCHROMA_LOC_BOTTOMLEFT})
+pattern AVChromaLocBottom = AVChromaLocation (#{const AVCHROMA_LOC_BOTTOM})
 
 -- | AVStereo3DType enum
 newtype AVStereo3DType = AVStereo3DType CInt deriving (Eq, Show, CEnum)
-#{enum AVStereo3DType, AVStereo3DType,
-	av_stereo3d_2d = AV_STEREO3D_2D,
-	av_stereo3d_sidebyside = AV_STEREO3D_SIDEBYSIDE,
-	av_stereo3d_topbottom = AV_STEREO3D_TOPBOTTOM,
-	av_stereo3d_framesequence = AV_STEREO3D_FRAMESEQUENCE,
-	av_stereo3d_checkerboard = AV_STEREO3D_CHECKERBOARD,
-	av_stereo3d_sidebyside_quincunx = AV_STEREO3D_SIDEBYSIDE_QUINCUNX,
-	av_stereo3d_lines = AV_STEREO3D_LINES,
-	av_stereo3d_columns = AV_STEREO3D_COLUMNS
-}
+pattern AVStereo3d2d = AVStereo3DType (#{const AV_STEREO3D_2D})
+pattern AVStereo3dSidebyside = AVStereo3DType (#{const AV_STEREO3D_SIDEBYSIDE})
+pattern AVStereo3dTopbottom = AVStereo3DType (#{const AV_STEREO3D_TOPBOTTOM})
+pattern AVStereo3dFramesequence = AVStereo3DType (#{const AV_STEREO3D_FRAMESEQUENCE})
+pattern AVStereo3dCheckerboard = AVStereo3DType (#{const AV_STEREO3D_CHECKERBOARD})
+pattern AVStereo3dSidebysideQuincunx = AVStereo3DType (#{const AV_STEREO3D_SIDEBYSIDE_QUINCUNX})
+pattern AVStereo3dLines = AVStereo3DType (#{const AV_STEREO3D_LINES})
+pattern AVStereo3dColumns = AVStereo3DType (#{const AV_STEREO3D_COLUMNS})
 
 -- | Flags for the AVStereo3D struct
 newtype AVStereo3DFlags = AVStereo3DFlags CInt deriving (Eq, Show, CEnum, CFlags)
-#{enum AVStereo3DFlags, AVStereo3DFlags,
-	av_stereo3d_flag_invert = AV_STEREO3D_FLAG_INVERT
-}
+pattern AVStereo3dFlagInvert = AVStereo3DFlags (#{const AV_STEREO3D_FLAG_INVERT})
 
 -- | AVDownmixType enum
 newtype AVDownmixType = AVDownmixType CInt deriving (Eq, Show, CEnum)
-#{enum AVDownmixType, AVDownmixType,
-	av_downmix_type_unknown = AV_DOWNMIX_TYPE_UNKNOWN,
-	av_downmix_type_loro = AV_DOWNMIX_TYPE_LORO,
-	av_downmix_type_ltrt = AV_DOWNMIX_TYPE_LTRT,
-	av_downmix_type_dplii = AV_DOWNMIX_TYPE_DPLII
-}
+pattern AVDownmixTypeUnknown = AVDownmixType (#{const AV_DOWNMIX_TYPE_UNKNOWN})
+pattern AVDownmixTypeLoro = AVDownmixType (#{const AV_DOWNMIX_TYPE_LORO})
+pattern AVDownmixTypeLtrt = AVDownmixType (#{const AV_DOWNMIX_TYPE_LTRT})
+pattern AVDownmixTypeDplii = AVDownmixType (#{const AV_DOWNMIX_TYPE_DPLII})
 
 -- | AVOptType enum
 newtype AVOptType = AVOptType CInt deriving (Eq, CEnum, Storable)
@@ -460,33 +437,28 @@ instance Show AVOptType where
 
 -- | AVOptionFlags enum
 newtype AVOptionFlags = AVOptionFlags CInt deriving (Eq, Show, CEnum, CFlags, Storable)
-#{enum AVOptionFlags, AVOptionFlags,
-	av_opt_flag_encoding_param = AV_OPT_FLAG_ENCODING_PARAM,
-	av_opt_flag_decoding_param = AV_OPT_FLAG_DECODING_PARAM,
-	av_opt_flag_audio_param = AV_OPT_FLAG_AUDIO_PARAM,
-	av_opt_flag_video_param = AV_OPT_FLAG_VIDEO_PARAM,
-	av_opt_flag_subtitle_param = AV_OPT_FLAG_SUBTITLE_PARAM,
-	av_opt_flag_export = AV_OPT_FLAG_EXPORT,
-	av_opt_flag_readonly = AV_OPT_FLAG_READONLY,
-	av_opt_flag_filtering_param = AV_OPT_FLAG_FILTERING_PARAM
-}
+pattern AVOptFlagEncodingParam = AVOptionFlags (#{const AV_OPT_FLAG_ENCODING_PARAM})
+pattern AVOptFlagDecodingParam = AVOptionFlags (#{const AV_OPT_FLAG_DECODING_PARAM})
+pattern AVOptFlagAudioParam = AVOptionFlags (#{const AV_OPT_FLAG_AUDIO_PARAM})
+pattern AVOptFlagVideoParam = AVOptionFlags (#{const AV_OPT_FLAG_VIDEO_PARAM})
+pattern AVOptFlagSubtitleParam = AVOptionFlags (#{const AV_OPT_FLAG_SUBTITLE_PARAM})
+pattern AVOptFlagExport = AVOptionFlags (#{const AV_OPT_FLAG_EXPORT})
+pattern AVOptFlagReadonly = AVOptionFlags (#{const AV_OPT_FLAG_READONLY})
+pattern AVOptFlagFilteringParam = AVOptionFlags (#{const AV_OPT_FLAG_FILTERING_PARAM})
 
 -- | AV_OPT_SEARCH_ flags
 newtype AVOptionSearchFlags = AVOptionSearchFlags CInt deriving (Eq, Show, CEnum, CFlags)
-#{enum AVOptionSearchFlags, AVOptionSearchFlags,
-	av_opt_search_children = AV_OPT_SEARCH_CHILDREN,
-	av_opt_search_fake_obj = AV_OPT_SEARCH_FAKE_OBJ
-}
+pattern AVOptSearchChildren = AVOptionSearchFlags (#{const AV_OPT_SEARCH_CHILDREN})
+pattern AVOptSearchFakeObj = AVOptionSearchFlags (#{const AV_OPT_SEARCH_FAKE_OBJ})
 
+-- | AVPictureType enum
 newtype AVPictureType = AVPictureType CInt deriving (Eq, Show, CEnum, Storable)
-#{enum AVPictureType, AVPictureType,
-	av_picture_type_none = AV_PICTURE_TYPE_NONE,
-	av_picture_type_i = AV_PICTURE_TYPE_I,
-	av_picture_type_p = AV_PICTURE_TYPE_P,
-	av_picture_type_b = AV_PICTURE_TYPE_B,
-	av_picture_type_s = AV_PICTURE_TYPE_S,
-	av_picture_type_si = AV_PICTURE_TYPE_SI,
-	av_picture_type_sp = AV_PICTURE_TYPE_SP,
-	av_picture_type_bi = AV_PICTURE_TYPE_BI
-}
+pattern AVPictureTypeNone = AVPictureType (#{const AV_PICTURE_TYPE_NONE})
+pattern AVPictureTypeI = AVPictureType (#{const AV_PICTURE_TYPE_I})
+pattern AVPictureTypeP = AVPictureType (#{const AV_PICTURE_TYPE_P})
+pattern AVPictureTypeB = AVPictureType (#{const AV_PICTURE_TYPE_B})
+pattern AVPictureTypeS = AVPictureType (#{const AV_PICTURE_TYPE_S})
+pattern AVPictureTypeSi = AVPictureType (#{const AV_PICTURE_TYPE_SI})
+pattern AVPictureTypeSp = AVPictureType (#{const AV_PICTURE_TYPE_SP})
+pattern AVPictureTypeBi = AVPictureType (#{const AV_PICTURE_TYPE_BI})
 

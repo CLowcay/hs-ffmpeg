@@ -92,13 +92,13 @@ alignDimensions2 :: MonadIO m =>
 alignDimensions2 ctx (w, h) ls = liftIO.withThis ctx$ \ptr ->
 	alloca$ \pw ->
 	alloca$ \ph ->
-	withArray (take av_num_data_pointers$ (fromIntegral <$> ls) ++ [1..]) $ \pls -> do
+	withArray (take AVNumDataPointers$ (fromIntegral <$> ls) ++ [1..]) $ \pls -> do
 		poke pw (fromIntegral w)
 		poke ph (fromIntegral h)
 		avcodec_align_dimensions2 ptr pw ph pls
 		w' <- fromIntegral <$> peek pw
 		h' <- fromIntegral <$> peek ph
-		ls' <- (fmap fromIntegral) <$> peekArray av_num_data_pointers pls
+		ls' <- (fmap fromIntegral) <$> peekArray AVNumDataPointers pls
 		return (w', h', ls')
 
 -- | Get the (x, y) coordinates of an AVChromaLocation

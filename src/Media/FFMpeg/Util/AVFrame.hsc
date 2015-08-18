@@ -337,72 +337,72 @@ class AVFrameSideDataPayload a where
 
 instance AVFrameSideDataPayload AVFrameDataPanScan where
 	peekAVFrameSideDataPtr ptr = castPtr <$>
-		av_frame_get_side_data ptr (fromCEnum av_frame_data_panscan)
-	getPayloadType _ = av_frame_data_panscan
+		av_frame_get_side_data ptr (fromCEnum AVFrameDataTypePanscan)
+	getPayloadType _ = AVFrameDataTypePanscan
 	getPayloadSize (AVFrameDataPanScan x) = fromIntegral$ sizeOf x
 	peekPayload ptr _ = peek ptr
 	pokePayload = poke
 instance AVFrameSideDataPayload AVFrameDataA53CC where
 	peekAVFrameSideDataPtr ptr = castPtr <$>
-		av_frame_get_side_data ptr (fromCEnum av_frame_data_a53_cc)
-	getPayloadType _ = av_frame_data_a53_cc
+		av_frame_get_side_data ptr (fromCEnum AVFrameDataTypeA53CC)
+	getPayloadType _ = AVFrameDataTypeA53CC
 	getPayloadSize (AVFrameDataA53CC s) = fromIntegral$ B.length s
 	peekPayload ptr size = AVFrameDataA53CC <$> B.packCStringLen (castPtr ptr, size)
 	pokePayload ptr (AVFrameDataA53CC s) = B.unsafeUseAsCString s$ \ps ->
 		copyArray (castPtr ptr) ps (B.length s)
 instance AVFrameSideDataPayload AVFrameDataStereo3d where
 	peekAVFrameSideDataPtr ptr = castPtr <$>
-		av_frame_get_side_data ptr (fromCEnum av_frame_data_stereo3d)
-	getPayloadType _ = av_frame_data_stereo3d
+		av_frame_get_side_data ptr (fromCEnum AVFrameDataTypeStereo3d)
+	getPayloadType _ = AVFrameDataTypeStereo3d
 	getPayloadSize (AVFrameDataStereo3d  x) = fromIntegral$ sizeOf x
 	peekPayload ptr _ = peek ptr
 	pokePayload = poke
 instance AVFrameSideDataPayload AVFrameDataMatrixEncoding where
 	peekAVFrameSideDataPtr ptr = castPtr <$>
-		av_frame_get_side_data ptr (fromCEnum av_frame_data_matrixencoding)
-	getPayloadType _ = av_frame_data_matrixencoding
+		av_frame_get_side_data ptr (fromCEnum AVFrameDataTypeMatrixEncoding)
+	getPayloadType _ = AVFrameDataTypeMatrixEncoding
 	getPayloadSize (AVFrameDataMatrixEncoding x) = fromIntegral$ sizeOf x
 	peekPayload ptr _ = peek ptr
 	pokePayload = poke
 instance AVFrameSideDataPayload AVFrameDataDownmixInfo where
 	peekAVFrameSideDataPtr ptr = castPtr <$>
-		av_frame_get_side_data ptr (fromCEnum av_frame_data_downmix_info)
-	getPayloadType _ = av_frame_data_downmix_info
+		av_frame_get_side_data ptr (fromCEnum AVFrameDataTypeDownmixInfo)
+	getPayloadType _ = AVFrameDataTypeDownmixInfo
 	getPayloadSize (AVFrameDataDownmixInfo  x) = fromIntegral$ sizeOf x
 	peekPayload ptr _ = peek ptr
 	pokePayload = poke
 instance AVFrameSideDataPayload AVFrameDataReplayGain where
 	peekAVFrameSideDataPtr ptr = castPtr <$>
-		av_frame_get_side_data ptr (fromCEnum av_frame_data_replaygain)
-	getPayloadType _ = av_frame_data_replaygain
+		av_frame_get_side_data ptr (fromCEnum AVFrameDataTypeReplayGain)
+	getPayloadType _ = AVFrameDataTypeReplayGain
 	getPayloadSize (AVFrameDataReplayGain  x) = fromIntegral$ sizeOf x
 	peekPayload ptr _ = peek ptr
 	pokePayload = poke
 instance AVFrameSideDataPayload AVFrameDataDisplayMatrix where
 	peekAVFrameSideDataPtr ptr = castPtr <$>
-		av_frame_get_side_data ptr (fromCEnum av_frame_data_displaymatrix)
-	getPayloadType _ = av_frame_data_displaymatrix
+		av_frame_get_side_data ptr (fromCEnum AVFrameDataTypeDisplayMatrix)
+	getPayloadType _ = AVFrameDataTypeDisplayMatrix
 	getPayloadSize (AVFrameDataDisplayMatrix  x) = fromIntegral$ sizeOf x
 	peekPayload ptr _ = peek ptr
 	pokePayload = poke
 instance AVFrameSideDataPayload AVFrameDataAfd where
 	peekAVFrameSideDataPtr ptr = castPtr <$>
-		av_frame_get_side_data ptr (fromCEnum av_frame_data_afd)
-	getPayloadType _ = av_frame_data_afd
+		av_frame_get_side_data ptr (fromCEnum AVFrameDataTypeAfd)
+	getPayloadType _ = AVFrameDataTypeAfd
 	getPayloadSize _ = 1
 	peekPayload ptr _ = (AVFrameDataAfd).toCEnum.fromIntegral <$> (peek (castPtr ptr) :: IO Word8)
 	pokePayload ptr (AVFrameDataAfd x) = poke (castPtr ptr) (fromIntegral.fromCEnum$ x :: Word8)
 instance AVFrameSideDataPayload AVFrameDataMotionVectors where
 	peekAVFrameSideDataPtr ptr = castPtr <$>
-		av_frame_get_side_data ptr (fromCEnum av_frame_data_motion_vectors)
-	getPayloadType _ = av_frame_data_motion_vectors
+		av_frame_get_side_data ptr (fromCEnum AVFrameDataTypeMotionVectors)
+	getPayloadType _ = AVFrameDataTypeMotionVectors
 	getPayloadSize (AVFrameDataMotionVectors  x) = fromIntegral$ sizeOf x
 	peekPayload ptr _ = peek ptr
 	pokePayload = poke
 instance AVFrameSideDataPayload AVFrameDataSkipSamples where
 	peekAVFrameSideDataPtr ptr = castPtr <$>
-		av_frame_get_side_data ptr (fromCEnum av_frame_data_skip_samples)
-	getPayloadType _ = av_frame_data_skip_samples
+		av_frame_get_side_data ptr (fromCEnum AVFrameDataTypeSkipSamples)
+	getPayloadType _ = AVFrameDataTypeSkipSamples
 	getPayloadSize (AVFrameDataSkipSamples  x) = fromIntegral$ sizeOf x
 	peekPayload ptr _ = peek ptr
 	pokePayload = poke
