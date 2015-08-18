@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 {- |
 
@@ -98,29 +99,29 @@ instance Storable AVPacketParamChange where
 		flags <- peek (castPtr ptr) :: IO AVSideDataParamChangeFlags
 		let ptrData = ptr `plusPtr` 4
 		case flags of
-			av_side_data_param_change_channel_count ->
+			AVSideDataParamChangeChannelCount ->
 				AVPacketParamChangeChannelCount <$> peek ptrData
-			av_side_data_param_change_channel_layout ->
+			AVSideDataParamChangeChannelLayout ->
 				AVPacketParamChangeChannelLayout <$> peek ptrData
-			av_side_data_param_change_sample_rate ->
+			AVSideDataParamChangeSampleRate ->
 				AVPacketParamChangeChannelSampleRate <$> peek ptrData
-			av_side_data_param_change_dimensions ->
+			AVSideDataParamChangeDimensions ->
 				AVPacketParamChangeChannelDimensions <$>
 					(peek ptrData) <*> (peek$ ptrData `plusPtr` 4)
 			_ -> fail$
 				"Attempted to marshal an AVPacketParamChange into Haskell, but the flag field was invalid."
 				++ "  The flag field was " ++ (show flags)
 	poke ptr (AVPacketParamChangeChannelCount v) = do
-		poke (castPtr ptr) av_side_data_param_change_channel_count
+		poke (castPtr ptr) AVSideDataParamChangeChannelCount
 		poke (ptr `plusPtr` 4) v
 	poke ptr (AVPacketParamChangeChannelLayout v) = do
-		poke (castPtr ptr) av_side_data_param_change_channel_layout
+		poke (castPtr ptr) AVSideDataParamChangeChannelLayout
 		poke (ptr `plusPtr` 4) v
 	poke ptr (AVPacketParamChangeChannelSampleRate v) = do
-		poke (castPtr ptr) av_side_data_param_change_sample_rate
+		poke (castPtr ptr) AVSideDataParamChangeSampleRate
 		poke (ptr `plusPtr` 4) v
 	poke ptr (AVPacketParamChangeChannelDimensions w h) = do
-		poke (castPtr ptr) av_side_data_param_change_dimensions
+		poke (castPtr ptr) AVSideDataParamChangeDimensions
 		poke (ptr `plusPtr` 4) w
 		poke (ptr `plusPtr` 8) h
 

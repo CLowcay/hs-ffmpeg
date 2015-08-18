@@ -1,5 +1,6 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 {- |
 
@@ -15,702 +16,702 @@ Enumerations for libavcodec.
 
 module Media.FFMpeg.Codec.Enums (
 	AVMediaType,
-	avmedia_type_unknown,
-	avmedia_type_video,
-	avmedia_type_audio,
-	avmedia_type_data,
-	avmedia_type_subtitle,
-	avmedia_type_attachment,
+	pattern AVMediaTypeUnknown,
+	pattern AVMediaTypeVideo,
+	pattern AVMediaTypeAudio,
+	pattern AVMediaTypeData,
+	pattern AVMediaTypeSubtitle,
+	pattern AVMediaTypeAttachment,
 
 	AVSampleFormat,
-	av_sample_fmt_none,
-	av_sample_fmt_u8,
-	av_sample_fmt_s16,
-	av_sample_fmt_s32,
-	av_sample_fmt_flt,
-	av_sample_fmt_dbl,
-	av_sample_fmt_u8p,
-	av_sample_fmt_s16p,
-	av_sample_fmt_s32p,
-	av_sample_fmt_fltp,
-	av_sample_fmt_dblp,
+	pattern AVSampleFmtNone,
+	pattern AVSampleFmtU8,
+	pattern AVSampleFmtS16,
+	pattern AVSampleFmtS32,
+	pattern AVSampleFmtFlt,
+	pattern AVSampleFmtDbl,
+	pattern AVSampleFmtU8p,
+	pattern AVSampleFmtS16p,
+	pattern AVSampleFmtS32p,
+	pattern AVSampleFmtFltp,
+	pattern AVSampleFmtDblp,
 
 	AVPacketSideDataType,
-	av_pkt_data_palette,
-	av_pkt_data_new_extradata,
-	av_pkt_data_param_change,
-	av_pkt_data_h263_mb_info,
-	av_pkt_data_replaygain,
-	av_pkt_data_displaymatrix,
-	av_pkt_data_stereo3d,
-	--av_pkt_data_audio_service_type,
-	--av_pkt_data_quality_factor,
-	av_pkt_data_skip_samples,
-	av_pkt_data_jp_dualmono,
-	av_pkt_data_strings_metadata,
-	av_pkt_data_subtitle_position,
-	av_pkt_data_matroska_blockadditional,
-	av_pkt_data_webvtt_identifier,
-	av_pkt_data_webvtt_settings,
-	av_pkt_data_metadata_update,
+	pattern AVPktDataPalette,
+	pattern AVPktDataNewExtradata,
+	pattern AVPktDataParamChange,
+	pattern AVPktDataH263MbInfo,
+	pattern AVPktDataReplayGain,
+	pattern AVPktDataDisplayMatrix,
+	pattern AVPktDataStereo3d,
+	--pattern AVPktDataAudioServiceType,
+	--pattern AVPktDataQualityFactor,
+	pattern AVPktDataSkipSamples,
+	pattern AVPktDataJpDualmono,
+	pattern AVPktDataStringsMetadata,
+	pattern AVPktDataSubtitlePosition,
+	pattern AVPktDataMatroskaBlockadditional,
+	pattern AVPktDataWebvttIdentifier,
+	pattern AVPktDataWebvttSettings,
+	pattern AVPktDataMetadataUpdate,
 
 	AVPacketFlag,
-	av_pkt_flag_key,
-	av_pkt_flag_corrupt,
+	pattern AVPktFlagKey,
+	pattern AVPktFlagCorrupt,
 
 	AVSideDataParamChangeFlags,
-	av_side_data_param_change_channel_count,
-	av_side_data_param_change_channel_layout,
-	av_side_data_param_change_sample_rate,
-	av_side_data_param_change_dimensions,
+	pattern AVSideDataParamChangeChannelCount,
+	pattern AVSideDataParamChangeChannelLayout,
+	pattern AVSideDataParamChangeSampleRate,
+	pattern AVSideDataParamChangeDimensions,
 
 	AVCodecProp,
-	av_codec_prop_intra_only,
-	av_codec_prop_lossy,
-	av_codec_prop_lossless,
-	av_codec_prop_reorder,
-	av_codec_prop_bitmap_sub,
-	av_codec_prop_text_sub,
+	pattern AVCodecPropIntraOnly,
+	pattern AVCodecPropLossy,
+	pattern AVCodecPropLossless,
+	pattern AVCodecPropReorder,
+	pattern AVCodecPropBitmapSub,
+	pattern AVCodecPropTextSub,
 
-	ff_max_b_frames,
+	pattern FFMaxBFrames,
 
 	AVCodecFlag,
-	codec_flag_unaligned,
-	codec_flag_qscale,
-	codec_flag_4mv,
-	codec_flag_output_corrupt,
-	codec_flag_qpel,
-	codec_flag_gmc,
-	codec_flag_mv0,
-	codec_flag_input_preserved,
-	codec_flag_pass1,
-	codec_flag_pass2,
-	codec_flag_gray,
-	codec_flag_emu_edge,
-	codec_flag_psnr,
-	codec_flag_truncated,
-	codec_flag_normalize_aqp,
-	codec_flag_interlaced_dct,
-	codec_flag_low_delay,
-	codec_flag_global_header,
-	codec_flag_bitexact,
-	codec_flag_ac_pred,
-	codec_flag_loop_filter,
-	codec_flag_interlaced_me,
-	codec_flag_closed_gop,
+	pattern CodecFlagUnaligned,
+	pattern CodecFlagQscale,
+	pattern CodecFlag4mv,
+	pattern CodecFlagOutputCorrupt,
+	pattern CodecFlagQpel,
+	pattern CodecFlagGmc,
+	pattern CodecFlagMv0,
+	pattern CodecFlagInputPreserved,
+	pattern CodecFlagPass1,
+	pattern CodecFlagPass2,
+	pattern CodecFlagGray,
+	pattern CodecFlagEmuEdge,
+	pattern CodecFlagPsnr,
+	pattern CodecFlagTruncated,
+	pattern CodecFlagNormalizeAqp,
+	pattern CodecFlagInterlacedDct,
+	pattern CodecFlagLowDelay,
+	pattern CodecFlagGlobalHeader,
+	pattern CodecFlagBitexact,
+	pattern CodecFlagAcPred,
+	pattern CodecFlagLoopFilter,
+	pattern CodecFlagInterlacedMe,
+	pattern CodecFlagClosedGop,
 
 	AVCodecFlag2,
-	codec_flag2_fast,
-	codec_flag2_no_output,
-	codec_flag2_local_header,
-	codec_flag2_drop_frame_timecode,
-	codec_flag2_ignore_crop,
-	codec_flag2_chunks,
-	codec_flag2_show_all,
-	codec_flag2_export_mvs,
-	codec_flag2_skip_manual,
+	pattern CodecFlag2Fast,
+	pattern CodecFlag2NoOutput,
+	pattern CodecFlag2LocalHeader,
+	pattern CodecFlag2DropFrameTimecode,
+	pattern CodecFlag2IgnoreCrop,
+	pattern CodecFlag2Chunks,
+	pattern CodecFlag2ShowAll,
+	pattern CodecFlag2ExportMvs,
+	pattern CodecFlag2SkipManual,
 
 	AVCodecCap,
-	codec_cap_draw_horiz_band,
-	codec_cap_dr1,
-	codec_cap_truncated,
-	codec_cap_delay,
-	codec_cap_small_last_frame,
-	codec_cap_hwaccel_vdpau,
-	codec_cap_subframes,
-	codec_cap_experimental,
-	codec_cap_channel_conf,
-	codec_cap_neg_linesizes,
-	codec_cap_frame_threads,
-	codec_cap_slice_threads,
-	codec_cap_param_change,
-	codec_cap_auto_threads,
-	codec_cap_variable_frame_size,
-	codec_cap_intra_only,
-	codec_cap_lossless,
+	pattern CodecCapDrawHorizBand,
+	pattern CodecCapDr1,
+	pattern CodecCapTruncated,
+	pattern CodecCapDelay,
+	pattern CodecCapSmallLastFrame,
+	pattern CodecCapHwaccelVdpau,
+	pattern CodecCapSubframes,
+	pattern CodecCapExperimental,
+	pattern CodecCapChannelConf,
+	pattern CodecCapNegLinesizes,
+	pattern CodecCapFrameThreads,
+	pattern CodecCapSliceThreads,
+	pattern CodecCapParamChange,
+	pattern CodecCapAutoThreads,
+	pattern CodecCapVariableFrameSize,
+	pattern CodecCapIntraOnly,
+	pattern CodecCapLossless,
 
 	AVMBType,
-	mb_type_intra4X4,
-	mb_type_intra16X16,
-	mb_type_intra_pcm,
-	mb_type_16X16,
-	mb_type_16X8,
-	mb_type_8X16,
-	mb_type_8X8,
-	mb_type_interlaced,
-	mb_type_direct2,
-	mb_type_acpred,
-	mb_type_gmc,
-	mb_type_skip,
-	mb_type_p0l0,
-	mb_type_p1l0,
-	mb_type_p0l1,
-	mb_type_p1l1,
-	mb_type_l0,
-	mb_type_l1,
-	mb_type_l0l1,
-	mb_type_quant,
-	mb_type_cbp,
+	pattern MBTypeIntra4X4,
+	pattern MBTypeIntra16X16,
+	pattern MBTypeIntraPcm,
+	pattern MBType16X16,
+	pattern MBType16X8,
+	pattern MBType8X16,
+	pattern MBType8X8,
+	pattern MBTypeInterlaced,
+	pattern MBTypeDirect2,
+	pattern MBTypeAcpred,
+	pattern MBTypeGmc,
+	pattern MBTypeSkip,
+	pattern MBTypeP0l0,
+	pattern MBTypeP1l0,
+	pattern MBTypeP0l1,
+	pattern MBTypeP1l1,
+	pattern MBTypeL0,
+	pattern MBTypeL1,
+	pattern MBTypeL0l1,
+	pattern MBTypeQuant,
+	pattern MBTypeCbp,
 
 	FFQscaleType,
-	ff_qscale_type_mpeg1,
-	ff_qscale_type_mpeg2,
-	ff_qscale_type_h264,
-	ff_qscale_type_vp56,
+	pattern FFQscaleTypeMpeg1,
+	pattern FFQscaleTypeMpeg2,
+	pattern FFQscaleTypeH264,
+	pattern FFQscaleTypeVp56,
 
 	FFBufferType,
-	ff_buffer_type_internal,
-	ff_buffer_type_user,
-	ff_buffer_type_shared,
-	ff_buffer_type_copy,
+	pattern FFBufferTypeInternal,
+	pattern FFBufferTypeUser,
+	pattern FFBufferTypeShared,
+	pattern FFBufferTypeCopy,
 
 	FFBufferHints,
-	ff_buffer_hints_valid,
-	ff_buffer_hints_readable,
-	ff_buffer_hints_preserve,
-	ff_buffer_hints_reusable,
+	pattern FFBufferHintsValid,
+	pattern FFBufferHintsReadable,
+	pattern FFBufferHintsPreserve,
+	pattern FFBufferHintsReusable,
 
 	AVGetBufferFlag,
-	av_get_buffer_flag_ref,
+	pattern AVGetBufferFlagRef,
 
 	AVSubtitleFlag,
-	av_subtitle_flag_forced,
+	pattern AVSubtitleFlagForced,
 
 	AVAudioServiceType,
-	av_audio_service_type_main,
-	av_audio_service_type_effects,
-	av_audio_service_type_visually_impaired,
-	av_audio_service_type_hearing_impaired,
-	av_audio_service_type_dialogue,
-	av_audio_service_type_commentary,
-	av_audio_service_type_emergency,
-	av_audio_service_type_voice_over,
-	av_audio_service_type_karaoke,
+	pattern AVAudioServiceTypeMain,
+	pattern AVAudioServiceTypeEffects,
+	pattern AVAudioServiceTypeVisuallyImpaired,
+	pattern AVAudioServiceTypeHearingImpaired,
+	pattern AVAudioServiceTypeDialogue,
+	pattern AVAudioServiceTypeCommentary,
+	pattern AVAudioServiceTypeEmergency,
+	pattern AVAudioServiceTypeVoiceOver,
+	pattern AVAudioServiceTypeKaraoke,
 
 	AVFieldOrder,
-	av_field_unknown,
-	av_field_progressive,
-	av_field_tt,
-	av_field_bb,
-	av_field_tb,
-	av_field_bt,
+	pattern AVFieldUnknown,
+	pattern AVFieldProgressive,
+	pattern AVFieldTt,
+	pattern AVFieldBb,
+	pattern AVFieldTb,
+	pattern AVFieldBt,
 
 	AVSubtitleType,
-	subtitle_none,
-	subtitle_bitmap,
-	subtitle_text,
-	subtitle_ass,
+	pattern SubtitleNone,
+	pattern SubtitleBitmap,
+	pattern SubtitleText,
+	pattern SubtitleAss,
 
 	AVDiscard,
-	avdiscard_none,
-	avdiscard_default,
-	avdiscard_nonref,
-	avdiscard_bidir,
-	avdiscard_nonintra,
-	avdiscard_nonkey,
-	avdiscard_all,
+	pattern AVDiscardNone,
+	pattern AVDiscardDefault,
+	pattern AVDiscardNonref,
+	pattern AVDiscardBidir,
+	pattern AVDiscardNonintra,
+	pattern AVDiscardNonkey,
+	pattern AVDiscardAll,
 
-	ff_input_buffer_padding_size,
+	pattern FFInputBufferPaddingSize,
 
 	Motion_Est_ID,
-	me_zero,
-	me_full,
-	me_log,
-	me_phods,
-	me_epzs,
-	me_x1,
-	me_hex,
-	me_umh,
-	me_tesa,
-	me_iter,
+	pattern MEZero,
+	pattern MEFull,
+	pattern MELog,
+	pattern MEPhods,
+	pattern MEEpzs,
+	pattern MEX1,
+	pattern MEHex,
+	pattern MEUmh,
+	pattern METesa,
+	pattern MEIter,
 
-	ff_min_buffer_size,
+	pattern FFMinBufferSize,
 
 	FFCompliance,
-	ff_compliance_very_strict,
-	ff_compliance_strict,
-	ff_compliance_normal,
-	ff_compliance_unofficial,
-	ff_compliance_experimental,
+	pattern FFComplianceVeryStrict,
+	pattern FFComplianceStrict,
+	pattern FFComplianceNormal,
+	pattern FFComplianceUnofficial,
+	pattern FFComplianceExperimental,
 
 	FFProfile,
-	ff_profile_unknown,
-	ff_profile_reserved,
-	ff_profile_aac_main,
-	ff_profile_aac_low,
-	ff_profile_aac_ssr,
-	ff_profile_aac_ltp,
-	ff_profile_aac_he,
-	ff_profile_aac_he_v2,
-	ff_profile_aac_ld,
-	ff_profile_aac_eld,
-	ff_profile_mpeg2_aac_low,
-	ff_profile_mpeg2_aac_he,
-	ff_profile_dts,
-	ff_profile_dts_es,
-	ff_profile_dts_96_24,
-	ff_profile_dts_hd_hra,
-	ff_profile_dts_hd_ma,
-	ff_profile_mpeg2_422,
-	ff_profile_mpeg2_high,
-	ff_profile_mpeg2_ss,
-	ff_profile_mpeg2_snr_scalable,
-	ff_profile_mpeg2_main,
-	ff_profile_mpeg2_simple,
-	ff_profile_h264_constrained,
-	ff_profile_h264_intra,
-	ff_profile_h264_baseline,
-	ff_profile_h264_constrained_baseline,
-	ff_profile_h264_main,
-	ff_profile_h264_extended,
-	ff_profile_h264_high,
-	ff_profile_h264_high_10,
-	ff_profile_h264_high_10_intra,
-	ff_profile_h264_high_422,
-	ff_profile_h264_high_422_intra,
-	ff_profile_h264_high_444,
-	ff_profile_h264_high_444_predictive,
-	ff_profile_h264_high_444_intra,
-	ff_profile_h264_cavlc_444,
-	ff_profile_vc1_simple,
-	ff_profile_vc1_main,
-	ff_profile_vc1_complex,
-	ff_profile_vc1_advanced,
-	ff_profile_mpeg4_simple,
-	ff_profile_mpeg4_simple_scalable,
-	ff_profile_mpeg4_core,
-	ff_profile_mpeg4_main,
-	ff_profile_mpeg4_n_bit,
-	ff_profile_mpeg4_scalable_texture,
-	ff_profile_mpeg4_simple_face_animation,
-	ff_profile_mpeg4_basic_animated_texture,
-	ff_profile_mpeg4_hybrid,
-	ff_profile_mpeg4_advanced_real_time,
-	ff_profile_mpeg4_core_scalable,
-	ff_profile_mpeg4_advanced_coding,
-	ff_profile_mpeg4_advanced_core,
-	ff_profile_mpeg4_advanced_scalable_texture,
-	ff_profile_mpeg4_simple_studio,
-	ff_profile_mpeg4_advanced_simple,
-	ff_profile_jpeg2000_cstream_restriction_0,
-	ff_profile_jpeg2000_cstream_restriction_1,
-	ff_profile_jpeg2000_cstream_no_restriction,
-	ff_profile_jpeg2000_dcinema_2k,
-	ff_profile_jpeg2000_dcinema_4k,
-	ff_profile_hevc_main,
-	ff_profile_hevc_main_10,
-	ff_profile_hevc_main_still_picture,
-	ff_profile_hevc_rext,
+	pattern FFProfileUnknown,
+	pattern FFProfileReserved,
+	pattern FFProfileAacMain,
+	pattern FFProfileAacLow,
+	pattern FFProfileAacSsr,
+	pattern FFProfileAacLtp,
+	pattern FFProfileAacHe,
+	pattern FFProfileAacHeV2,
+	pattern FFProfileAacLd,
+	pattern FFProfileAacEld,
+	pattern FFProfileMpeg2AacLow,
+	pattern FFProfileMpeg2AacHe,
+	pattern FFProfileDts,
+	pattern FFProfileDtsEs,
+	pattern FFProfileDts9624,
+	pattern FFProfileDtsHdHra,
+	pattern FFProfileDtsHdMa,
+	pattern FFProfileMpeg2422,
+	pattern FFProfileMpeg2High,
+	pattern FFProfileMpeg2Ss,
+	pattern FFProfileMpeg2SnrScalable,
+	pattern FFProfileMpeg2Main,
+	pattern FFProfileMpeg2Simple,
+	pattern FFProfileH264Constrained,
+	pattern FFProfileH264Intra,
+	pattern FFProfileH264Baseline,
+	pattern FFProfileH264ConstrainedBaseline,
+	pattern FFProfileH264Main,
+	pattern FFProfileH264Extended,
+	pattern FFProfileH264High,
+	pattern FFProfileH264High10,
+	pattern FFProfileH264High10Intra,
+	pattern FFProfileH264High422,
+	pattern FFProfileH264High422Intra,
+	pattern FFProfileH264High444,
+	pattern FFProfileH264High444Predictive,
+	pattern FFProfileH264High444Intra,
+	pattern FFProfileH264Cavlc444,
+	pattern FFProfileVc1Simple,
+	pattern FFProfileVc1Main,
+	pattern FFProfileVc1Complex,
+	pattern FFProfileVc1Advanced,
+	pattern FFProfileMpeg4Simple,
+	pattern FFProfileMpeg4SimpleScalable,
+	pattern FFProfileMpeg4Core,
+	pattern FFProfileMpeg4Main,
+	pattern FFProfileMpeg4NBit,
+	pattern FFProfileMpeg4ScalableTexture,
+	pattern FFProfileMpeg4SimpleFaceAnimation,
+	pattern FFProfileMpeg4BasicAnimatedTexture,
+	pattern FFProfileMpeg4Hybrid,
+	pattern FFProfileMpeg4AdvancedRealTime,
+	pattern FFProfileMpeg4CoreScalable,
+	pattern FFProfileMpeg4AdvancedCoding,
+	pattern FFProfileMpeg4AdvancedCore,
+	pattern FFProfileMpeg4AdvancedScalableTexture,
+	pattern FFProfileMpeg4SimpleStudio,
+	pattern FFProfileMpeg4AdvancedSimple,
+	pattern FFProfileJpeg2000CstreamRestriction0,
+	pattern FFProfileJpeg2000CstreamRestriction1,
+	pattern FFProfileJpeg2000CstreamNoRestriction,
+	pattern FFProfileJpeg2000Dcinema2k,
+	pattern FFProfileJpeg2000Dcinema4k,
+	pattern FFProfileHevcMain,
+	pattern FFProfileHevcMain10,
+	pattern FFProfileHevcMainStillPicture,
+	pattern FFProfileHevcRext,
 
 	AVCodecID,
-	av_codec_id_none,
-	av_codec_id_mpeg1video,
-	av_codec_id_mpeg2video,
-	av_codec_id_h261,
-	av_codec_id_h263,
-	av_codec_id_rv10,
-	av_codec_id_rv20,
-	av_codec_id_mjpeg,
-	av_codec_id_mjpegb,
-	av_codec_id_ljpeg,
-	av_codec_id_sp5x,
-	av_codec_id_jpegls,
-	av_codec_id_mpeg4,
-	av_codec_id_rawvideo,
-	av_codec_id_msmpeg4v1,
-	av_codec_id_msmpeg4v2,
-	av_codec_id_msmpeg4v3,
-	av_codec_id_wmv1,
-	av_codec_id_wmv2,
-	av_codec_id_h263p,
-	av_codec_id_h263i,
-	av_codec_id_flv1,
-	av_codec_id_svq1,
-	av_codec_id_svq3,
-	av_codec_id_dvvideo,
-	av_codec_id_huffyuv,
-	av_codec_id_cyuv,
-	av_codec_id_h264,
-	av_codec_id_indeo3,
-	av_codec_id_vp3,
-	av_codec_id_theora,
-	av_codec_id_asv1,
-	av_codec_id_asv2,
-	av_codec_id_ffv1,
-	av_codec_id_4xm,
-	av_codec_id_vcr1,
-	av_codec_id_cljr,
-	av_codec_id_mdec,
-	av_codec_id_roq,
-	av_codec_id_interplay_video,
-	av_codec_id_xan_wc3,
-	av_codec_id_xan_wc4,
-	av_codec_id_rpza,
-	av_codec_id_cinepak,
-	av_codec_id_ws_vqa,
-	av_codec_id_msrle,
-	av_codec_id_msvideo1,
-	av_codec_id_idcin,
-	av_codec_id_8bps,
-	av_codec_id_smc,
-	av_codec_id_flic,
-	av_codec_id_truemotion1,
-	av_codec_id_vmdvideo,
-	av_codec_id_mszh,
-	av_codec_id_zlib,
-	av_codec_id_qtrle,
-	av_codec_id_tscc,
-	av_codec_id_ulti,
-	av_codec_id_qdraw,
-	av_codec_id_vixl,
-	av_codec_id_qpeg,
-	av_codec_id_png,
-	av_codec_id_ppm,
-	av_codec_id_pbm,
-	av_codec_id_pgm,
-	av_codec_id_pgmyuv,
-	av_codec_id_pam,
-	av_codec_id_ffvhuff,
-	av_codec_id_rv30,
-	av_codec_id_rv40,
-	av_codec_id_vc1,
-	av_codec_id_wmv3,
-	av_codec_id_loco,
-	av_codec_id_wnv1,
-	av_codec_id_aasc,
-	av_codec_id_indeo2,
-	av_codec_id_fraps,
-	av_codec_id_truemotion2,
-	av_codec_id_bmp,
-	av_codec_id_cscd,
-	av_codec_id_mmvideo,
-	av_codec_id_zmbv,
-	av_codec_id_avs,
-	av_codec_id_smackvideo,
-	av_codec_id_nuv,
-	av_codec_id_kmvc,
-	av_codec_id_flashsv,
-	av_codec_id_cavs,
-	av_codec_id_jpeg2000,
-	av_codec_id_vmnc,
-	av_codec_id_vp5,
-	av_codec_id_vp6,
-	av_codec_id_vp6f,
-	av_codec_id_targa,
-	av_codec_id_dsicinvideo,
-	av_codec_id_tiertexseqvideo,
-	av_codec_id_tiff,
-	av_codec_id_gif,
-	av_codec_id_dxa,
-	av_codec_id_dnxhd,
-	av_codec_id_thp,
-	av_codec_id_sgi,
-	av_codec_id_c93,
-	av_codec_id_bethsoftvid,
-	av_codec_id_ptx,
-	av_codec_id_txd,
-	av_codec_id_vp6a,
-	av_codec_id_amv,
-	av_codec_id_vb,
-	av_codec_id_pcx,
-	av_codec_id_sunrast,
-	av_codec_id_indeo4,
-	av_codec_id_indeo5,
-	av_codec_id_mimic,
-	av_codec_id_rl2,
-	av_codec_id_escape124,
-	av_codec_id_dirac,
-	av_codec_id_bfi,
-	av_codec_id_cmv,
-	av_codec_id_motionpixels,
-	av_codec_id_tgv,
-	av_codec_id_tgq,
-	av_codec_id_tqi,
-	av_codec_id_aura,
-	av_codec_id_aura2,
-	av_codec_id_v210x,
-	av_codec_id_tmv,
-	av_codec_id_v210,
-	av_codec_id_dpx,
-	av_codec_id_mad,
-	av_codec_id_frwu,
-	av_codec_id_flashsv2,
-	av_codec_id_cdgraphics,
-	av_codec_id_r210,
-	av_codec_id_anm,
-	av_codec_id_binkvideo,
-	av_codec_id_iff_ilbm,
-	av_codec_id_iff_byterun1,
-	av_codec_id_kgv1,
-	av_codec_id_yop,
-	av_codec_id_vp8,
-	av_codec_id_pictor,
-	av_codec_id_ansi,
-	av_codec_id_a64_multi,
-	av_codec_id_a64_multi5,
-	av_codec_id_r10k,
-	av_codec_id_mxpeg,
-	av_codec_id_lagarith,
-	av_codec_id_prores,
-	av_codec_id_jv,
-	av_codec_id_dfa,
-	av_codec_id_wmv3image,
-	av_codec_id_vc1image,
-	av_codec_id_utvideo,
-	av_codec_id_bmv_video,
-	av_codec_id_vble,
-	av_codec_id_dxtory,
-	av_codec_id_v410,
-	av_codec_id_xwd,
-	av_codec_id_cdxl,
-	av_codec_id_xbm,
-	av_codec_id_zerocodec,
-	av_codec_id_mss1,
-	av_codec_id_msa1,
-	av_codec_id_tscc2,
-	av_codec_id_mts2,
-	av_codec_id_cllc,
-	av_codec_id_mss2,
-	av_codec_id_vp9,
-	av_codec_id_aic,
-	av_codec_id_escape130_deprecated,
-	av_codec_id_g2m_deprecated,
-	av_codec_id_webp_deprecated,
-	av_codec_id_hnm4_video,
-	av_codec_id_hevc_deprecated,
-	av_codec_id_fic,
-	av_codec_id_alias_pix,
-	av_codec_id_brender_pix_deprecated,
-	av_codec_id_paf_video_deprecated,
-	av_codec_id_exr_deprecated,
-	av_codec_id_vp7_deprecated,
-	av_codec_id_sanm_deprecated,
-	av_codec_id_sgirle_deprecated,
-	av_codec_id_mvc1_deprecated,
-	av_codec_id_mvc2_deprecated,
-	av_codec_id_brender_pix,
-	av_codec_id_y41p,
-	av_codec_id_escape130,
-	av_codec_id_exr,
-	av_codec_id_avrp,
-	av_codec_id_012v,
-	av_codec_id_g2m,
-	av_codec_id_avui,
-	av_codec_id_ayuv,
-	av_codec_id_targa_y216,
-	av_codec_id_v308,
-	av_codec_id_v408,
-	av_codec_id_yuv4,
-	av_codec_id_sanm,
-	av_codec_id_paf_video,
-	av_codec_id_avrn,
-	av_codec_id_cpia,
-	av_codec_id_xface,
-	av_codec_id_sgirle,
-	av_codec_id_mvc1,
-	av_codec_id_mvc2,
-	av_codec_id_snow,
-	av_codec_id_webp,
-	av_codec_id_smvjpeg,
-	av_codec_id_hevc,
-	av_codec_id_h265,
-	av_codec_id_vp7,
-	av_codec_id_apng,
-	av_codec_id_first_audio,
-	av_codec_id_pcm_s16le,
-	av_codec_id_pcm_s16be,
-	av_codec_id_pcm_u16le,
-	av_codec_id_pcm_u16be,
-	av_codec_id_pcm_s8,
-	av_codec_id_pcm_u8,
-	av_codec_id_pcm_mulaw,
-	av_codec_id_pcm_alaw,
-	av_codec_id_pcm_s32le,
-	av_codec_id_pcm_s32be,
-	av_codec_id_pcm_u32le,
-	av_codec_id_pcm_u32be,
-	av_codec_id_pcm_s24le,
-	av_codec_id_pcm_s24be,
-	av_codec_id_pcm_u24le,
-	av_codec_id_pcm_u24be,
-	av_codec_id_pcm_s24daud,
-	av_codec_id_pcm_zork,
-	av_codec_id_pcm_s16le_planar,
-	av_codec_id_pcm_dvd,
-	av_codec_id_pcm_f32be,
-	av_codec_id_pcm_f32le,
-	av_codec_id_pcm_f64be,
-	av_codec_id_pcm_f64le,
-	av_codec_id_pcm_bluray,
-	av_codec_id_pcm_lxf,
-	av_codec_id_s302m,
-	av_codec_id_pcm_s8_planar,
-	av_codec_id_pcm_s24le_planar_deprecated,
-	av_codec_id_pcm_s32le_planar_deprecated,
-	av_codec_id_pcm_s24le_planar,
-	av_codec_id_pcm_s32le_planar,
-	av_codec_id_pcm_s16be_planar,
-	av_codec_id_adpcm_ima_qt,
-	av_codec_id_adpcm_ima_wav,
-	av_codec_id_adpcm_ima_dk3,
-	av_codec_id_adpcm_ima_dk4,
-	av_codec_id_adpcm_ima_ws,
-	av_codec_id_adpcm_ima_smjpeg,
-	av_codec_id_adpcm_ms,
-	av_codec_id_adpcm_4xm,
-	av_codec_id_adpcm_xa,
-	av_codec_id_adpcm_adx,
-	av_codec_id_adpcm_ea,
-	av_codec_id_adpcm_g726,
-	av_codec_id_adpcm_ct,
-	av_codec_id_adpcm_swf,
-	av_codec_id_adpcm_yamaha,
-	av_codec_id_adpcm_sbpro_4,
-	av_codec_id_adpcm_sbpro_3,
-	av_codec_id_adpcm_sbpro_2,
-	av_codec_id_adpcm_thp,
-	av_codec_id_adpcm_ima_amv,
-	av_codec_id_adpcm_ea_r1,
-	av_codec_id_adpcm_ea_r3,
-	av_codec_id_adpcm_ea_r2,
-	av_codec_id_adpcm_ima_ea_sead,
-	av_codec_id_adpcm_ima_ea_eacs,
-	av_codec_id_adpcm_ea_xas,
-	av_codec_id_adpcm_ea_maxis_xa,
-	av_codec_id_adpcm_ima_iss,
-	av_codec_id_adpcm_g722,
-	av_codec_id_adpcm_ima_apc,
-	av_codec_id_adpcm_vima_deprecated,
-	av_codec_id_adpcm_vima,
-	av_codec_id_adpcm_afc,
-	av_codec_id_adpcm_ima_oki,
-	av_codec_id_adpcm_dtk,
-	av_codec_id_adpcm_ima_rad,
-	av_codec_id_adpcm_g726le,
-	av_codec_id_amr_nb,
-	av_codec_id_amr_wb,
-	av_codec_id_ra_144,
-	av_codec_id_ra_288,
-	av_codec_id_roq_dpcm,
-	av_codec_id_interplay_dpcm,
-	av_codec_id_xan_dpcm,
-	av_codec_id_sol_dpcm,
-	av_codec_id_mp2,
-	av_codec_id_mp3,
-	av_codec_id_aac,
-	av_codec_id_ac3,
-	av_codec_id_dts,
-	av_codec_id_vorbis,
-	av_codec_id_dvaudio,
-	av_codec_id_wmav1,
-	av_codec_id_wmav2,
-	av_codec_id_mace3,
-	av_codec_id_mace6,
-	av_codec_id_vmdaudio,
-	av_codec_id_flac,
-	av_codec_id_mp3adu,
-	av_codec_id_mp3on4,
-	av_codec_id_shorten,
-	av_codec_id_alac,
-	av_codec_id_westwood_snd1,
-	av_codec_id_gsm,
-	av_codec_id_qdm2,
-	av_codec_id_cook,
-	av_codec_id_truespeech,
-	av_codec_id_tta,
-	av_codec_id_smackaudio,
-	av_codec_id_qcelp,
-	av_codec_id_wavpack,
-	av_codec_id_dsicinaudio,
-	av_codec_id_imc,
-	av_codec_id_musepack7,
-	av_codec_id_mlp,
-	av_codec_id_gsm_ms,
-	av_codec_id_atrac3,
-	av_codec_id_ape,
-	av_codec_id_nellymoser,
-	av_codec_id_musepack8,
-	av_codec_id_speex,
-	av_codec_id_wmavoice,
-	av_codec_id_wmapro,
-	av_codec_id_wmalossless,
-	av_codec_id_atrac3p,
-	av_codec_id_eac3,
-	av_codec_id_sipr,
-	av_codec_id_mp1,
-	av_codec_id_twinvq,
-	av_codec_id_truehd,
-	av_codec_id_mp4als,
-	av_codec_id_atrac1,
-	av_codec_id_binkaudio_rdft,
-	av_codec_id_binkaudio_dct,
-	av_codec_id_aac_latm,
-	av_codec_id_qdmc,
-	av_codec_id_celt,
-	av_codec_id_g723_1,
-	av_codec_id_g729,
-	av_codec_id_8svx_exp,
-	av_codec_id_8svx_fib,
-	av_codec_id_bmv_audio,
-	av_codec_id_ralf,
-	av_codec_id_iac,
-	av_codec_id_ilbc,
-	av_codec_id_opus_deprecated,
-	av_codec_id_comfort_noise,
-	av_codec_id_tak_deprecated,
-	av_codec_id_metasound,
-	av_codec_id_paf_audio_deprecated,
-	av_codec_id_on2avc,
-	av_codec_id_ffwavesynth,
-	av_codec_id_sonic,
-	av_codec_id_sonic_ls,
-	av_codec_id_paf_audio,
-	av_codec_id_opus,
-	av_codec_id_tak,
-	av_codec_id_evrc,
-	av_codec_id_smv,
-	av_codec_id_dsd_lsbf,
-	av_codec_id_dsd_msbf,
-	av_codec_id_dsd_lsbf_planar,
-	av_codec_id_dsd_msbf_planar,
-	av_codec_id_first_subtitle,
-	av_codec_id_dvd_subtitle,
-	av_codec_id_dvb_subtitle,
-	av_codec_id_text,
-	av_codec_id_xsub,
-	av_codec_id_ssa,
-	av_codec_id_mov_text,
-	av_codec_id_hdmv_pgs_subtitle,
-	av_codec_id_dvb_teletext,
-	av_codec_id_srt,
-	av_codec_id_microdvd,
-	av_codec_id_eia_608,
-	av_codec_id_jacosub,
-	av_codec_id_sami,
-	av_codec_id_realtext,
-	av_codec_id_stl,
-	av_codec_id_subviewer1,
-	av_codec_id_subviewer,
-	av_codec_id_subrip,
-	av_codec_id_webvtt,
-	av_codec_id_mpl2,
-	av_codec_id_vplayer,
-	av_codec_id_pjs,
-	av_codec_id_ass,
-	av_codec_id_first_unknown,
-	av_codec_id_ttf,
-	av_codec_id_bintext,
-	av_codec_id_xbin,
-	av_codec_id_idf,
-	av_codec_id_otf,
-	av_codec_id_smpte_klv,
-	av_codec_id_dvd_nav,
-	av_codec_id_timed_id3,
-	av_codec_id_bin_data,
-	av_codec_id_probe,
-	av_codec_id_mpeg2ts,
-	av_codec_id_mpeg4systems,
-	av_codec_id_ffmetadata
+	pattern AVCodecIdNone,
+	pattern AVCodecIdMpeg1video,
+	pattern AVCodecIdMpeg2video,
+	pattern AVCodecIdH261,
+	pattern AVCodecIdH263,
+	pattern AVCodecIdRv10,
+	pattern AVCodecIdRv20,
+	pattern AVCodecIdMjpeg,
+	pattern AVCodecIdMjpegb,
+	pattern AVCodecIdLjpeg,
+	pattern AVCodecIdSp5x,
+	pattern AVCodecIdJpegls,
+	pattern AVCodecIdMpeg4,
+	pattern AVCodecIdRawvideo,
+	pattern AVCodecIdMsmpeg4v1,
+	pattern AVCodecIdMsmpeg4v2,
+	pattern AVCodecIdMsmpeg4v3,
+	pattern AVCodecIdWmv1,
+	pattern AVCodecIdWmv2,
+	pattern AVCodecIdH263p,
+	pattern AVCodecIdH263i,
+	pattern AVCodecIdFlv1,
+	pattern AVCodecIdSvq1,
+	pattern AVCodecIdSvq3,
+	pattern AVCodecIdDvvideo,
+	pattern AVCodecIdHuffyuv,
+	pattern AVCodecIdCyuv,
+	pattern AVCodecIdH264,
+	pattern AVCodecIdIndeo3,
+	pattern AVCodecIdVp3,
+	pattern AVCodecIdTheora,
+	pattern AVCodecIdAsv1,
+	pattern AVCodecIdAsv2,
+	pattern AVCodecIdFfv1,
+	pattern AVCodecId4xm,
+	pattern AVCodecIdVcr1,
+	pattern AVCodecIdCljr,
+	pattern AVCodecIdMdec,
+	pattern AVCodecIdRoq,
+	pattern AVCodecIdInterplayVideo,
+	pattern AVCodecIdXanWc3,
+	pattern AVCodecIdXanWc4,
+	pattern AVCodecIdRpza,
+	pattern AVCodecIdCinepak,
+	pattern AVCodecIdWsVqa,
+	pattern AVCodecIdMsrle,
+	pattern AVCodecIdMsvideo1,
+	pattern AVCodecIdIdcin,
+	pattern AVCodecId8bps,
+	pattern AVCodecIdSmc,
+	pattern AVCodecIdFlic,
+	pattern AVCodecIdTruemotion1,
+	pattern AVCodecIdVmdvideo,
+	pattern AVCodecIdMszh,
+	pattern AVCodecIdZlib,
+	pattern AVCodecIdQtrle,
+	pattern AVCodecIdTscc,
+	pattern AVCodecIdUlti,
+	pattern AVCodecIdQdraw,
+	pattern AVCodecIdVixl,
+	pattern AVCodecIdQpeg,
+	pattern AVCodecIdPng,
+	pattern AVCodecIdPpm,
+	pattern AVCodecIdPbm,
+	pattern AVCodecIdPgm,
+	pattern AVCodecIdPgmyuv,
+	pattern AVCodecIdPam,
+	pattern AVCodecIdFfvhuff,
+	pattern AVCodecIdRv30,
+	pattern AVCodecIdRv40,
+	pattern AVCodecIdVc1,
+	pattern AVCodecIdWmv3,
+	pattern AVCodecIdLoco,
+	pattern AVCodecIdWnv1,
+	pattern AVCodecIdAasc,
+	pattern AVCodecIdIndeo2,
+	pattern AVCodecIdFraps,
+	pattern AVCodecIdTruemotion2,
+	pattern AVCodecIdBmp,
+	pattern AVCodecIdCscd,
+	pattern AVCodecIdMmvideo,
+	pattern AVCodecIdZmbv,
+	pattern AVCodecIdAvs,
+	pattern AVCodecIdSmackvideo,
+	pattern AVCodecIdNuv,
+	pattern AVCodecIdKmvc,
+	pattern AVCodecIdFlashsv,
+	pattern AVCodecIdCavs,
+	pattern AVCodecIdJpeg2000,
+	pattern AVCodecIdVmnc,
+	pattern AVCodecIdVp5,
+	pattern AVCodecIdVp6,
+	pattern AVCodecIdVp6f,
+	pattern AVCodecIdTarga,
+	pattern AVCodecIdDsicinvideo,
+	pattern AVCodecIdTiertexseqvideo,
+	pattern AVCodecIdTiff,
+	pattern AVCodecIdGif,
+	pattern AVCodecIdDxa,
+	pattern AVCodecIdDnxhd,
+	pattern AVCodecIdThp,
+	pattern AVCodecIdSgi,
+	pattern AVCodecIdC93,
+	pattern AVCodecIdBethsoftvid,
+	pattern AVCodecIdPtx,
+	pattern AVCodecIdTxd,
+	pattern AVCodecIdVp6a,
+	pattern AVCodecIdAmv,
+	pattern AVCodecIdVb,
+	pattern AVCodecIdPcx,
+	pattern AVCodecIdSunrast,
+	pattern AVCodecIdIndeo4,
+	pattern AVCodecIdIndeo5,
+	pattern AVCodecIdMimic,
+	pattern AVCodecIdRl2,
+	pattern AVCodecIdEscape124,
+	pattern AVCodecIdDirac,
+	pattern AVCodecIdBfi,
+	pattern AVCodecIdCmv,
+	pattern AVCodecIdMotionpixels,
+	pattern AVCodecIdTgv,
+	pattern AVCodecIdTgq,
+	pattern AVCodecIdTqi,
+	pattern AVCodecIdAura,
+	pattern AVCodecIdAura2,
+	pattern AVCodecIdV210x,
+	pattern AVCodecIdTmv,
+	pattern AVCodecIdV210,
+	pattern AVCodecIdDpx,
+	pattern AVCodecIdMad,
+	pattern AVCodecIdFrwu,
+	pattern AVCodecIdFlashsv2,
+	pattern AVCodecIdCdgraphics,
+	pattern AVCodecIdR210,
+	pattern AVCodecIdAnm,
+	pattern AVCodecIdBinkvideo,
+	pattern AVCodecIdIffIlbm,
+	pattern AVCodecIdIffByterun1,
+	pattern AVCodecIdKgv1,
+	pattern AVCodecIdYop,
+	pattern AVCodecIdVp8,
+	pattern AVCodecIdPictor,
+	pattern AVCodecIdAnsi,
+	pattern AVCodecIdA64Multi,
+	pattern AVCodecIdA64Multi5,
+	pattern AVCodecIdR10k,
+	pattern AVCodecIdMxpeg,
+	pattern AVCodecIdLagarith,
+	pattern AVCodecIdProres,
+	pattern AVCodecIdJv,
+	pattern AVCodecIdDfa,
+	pattern AVCodecIdWmv3image,
+	pattern AVCodecIdVc1image,
+	pattern AVCodecIdUtvideo,
+	pattern AVCodecIdBmvVideo,
+	pattern AVCodecIdVble,
+	pattern AVCodecIdDxtory,
+	pattern AVCodecIdV410,
+	pattern AVCodecIdXwd,
+	pattern AVCodecIdCdxl,
+	pattern AVCodecIdXbm,
+	pattern AVCodecIdZerocodec,
+	pattern AVCodecIdMss1,
+	pattern AVCodecIdMsa1,
+	pattern AVCodecIdTscc2,
+	pattern AVCodecIdMts2,
+	pattern AVCodecIdCllc,
+	pattern AVCodecIdMss2,
+	pattern AVCodecIdVp9,
+	pattern AVCodecIdAic,
+	pattern AVCodecIdEscape130Deprecated,
+	pattern AVCodecIdG2mDeprecated,
+	pattern AVCodecIdWebpDeprecated,
+	pattern AVCodecIdHnm4Video,
+	pattern AVCodecIdHevcDeprecated,
+	pattern AVCodecIdFic,
+	pattern AVCodecIdAliasPix,
+	pattern AVCodecIdBrenderPixDeprecated,
+	pattern AVCodecIdPafVideoDeprecated,
+	pattern AVCodecIdExrDeprecated,
+	pattern AVCodecIdVp7Deprecated,
+	pattern AVCodecIdSanmDeprecated,
+	pattern AVCodecIdSgirleDeprecated,
+	pattern AVCodecIdMvc1Deprecated,
+	pattern AVCodecIdMvc2Deprecated,
+	pattern AVCodecIdBrenderPix,
+	pattern AVCodecIdY41p,
+	pattern AVCodecIdEscape130,
+	pattern AVCodecIdExr,
+	pattern AVCodecIdAvrp,
+	pattern AVCodecId012v,
+	pattern AVCodecIdG2m,
+	pattern AVCodecIdAvui,
+	pattern AVCodecIdAyuv,
+	pattern AVCodecIdTargaY216,
+	pattern AVCodecIdV308,
+	pattern AVCodecIdV408,
+	pattern AVCodecIdYuv4,
+	pattern AVCodecIdSanm,
+	pattern AVCodecIdPafVideo,
+	pattern AVCodecIdAvrn,
+	pattern AVCodecIdCpia,
+	pattern AVCodecIdXface,
+	pattern AVCodecIdSgirle,
+	pattern AVCodecIdMvc1,
+	pattern AVCodecIdMvc2,
+	pattern AVCodecIdSnow,
+	pattern AVCodecIdWebp,
+	pattern AVCodecIdSmvjpeg,
+	pattern AVCodecIdHevc,
+	pattern AVCodecIdH265,
+	pattern AVCodecIdVp7,
+	pattern AVCodecIdApng,
+	pattern AVCodecIdFirstAudio,
+	pattern AVCodecIdPcmS16le,
+	pattern AVCodecIdPcmS16be,
+	pattern AVCodecIdPcmU16le,
+	pattern AVCodecIdPcmU16be,
+	pattern AVCodecIdPcmS8,
+	pattern AVCodecIdPcmU8,
+	pattern AVCodecIdPcmMulaw,
+	pattern AVCodecIdPcmAlaw,
+	pattern AVCodecIdPcmS32le,
+	pattern AVCodecIdPcmS32be,
+	pattern AVCodecIdPcmU32le,
+	pattern AVCodecIdPcmU32be,
+	pattern AVCodecIdPcmS24le,
+	pattern AVCodecIdPcmS24be,
+	pattern AVCodecIdPcmU24le,
+	pattern AVCodecIdPcmU24be,
+	pattern AVCodecIdPcmS24daud,
+	pattern AVCodecIdPcmZork,
+	pattern AVCodecIdPcmS16lePlanar,
+	pattern AVCodecIdPcmDvd,
+	pattern AVCodecIdPcmF32be,
+	pattern AVCodecIdPcmF32le,
+	pattern AVCodecIdPcmF64be,
+	pattern AVCodecIdPcmF64le,
+	pattern AVCodecIdPcmBluray,
+	pattern AVCodecIdPcmLxf,
+	pattern AVCodecIdS302m,
+	pattern AVCodecIdPcmS8Planar,
+	pattern AVCodecIdPcmS24lePlanarDeprecated,
+	pattern AVCodecIdPcmS32lePlanarDeprecated,
+	pattern AVCodecIdPcmS24lePlanar,
+	pattern AVCodecIdPcmS32lePlanar,
+	pattern AVCodecIdPcmS16bePlanar,
+	pattern AVCodecIdAdpcmImaQt,
+	pattern AVCodecIdAdpcmImaWav,
+	pattern AVCodecIdAdpcmImaDk3,
+	pattern AVCodecIdAdpcmImaDk4,
+	pattern AVCodecIdAdpcmImaWs,
+	pattern AVCodecIdAdpcmImaSmjpeg,
+	pattern AVCodecIdAdpcmMs,
+	pattern AVCodecIdAdpcm4xm,
+	pattern AVCodecIdAdpcmXa,
+	pattern AVCodecIdAdpcmAdx,
+	pattern AVCodecIdAdpcmEa,
+	pattern AVCodecIdAdpcmG726,
+	pattern AVCodecIdAdpcmCt,
+	pattern AVCodecIdAdpcmSwf,
+	pattern AVCodecIdAdpcmYamaha,
+	pattern AVCodecIdAdpcmSbpro4,
+	pattern AVCodecIdAdpcmSbpro3,
+	pattern AVCodecIdAdpcmSbpro2,
+	pattern AVCodecIdAdpcmThp,
+	pattern AVCodecIdAdpcmImaAmv,
+	pattern AVCodecIdAdpcmEaR1,
+	pattern AVCodecIdAdpcmEaR3,
+	pattern AVCodecIdAdpcmEaR2,
+	pattern AVCodecIdAdpcmImaEaSead,
+	pattern AVCodecIdAdpcmImaEaEacs,
+	pattern AVCodecIdAdpcmEaXas,
+	pattern AVCodecIdAdpcmEaMaxisXa,
+	pattern AVCodecIdAdpcmImaIss,
+	pattern AVCodecIdAdpcmG722,
+	pattern AVCodecIdAdpcmImaApc,
+	pattern AVCodecIdAdpcmVimaDeprecated,
+	pattern AVCodecIdAdpcmVima,
+	pattern AVCodecIdAdpcmAfc,
+	pattern AVCodecIdAdpcmImaOki,
+	pattern AVCodecIdAdpcmDtk,
+	pattern AVCodecIdAdpcmImaRad,
+	pattern AVCodecIdAdpcmG726le,
+	pattern AVCodecIdAmrNb,
+	pattern AVCodecIdAmrWb,
+	pattern AVCodecIdRa144,
+	pattern AVCodecIdRa288,
+	pattern AVCodecIdRoqDpcm,
+	pattern AVCodecIdInterplayDpcm,
+	pattern AVCodecIdXanDpcm,
+	pattern AVCodecIdSolDpcm,
+	pattern AVCodecIdMp2,
+	pattern AVCodecIdMp3,
+	pattern AVCodecIdAac,
+	pattern AVCodecIdAc3,
+	pattern AVCodecIdDts,
+	pattern AVCodecIdVorbis,
+	pattern AVCodecIdDvaudio,
+	pattern AVCodecIdWmav1,
+	pattern AVCodecIdWmav2,
+	pattern AVCodecIdMace3,
+	pattern AVCodecIdMace6,
+	pattern AVCodecIdVmdaudio,
+	pattern AVCodecIdFlac,
+	pattern AVCodecIdMp3adu,
+	pattern AVCodecIdMp3on4,
+	pattern AVCodecIdShorten,
+	pattern AVCodecIdAlac,
+	pattern AVCodecIdWestwoodSnd1,
+	pattern AVCodecIdGsm,
+	pattern AVCodecIdQdm2,
+	pattern AVCodecIdCook,
+	pattern AVCodecIdTruespeech,
+	pattern AVCodecIdTta,
+	pattern AVCodecIdSmackaudio,
+	pattern AVCodecIdQcelp,
+	pattern AVCodecIdWavpack,
+	pattern AVCodecIdDsicinaudio,
+	pattern AVCodecIdImc,
+	pattern AVCodecIdMusepack7,
+	pattern AVCodecIdMlp,
+	pattern AVCodecIdGsmMs,
+	pattern AVCodecIdAtrac3,
+	pattern AVCodecIdApe,
+	pattern AVCodecIdNellymoser,
+	pattern AVCodecIdMusepack8,
+	pattern AVCodecIdSpeex,
+	pattern AVCodecIdWmavoice,
+	pattern AVCodecIdWmapro,
+	pattern AVCodecIdWmalossless,
+	pattern AVCodecIdAtrac3p,
+	pattern AVCodecIdEac3,
+	pattern AVCodecIdSipr,
+	pattern AVCodecIdMp1,
+	pattern AVCodecIdTwinvq,
+	pattern AVCodecIdTruehd,
+	pattern AVCodecIdMp4als,
+	pattern AVCodecIdAtrac1,
+	pattern AVCodecIdBinkaudioRdft,
+	pattern AVCodecIdBinkaudioDct,
+	pattern AVCodecIdAacLatm,
+	pattern AVCodecIdQdmc,
+	pattern AVCodecIdCelt,
+	pattern AVCodecIdG723_1,
+	pattern AVCodecIdG729,
+	pattern AVCodecId8svxExp,
+	pattern AVCodecId8svxFib,
+	pattern AVCodecIdBmvAudio,
+	pattern AVCodecIdRalf,
+	pattern AVCodecIdIac,
+	pattern AVCodecIdIlbc,
+	pattern AVCodecIdOpusDeprecated,
+	pattern AVCodecIdComfortNoise,
+	pattern AVCodecIdTakDeprecated,
+	pattern AVCodecIdMetasound,
+	pattern AVCodecIdPafAudioDeprecated,
+	pattern AVCodecIdOn2avc,
+	pattern AVCodecIdFfwavesynth,
+	pattern AVCodecIdSonic,
+	pattern AVCodecIdSonicLs,
+	pattern AVCodecIdPafAudio,
+	pattern AVCodecIdOpus,
+	pattern AVCodecIdTak,
+	pattern AVCodecIdEvrc,
+	pattern AVCodecIdSmv,
+	pattern AVCodecIdDsdLsbf,
+	pattern AVCodecIdDsdMsbf,
+	pattern AVCodecIdDsdLsbfPlanar,
+	pattern AVCodecIdDsdMsbfPlanar,
+	pattern AVCodecIdFirstSubtitle,
+	pattern AVCodecIdDvdSubtitle,
+	pattern AVCodecIdDvbSubtitle,
+	pattern AVCodecIdText,
+	pattern AVCodecIdXsub,
+	pattern AVCodecIdSsa,
+	pattern AVCodecIdMovText,
+	pattern AVCodecIdHdmvPgsSubtitle,
+	pattern AVCodecIdDvbTeletext,
+	pattern AVCodecIdSrt,
+	pattern AVCodecIdMicrodvd,
+	pattern AVCodecIdEia608,
+	pattern AVCodecIdJacosub,
+	pattern AVCodecIdSami,
+	pattern AVCodecIdRealtext,
+	pattern AVCodecIdStl,
+	pattern AVCodecIdSubviewer1,
+	pattern AVCodecIdSubviewer,
+	pattern AVCodecIdSubrip,
+	pattern AVCodecIdWebvtt,
+	pattern AVCodecIdMpl2,
+	pattern AVCodecIdVplayer,
+	pattern AVCodecIdPjs,
+	pattern AVCodecIdAss,
+	pattern AVCodecIdFirstUnknown,
+	pattern AVCodecIdTtf,
+	pattern AVCodecIdBintext,
+	pattern AVCodecIdXbin,
+	pattern AVCodecIdIdf,
+	pattern AVCodecIdOtf,
+	pattern AVCodecIdSmpteKlv,
+	pattern AVCodecIdDvdNav,
+	pattern AVCodecIdTimedId3,
+	pattern AVCodecIdBinData,
+	pattern AVCodecIdProbe,
+	pattern AVCodecIdMpeg2ts,
+	pattern AVCodecIdMpeg4systems,
+	pattern AVCodecIdFfmetadata
 ) where
 
 #include "ffmpeg.h"
@@ -723,365 +724,318 @@ import Media.FFMpeg.Internal.Common
 
 -- | AVMediaType
 newtype AVMediaType = AVMediaType CInt deriving (Eq, Show, CEnum, Storable)
-#{enum AVMediaType, AVMediaType,
-	avmedia_type_unknown = AVMEDIA_TYPE_UNKNOWN,
-	avmedia_type_video = AVMEDIA_TYPE_VIDEO,
-	avmedia_type_audio = AVMEDIA_TYPE_AUDIO,
-	avmedia_type_data = AVMEDIA_TYPE_DATA,
-	avmedia_type_subtitle = AVMEDIA_TYPE_SUBTITLE,
-	avmedia_type_attachment = AVMEDIA_TYPE_ATTACHMENT
-}
+pattern AVMediaTypeUnknown = AVMediaType (#{const AVMEDIA_TYPE_UNKNOWN})
+pattern AVMediaTypeVideo = AVMediaType #{const AVMEDIA_TYPE_VIDEO}
+pattern AVMediaTypeAudio = AVMediaType #{const AVMEDIA_TYPE_AUDIO}
+pattern AVMediaTypeData = AVMediaType #{const AVMEDIA_TYPE_DATA}
+pattern AVMediaTypeSubtitle = AVMediaType #{const AVMEDIA_TYPE_SUBTITLE}
+pattern AVMediaTypeAttachment = AVMediaType #{const AVMEDIA_TYPE_ATTACHMENT}
 
 -- | AVSampleFormat
 newtype AVSampleFormat = AVSampleFormat CInt deriving (Eq, Show, CEnum, Storable)
-#{enum AVSampleFormat, AVSampleFormat,
-	av_sample_fmt_none = AV_SAMPLE_FMT_NONE,
-	av_sample_fmt_u8 = AV_SAMPLE_FMT_U8,
-	av_sample_fmt_s16 = AV_SAMPLE_FMT_S16,
-	av_sample_fmt_s32 = AV_SAMPLE_FMT_S32,
-	av_sample_fmt_flt = AV_SAMPLE_FMT_FLT,
-	av_sample_fmt_dbl = AV_SAMPLE_FMT_DBL,
-	av_sample_fmt_u8p = AV_SAMPLE_FMT_U8P,
-	av_sample_fmt_s16p = AV_SAMPLE_FMT_S16P,
-	av_sample_fmt_s32p = AV_SAMPLE_FMT_S32P,
-	av_sample_fmt_fltp = AV_SAMPLE_FMT_FLTP,
-	av_sample_fmt_dblp = AV_SAMPLE_FMT_DBLP
-}
+pattern AVSampleFmtNone = AVSampleFormat (#{const AV_SAMPLE_FMT_NONE})
+pattern AVSampleFmtU8 = AVSampleFormat #{const AV_SAMPLE_FMT_U8}
+pattern AVSampleFmtS16 = AVSampleFormat #{const AV_SAMPLE_FMT_S16}
+pattern AVSampleFmtS32 = AVSampleFormat #{const AV_SAMPLE_FMT_S32}
+pattern AVSampleFmtFlt = AVSampleFormat #{const AV_SAMPLE_FMT_FLT}
+pattern AVSampleFmtDbl = AVSampleFormat #{const AV_SAMPLE_FMT_DBL}
+pattern AVSampleFmtU8p = AVSampleFormat #{const AV_SAMPLE_FMT_U8P}
+pattern AVSampleFmtS16p = AVSampleFormat #{const AV_SAMPLE_FMT_S16P}
+pattern AVSampleFmtS32p = AVSampleFormat #{const AV_SAMPLE_FMT_S32P}
+pattern AVSampleFmtFltp = AVSampleFormat #{const AV_SAMPLE_FMT_FLTP}
+pattern AVSampleFmtDblp = AVSampleFormat #{const AV_SAMPLE_FMT_DBLP}
 
 -- | AVPacketSideDataType
 newtype AVPacketSideDataType = AVPacketSideDataType CInt deriving (Eq, Show, CEnum, Storable)
-#{enum AVPacketSideDataType, AVPacketSideDataType,
-	av_pkt_data_palette = AV_PKT_DATA_PALETTE,
-	av_pkt_data_new_extradata = AV_PKT_DATA_NEW_EXTRADATA,
-	av_pkt_data_param_change = AV_PKT_DATA_PARAM_CHANGE,
-	av_pkt_data_h263_mb_info = AV_PKT_DATA_H263_MB_INFO,
-	av_pkt_data_replaygain = AV_PKT_DATA_REPLAYGAIN,
-	av_pkt_data_displaymatrix = AV_PKT_DATA_DISPLAYMATRIX,
-	av_pkt_data_stereo3d = AV_PKT_DATA_STEREO3D,
-	av_pkt_data_skip_samples = AV_PKT_DATA_SKIP_SAMPLES,
-	av_pkt_data_jp_dualmono = AV_PKT_DATA_JP_DUALMONO,
-	av_pkt_data_strings_metadata = AV_PKT_DATA_STRINGS_METADATA,
-	av_pkt_data_subtitle_position = AV_PKT_DATA_SUBTITLE_POSITION,
-	av_pkt_data_matroska_blockadditional = AV_PKT_DATA_MATROSKA_BLOCKADDITIONAL,
-	av_pkt_data_webvtt_identifier = AV_PKT_DATA_WEBVTT_IDENTIFIER,
-	av_pkt_data_webvtt_settings = AV_PKT_DATA_WEBVTT_SETTINGS,
-	av_pkt_data_metadata_update = AV_PKT_DATA_METADATA_UPDATE
-}
+pattern AVPktDataPalette = AVPacketSideDataType #{const AV_PKT_DATA_PALETTE}
+pattern AVPktDataNewExtradata = AVPacketSideDataType #{const AV_PKT_DATA_NEW_EXTRADATA}
+pattern AVPktDataParamChange = AVPacketSideDataType #{const AV_PKT_DATA_PARAM_CHANGE}
+pattern AVPktDataH263MbInfo = AVPacketSideDataType #{const AV_PKT_DATA_H263_MB_INFO}
+pattern AVPktDataReplayGain = AVPacketSideDataType #{const AV_PKT_DATA_REPLAYGAIN}
+pattern AVPktDataDisplayMatrix = AVPacketSideDataType #{const AV_PKT_DATA_DISPLAYMATRIX}
+pattern AVPktDataStereo3d = AVPacketSideDataType #{const AV_PKT_DATA_STEREO3D}
+pattern AVPktDataSkipSamples = AVPacketSideDataType #{const AV_PKT_DATA_SKIP_SAMPLES}
+pattern AVPktDataJpDualmono = AVPacketSideDataType #{const AV_PKT_DATA_JP_DUALMONO}
+pattern AVPktDataStringsMetadata = AVPacketSideDataType #{const AV_PKT_DATA_STRINGS_METADATA}
+pattern AVPktDataSubtitlePosition = AVPacketSideDataType #{const AV_PKT_DATA_SUBTITLE_POSITION}
+pattern AVPktDataMatroskaBlockadditional = AVPacketSideDataType #{const AV_PKT_DATA_MATROSKA_BLOCKADDITIONAL}
+pattern AVPktDataWebvttIdentifier = AVPacketSideDataType #{const AV_PKT_DATA_WEBVTT_IDENTIFIER}
+pattern AVPktDataWebvttSettings = AVPacketSideDataType #{const AV_PKT_DATA_WEBVTT_SETTINGS}
+pattern AVPktDataMetadataUpdate = AVPacketSideDataType #{const AV_PKT_DATA_METADATA_UPDATE}
 
 --av_pkt_data_audio_service_type = AV_PKT_DATA_AUDIO_SERVICE_TYPE,
 --av_pkt_data_quality_factor = AV_PKT_DATA_QUALITY_FACTOR,
 
 -- | AV_PKT_FLAG_ flags
 newtype AVPacketFlag = AVPacketFlag CInt deriving (Eq, Show, CEnum, CFlags)
-#{enum AVPacketFlag, AVPacketFlag,
-	av_pkt_flag_key = AV_PKT_FLAG_KEY,
-	av_pkt_flag_corrupt = AV_PKT_FLAG_CORRUPT
-}
+pattern AVPktFlagKey = AVPacketFlag #{const AV_PKT_FLAG_KEY}
+pattern AVPktFlagCorrupt = AVPacketFlag #{const AV_PKT_FLAG_CORRUPT}
 
 -- | AVSideDataParamChangeFlags
 newtype AVSideDataParamChangeFlags = AVSideDataParamChangeFlags Word32 deriving (Eq, Show, Storable)
-#{enum AVSideDataParamChangeFlags, AVSideDataParamChangeFlags,
-	av_side_data_param_change_channel_count = AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_COUNT,
-	av_side_data_param_change_channel_layout = AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_LAYOUT,
-	av_side_data_param_change_sample_rate = AV_SIDE_DATA_PARAM_CHANGE_SAMPLE_RATE,
-	av_side_data_param_change_dimensions = AV_SIDE_DATA_PARAM_CHANGE_DIMENSIONS
-}
+pattern AVSideDataParamChangeChannelCount = AVSideDataParamChangeFlags #{const AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_COUNT}
+pattern AVSideDataParamChangeChannelLayout = AVSideDataParamChangeFlags #{const AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_LAYOUT}
+pattern AVSideDataParamChangeSampleRate = AVSideDataParamChangeFlags #{const AV_SIDE_DATA_PARAM_CHANGE_SAMPLE_RATE}
+pattern AVSideDataParamChangeDimensions = AVSideDataParamChangeFlags #{const AV_SIDE_DATA_PARAM_CHANGE_DIMENSIONS}
 
 -- | AV_CODEC_PROP_ flags
 newtype AVCodecProp = AVCodecProp CInt deriving (Eq, Show, CEnum, CFlags)
-#{enum AVCodecProp, AVCodecProp,
-	av_codec_prop_intra_only = AV_CODEC_PROP_INTRA_ONLY,
-	av_codec_prop_lossy = AV_CODEC_PROP_LOSSY,
-	av_codec_prop_lossless = AV_CODEC_PROP_LOSSLESS,
-	av_codec_prop_reorder = AV_CODEC_PROP_REORDER,
-	av_codec_prop_bitmap_sub = AV_CODEC_PROP_BITMAP_SUB,
-	av_codec_prop_text_sub = AV_CODEC_PROP_TEXT_SUB
-}
+pattern AVCodecPropIntraOnly = AVCodecProp #{const AV_CODEC_PROP_INTRA_ONLY}
+pattern AVCodecPropLossy = AVCodecProp #{const AV_CODEC_PROP_LOSSY}
+pattern AVCodecPropLossless = AVCodecProp #{const AV_CODEC_PROP_LOSSLESS}
+pattern AVCodecPropReorder = AVCodecProp #{const AV_CODEC_PROP_REORDER}
+pattern AVCodecPropBitmapSub = AVCodecProp #{const AV_CODEC_PROP_BITMAP_SUB}
+pattern AVCodecPropTextSub = AVCodecProp #{const AV_CODEC_PROP_TEXT_SUB}
 
 -- FF_MAX_B_FRAMES
-ff_max_b_frames :: Int
-ff_max_b_frames = #{const FF_MAX_B_FRAMES}
+pattern FFMaxBFrames = #{const FF_MAX_B_FRAMES}
 
 -- CODEC_FLAG_ flags
 newtype AVCodecFlag = AVCodecFlag CInt deriving (Eq, Show, CFlags)
-#{enum AVCodecFlag, AVCodecFlag,
-	codec_flag_unaligned = CODEC_FLAG_UNALIGNED,
-	codec_flag_qscale = CODEC_FLAG_QSCALE,
-	codec_flag_4mv = CODEC_FLAG_4MV,
-	codec_flag_output_corrupt = CODEC_FLAG_OUTPUT_CORRUPT,
-	codec_flag_qpel = CODEC_FLAG_QPEL,
-	codec_flag_gmc = CODEC_FLAG_GMC,
-	codec_flag_mv0 = CODEC_FLAG_MV0,
-	codec_flag_input_preserved = CODEC_FLAG_INPUT_PRESERVED,
-	codec_flag_pass1 = CODEC_FLAG_PASS1,
-	codec_flag_pass2 = CODEC_FLAG_PASS2,
-	codec_flag_gray = CODEC_FLAG_GRAY,
-	codec_flag_emu_edge = CODEC_FLAG_EMU_EDGE,
-	codec_flag_psnr = CODEC_FLAG_PSNR,
-	codec_flag_truncated = CODEC_FLAG_TRUNCATED,
-	codec_flag_normalize_aqp = CODEC_FLAG_NORMALIZE_AQP,
-	codec_flag_interlaced_dct = CODEC_FLAG_INTERLACED_DCT,
-	codec_flag_low_delay = CODEC_FLAG_LOW_DELAY,
-	codec_flag_global_header = CODEC_FLAG_GLOBAL_HEADER,
-	codec_flag_bitexact = CODEC_FLAG_BITEXACT,
-	codec_flag_ac_pred = CODEC_FLAG_AC_PRED,
-	codec_flag_loop_filter = CODEC_FLAG_LOOP_FILTER,
-	codec_flag_interlaced_me = CODEC_FLAG_INTERLACED_ME,
-	codec_flag_closed_gop = CODEC_FLAG_CLOSED_GOP
-}
+pattern CodecFlagUnaligned = AVCodecFlag #{const CODEC_FLAG_UNALIGNED}
+pattern CodecFlagQscale = AVCodecFlag #{const CODEC_FLAG_QSCALE}
+pattern CodecFlag4mv = AVCodecFlag #{const CODEC_FLAG_4MV}
+pattern CodecFlagOutputCorrupt = AVCodecFlag #{const CODEC_FLAG_OUTPUT_CORRUPT}
+pattern CodecFlagQpel = AVCodecFlag #{const CODEC_FLAG_QPEL}
+pattern CodecFlagGmc = AVCodecFlag #{const CODEC_FLAG_GMC}
+pattern CodecFlagMv0 = AVCodecFlag #{const CODEC_FLAG_MV0}
+pattern CodecFlagInputPreserved = AVCodecFlag #{const CODEC_FLAG_INPUT_PRESERVED}
+pattern CodecFlagPass1 = AVCodecFlag #{const CODEC_FLAG_PASS1}
+pattern CodecFlagPass2 = AVCodecFlag #{const CODEC_FLAG_PASS2}
+pattern CodecFlagGray = AVCodecFlag #{const CODEC_FLAG_GRAY}
+pattern CodecFlagEmuEdge = AVCodecFlag #{const CODEC_FLAG_EMU_EDGE}
+pattern CodecFlagPsnr = AVCodecFlag #{const CODEC_FLAG_PSNR}
+pattern CodecFlagTruncated = AVCodecFlag #{const CODEC_FLAG_TRUNCATED}
+pattern CodecFlagNormalizeAqp = AVCodecFlag #{const CODEC_FLAG_NORMALIZE_AQP}
+pattern CodecFlagInterlacedDct = AVCodecFlag #{const CODEC_FLAG_INTERLACED_DCT}
+pattern CodecFlagLowDelay = AVCodecFlag #{const CODEC_FLAG_LOW_DELAY}
+pattern CodecFlagGlobalHeader = AVCodecFlag #{const CODEC_FLAG_GLOBAL_HEADER}
+pattern CodecFlagBitexact = AVCodecFlag #{const CODEC_FLAG_BITEXACT}
+pattern CodecFlagAcPred = AVCodecFlag #{const CODEC_FLAG_AC_PRED}
+pattern CodecFlagLoopFilter = AVCodecFlag #{const CODEC_FLAG_LOOP_FILTER}
+pattern CodecFlagInterlacedMe = AVCodecFlag #{const CODEC_FLAG_INTERLACED_ME}
+pattern CodecFlagClosedGop = AVCodecFlag #{const CODEC_FLAG_CLOSED_GOP}
 
 -- | CODEC_FLAG2_ flags
 newtype AVCodecFlag2 = AVCodecFlag2 CInt deriving (Eq, Show, CFlags)
-#{enum AVCodecFlag2, AVCodecFlag2,
-	codec_flag2_fast = CODEC_FLAG2_FAST,
-	codec_flag2_no_output = CODEC_FLAG2_NO_OUTPUT,
-	codec_flag2_local_header = CODEC_FLAG2_LOCAL_HEADER,
-	codec_flag2_drop_frame_timecode = CODEC_FLAG2_DROP_FRAME_TIMECODE,
-	codec_flag2_ignore_crop = CODEC_FLAG2_IGNORE_CROP,
-	codec_flag2_chunks = CODEC_FLAG2_CHUNKS,
-	codec_flag2_show_all = CODEC_FLAG2_SHOW_ALL,
-	codec_flag2_export_mvs = CODEC_FLAG2_EXPORT_MVS,
-	codec_flag2_skip_manual = CODEC_FLAG2_SKIP_MANUAL
-}
+pattern CodecFlag2Fast = AVCodecFlag2 #{const CODEC_FLAG2_FAST}
+pattern CodecFlag2NoOutput = AVCodecFlag2 #{const CODEC_FLAG2_NO_OUTPUT}
+pattern CodecFlag2LocalHeader = AVCodecFlag2 #{const CODEC_FLAG2_LOCAL_HEADER}
+pattern CodecFlag2DropFrameTimecode = AVCodecFlag2 #{const CODEC_FLAG2_DROP_FRAME_TIMECODE}
+pattern CodecFlag2IgnoreCrop = AVCodecFlag2 #{const CODEC_FLAG2_IGNORE_CROP}
+pattern CodecFlag2Chunks = AVCodecFlag2 #{const CODEC_FLAG2_CHUNKS}
+pattern CodecFlag2ShowAll = AVCodecFlag2 #{const CODEC_FLAG2_SHOW_ALL}
+pattern CodecFlag2ExportMvs = AVCodecFlag2 #{const CODEC_FLAG2_EXPORT_MVS}
+pattern CodecFlag2SkipManual = AVCodecFlag2 #{const CODEC_FLAG2_SKIP_MANUAL}
 
 -- | CODEC_CAP_ flags
 newtype AVCodecCap = AVCodecCap CInt deriving (Eq, Show, CFlags)
-#{enum AVCodecCap, AVCodecCap,
-	codec_cap_draw_horiz_band = CODEC_CAP_DRAW_HORIZ_BAND,
-	codec_cap_dr1 = CODEC_CAP_DR1,
-	codec_cap_truncated = CODEC_CAP_TRUNCATED,
-	codec_cap_delay = CODEC_CAP_DELAY,
-	codec_cap_small_last_frame = CODEC_CAP_SMALL_LAST_FRAME,
-	codec_cap_hwaccel_vdpau = CODEC_CAP_HWACCEL_VDPAU,
-	codec_cap_subframes = CODEC_CAP_SUBFRAMES,
-	codec_cap_experimental = CODEC_CAP_EXPERIMENTAL,
-	codec_cap_channel_conf = CODEC_CAP_CHANNEL_CONF,
-	codec_cap_neg_linesizes = CODEC_CAP_NEG_LINESIZES,
-	codec_cap_frame_threads = CODEC_CAP_FRAME_THREADS,
-	codec_cap_slice_threads = CODEC_CAP_SLICE_THREADS,
-	codec_cap_param_change = CODEC_CAP_PARAM_CHANGE,
-	codec_cap_auto_threads = CODEC_CAP_AUTO_THREADS,
-	codec_cap_variable_frame_size = CODEC_CAP_VARIABLE_FRAME_SIZE,
-	codec_cap_intra_only = CODEC_CAP_INTRA_ONLY,
-	codec_cap_lossless = CODEC_CAP_LOSSLESS
-}
+pattern CodecCapDrawHorizBand = AVCodecCap #{const CODEC_CAP_DRAW_HORIZ_BAND}
+pattern CodecCapDr1 = AVCodecCap #{const CODEC_CAP_DR1}
+pattern CodecCapTruncated = AVCodecCap #{const CODEC_CAP_TRUNCATED}
+pattern CodecCapDelay = AVCodecCap #{const CODEC_CAP_DELAY}
+pattern CodecCapSmallLastFrame = AVCodecCap #{const CODEC_CAP_SMALL_LAST_FRAME}
+pattern CodecCapHwaccelVdpau = AVCodecCap #{const CODEC_CAP_HWACCEL_VDPAU}
+pattern CodecCapSubframes = AVCodecCap #{const CODEC_CAP_SUBFRAMES}
+pattern CodecCapExperimental = AVCodecCap #{const CODEC_CAP_EXPERIMENTAL}
+pattern CodecCapChannelConf = AVCodecCap #{const CODEC_CAP_CHANNEL_CONF}
+pattern CodecCapNegLinesizes = AVCodecCap #{const CODEC_CAP_NEG_LINESIZES}
+pattern CodecCapFrameThreads = AVCodecCap #{const CODEC_CAP_FRAME_THREADS}
+pattern CodecCapSliceThreads = AVCodecCap #{const CODEC_CAP_SLICE_THREADS}
+pattern CodecCapParamChange = AVCodecCap #{const CODEC_CAP_PARAM_CHANGE}
+pattern CodecCapAutoThreads = AVCodecCap #{const CODEC_CAP_AUTO_THREADS}
+pattern CodecCapVariableFrameSize = AVCodecCap #{const CODEC_CAP_VARIABLE_FRAME_SIZE}
+pattern CodecCapIntraOnly = AVCodecCap #{const CODEC_CAP_INTRA_ONLY}
+pattern CodecCapLossless = AVCodecCap #{const CODEC_CAP_LOSSLESS}
 
 -- | MB_TYPE_ flags
 newtype AVMBType = AVMBType CInt deriving (Eq, Show, CFlags)
-#{enum AVMBType, AVMBType,
-	mb_type_intra4X4 = MB_TYPE_INTRA4x4,
-	mb_type_intra16X16 = MB_TYPE_INTRA16x16,
-	mb_type_intra_pcm = MB_TYPE_INTRA_PCM,
-	mb_type_16X16 = MB_TYPE_16x16,
-	mb_type_16X8 = MB_TYPE_16x8,
-	mb_type_8X16 = MB_TYPE_8x16,
-	mb_type_8X8 = MB_TYPE_8x8,
-	mb_type_interlaced = MB_TYPE_INTERLACED,
-	mb_type_direct2 = MB_TYPE_DIRECT2,
-	mb_type_acpred = MB_TYPE_ACPRED,
-	mb_type_gmc = MB_TYPE_GMC,
-	mb_type_skip = MB_TYPE_SKIP,
-	mb_type_p0l0 = MB_TYPE_P0L0,
-	mb_type_p1l0 = MB_TYPE_P1L0,
-	mb_type_p0l1 = MB_TYPE_P0L1,
-	mb_type_p1l1 = MB_TYPE_P1L1,
-	mb_type_l0 = MB_TYPE_L0,
-	mb_type_l1 = MB_TYPE_L1,
-	mb_type_l0l1 = MB_TYPE_L0L1,
-	mb_type_quant = MB_TYPE_QUANT,
-	mb_type_cbp = MB_TYPE_CBP
-}
+pattern MBTypeIntra4X4 = AVMBType #{const MB_TYPE_INTRA4x4}
+pattern MBTypeIntra16X16 = AVMBType #{const MB_TYPE_INTRA16x16}
+pattern MBTypeIntraPcm = AVMBType #{const MB_TYPE_INTRA_PCM}
+pattern MBType16X16 = AVMBType #{const MB_TYPE_16x16}
+pattern MBType16X8 = AVMBType #{const MB_TYPE_16x8}
+pattern MBType8X16 = AVMBType #{const MB_TYPE_8x16}
+pattern MBType8X8 = AVMBType #{const MB_TYPE_8x8}
+pattern MBTypeInterlaced = AVMBType #{const MB_TYPE_INTERLACED}
+pattern MBTypeDirect2 = AVMBType #{const MB_TYPE_DIRECT2}
+pattern MBTypeAcpred = AVMBType #{const MB_TYPE_ACPRED}
+pattern MBTypeGmc = AVMBType #{const MB_TYPE_GMC}
+pattern MBTypeSkip = AVMBType #{const MB_TYPE_SKIP}
+pattern MBTypeP0l0 = AVMBType #{const MB_TYPE_P0L0}
+pattern MBTypeP1l0 = AVMBType #{const MB_TYPE_P1L0}
+pattern MBTypeP0l1 = AVMBType #{const MB_TYPE_P0L1}
+pattern MBTypeP1l1 = AVMBType #{const MB_TYPE_P1L1}
+pattern MBTypeL0 = AVMBType #{const MB_TYPE_L0}
+pattern MBTypeL1 = AVMBType #{const MB_TYPE_L1}
+pattern MBTypeL0l1 = AVMBType #{const MB_TYPE_L0L1}
+pattern MBTypeQuant = AVMBType #{const MB_TYPE_QUANT}
+pattern MBTypeCbp = AVMBType #{const MB_TYPE_CBP}
 
 -- | FF_QSCALE_TYPE_ constants
 newtype FFQscaleType = FFQscaleType CInt deriving (Eq, Show, CEnum)
-#{enum FFQscaleType, FFQscaleType,
-	ff_qscale_type_mpeg1 = FF_QSCALE_TYPE_MPEG1,
-	ff_qscale_type_mpeg2 = FF_QSCALE_TYPE_MPEG2,
-	ff_qscale_type_h264 = FF_QSCALE_TYPE_H264,
-	ff_qscale_type_vp56 = FF_QSCALE_TYPE_VP56
-}
+pattern FFQscaleTypeMpeg1 = FFQscaleType #{const FF_QSCALE_TYPE_MPEG1}
+pattern FFQscaleTypeMpeg2 = FFQscaleType #{const FF_QSCALE_TYPE_MPEG2}
+pattern FFQscaleTypeH264 = FFQscaleType #{const FF_QSCALE_TYPE_H264}
+pattern FFQscaleTypeVp56 = FFQscaleType #{const FF_QSCALE_TYPE_VP56}
 
 --  | FF_BUFFER_TYPE_ constants
 newtype FFBufferType = FFBufferType CInt deriving (Eq, Show, CEnum)
-#{enum FFBufferType, FFBufferType,
-	ff_buffer_type_internal = FF_BUFFER_TYPE_INTERNAL,
-	ff_buffer_type_user = FF_BUFFER_TYPE_USER,
-	ff_buffer_type_shared = FF_BUFFER_TYPE_SHARED,
-	ff_buffer_type_copy = FF_BUFFER_TYPE_COPY
-}
+pattern FFBufferTypeInternal = FFBufferType #{const FF_BUFFER_TYPE_INTERNAL}
+pattern FFBufferTypeUser = FFBufferType #{const FF_BUFFER_TYPE_USER}
+pattern FFBufferTypeShared = FFBufferType #{const FF_BUFFER_TYPE_SHARED}
+pattern FFBufferTypeCopy = FFBufferType #{const FF_BUFFER_TYPE_COPY}
 
 -- | FF_BUFFER_HINTS_ flags
 newtype FFBufferHints = FFBufferHints CInt deriving (Eq, Show, CFlags)
-#{enum FFBufferHints, FFBufferHints,
-	ff_buffer_hints_valid = FF_BUFFER_HINTS_VALID,
-	ff_buffer_hints_readable = FF_BUFFER_HINTS_READABLE,
-	ff_buffer_hints_preserve = FF_BUFFER_HINTS_PRESERVE,
-	ff_buffer_hints_reusable = FF_BUFFER_HINTS_REUSABLE
-}
+pattern FFBufferHintsValid = FFBufferHints #{const FF_BUFFER_HINTS_VALID}
+pattern FFBufferHintsReadable = FFBufferHints #{const FF_BUFFER_HINTS_READABLE}
+pattern FFBufferHintsPreserve = FFBufferHints #{const FF_BUFFER_HINTS_PRESERVE}
+pattern FFBufferHintsReusable = FFBufferHints #{const FF_BUFFER_HINTS_REUSABLE}
 
 -- | AV_GET_BUFFER_FLAG_ flags
 newtype AVGetBufferFlag = AVGetBufferFlag CInt deriving (Eq, Show, CFlags)
-#{enum AVGetBufferFlag, AVGetBufferFlag,
-	av_get_buffer_flag_ref = AV_GET_BUFFER_FLAG_REF
-}
+pattern AVGetBufferFlagRef = AVGetBufferFlag #{const AV_GET_BUFFER_FLAG_REF}
 
 -- | AV_SUBTITLE_FLAG_ flags
 newtype AVSubtitleFlag = AVSubtitleFlag CInt deriving (Eq, Show, CEnum, CFlags, Storable)
-#{enum AVSubtitleFlag, AVSubtitleFlag,
-	av_subtitle_flag_forced = AV_SUBTITLE_FLAG_FORCED
-}
+pattern AVSubtitleFlagForced = AVSubtitleFlag #{const AV_SUBTITLE_FLAG_FORCED}
 
 -- | AVAudioServiceType
 newtype AVAudioServiceType = AVAudioServiceType CInt deriving (Eq, Show, CEnum, Storable)
-#{enum AVAudioServiceType, AVAudioServiceType,
-	av_audio_service_type_main = AV_AUDIO_SERVICE_TYPE_MAIN,
-	av_audio_service_type_effects = AV_AUDIO_SERVICE_TYPE_EFFECTS,
-	av_audio_service_type_visually_impaired = AV_AUDIO_SERVICE_TYPE_VISUALLY_IMPAIRED,
-	av_audio_service_type_hearing_impaired = AV_AUDIO_SERVICE_TYPE_HEARING_IMPAIRED,
-	av_audio_service_type_dialogue = AV_AUDIO_SERVICE_TYPE_DIALOGUE,
-	av_audio_service_type_commentary = AV_AUDIO_SERVICE_TYPE_COMMENTARY,
-	av_audio_service_type_emergency = AV_AUDIO_SERVICE_TYPE_EMERGENCY,
-	av_audio_service_type_voice_over = AV_AUDIO_SERVICE_TYPE_VOICE_OVER,
-	av_audio_service_type_karaoke = AV_AUDIO_SERVICE_TYPE_KARAOKE
-}
+pattern AVAudioServiceTypeMain = AVAudioServiceType #{const AV_AUDIO_SERVICE_TYPE_MAIN}
+pattern AVAudioServiceTypeEffects = AVAudioServiceType #{const AV_AUDIO_SERVICE_TYPE_EFFECTS}
+pattern AVAudioServiceTypeVisuallyImpaired = AVAudioServiceType #{const AV_AUDIO_SERVICE_TYPE_VISUALLY_IMPAIRED}
+pattern AVAudioServiceTypeHearingImpaired = AVAudioServiceType #{const AV_AUDIO_SERVICE_TYPE_HEARING_IMPAIRED}
+pattern AVAudioServiceTypeDialogue = AVAudioServiceType #{const AV_AUDIO_SERVICE_TYPE_DIALOGUE}
+pattern AVAudioServiceTypeCommentary = AVAudioServiceType #{const AV_AUDIO_SERVICE_TYPE_COMMENTARY}
+pattern AVAudioServiceTypeEmergency = AVAudioServiceType #{const AV_AUDIO_SERVICE_TYPE_EMERGENCY}
+pattern AVAudioServiceTypeVoiceOver = AVAudioServiceType #{const AV_AUDIO_SERVICE_TYPE_VOICE_OVER}
+pattern AVAudioServiceTypeKaraoke = AVAudioServiceType #{const AV_AUDIO_SERVICE_TYPE_KARAOKE}
 
 -- | AVFieldOrder
 newtype AVFieldOrder = AVFieldOrder CInt deriving (Eq, Show, CEnum)
-#{enum AVFieldOrder, AVFieldOrder,
-	av_field_unknown = AV_FIELD_UNKNOWN,
-	av_field_progressive = AV_FIELD_PROGRESSIVE,
-	av_field_tt = AV_FIELD_TT,
-	av_field_bb = AV_FIELD_BB,
-	av_field_tb = AV_FIELD_TB,
-	av_field_bt = AV_FIELD_BT
-}
+pattern AVFieldUnknown = AVFieldOrder #{const AV_FIELD_UNKNOWN}
+pattern AVFieldProgressive = AVFieldOrder #{const AV_FIELD_PROGRESSIVE}
+pattern AVFieldTt = AVFieldOrder #{const AV_FIELD_TT}
+pattern AVFieldBb = AVFieldOrder #{const AV_FIELD_BB}
+pattern AVFieldTb = AVFieldOrder #{const AV_FIELD_TB}
+pattern AVFieldBt = AVFieldOrder #{const AV_FIELD_BT}
 
 -- | AVSubtitleType
 newtype AVSubtitleType = AVSubtitleType CInt deriving (Eq, Show, CEnum, Storable)
-#{enum AVSubtitleType, AVSubtitleType,
-	subtitle_none = SUBTITLE_NONE,
-	subtitle_bitmap = SUBTITLE_BITMAP,
-	subtitle_text = SUBTITLE_TEXT,
-	subtitle_ass = SUBTITLE_ASS
-}
+pattern SubtitleNone = AVSubtitleType #{const SUBTITLE_NONE}
+pattern SubtitleBitmap = AVSubtitleType #{const SUBTITLE_BITMAP}
+pattern SubtitleText = AVSubtitleType #{const SUBTITLE_TEXT}
+pattern SubtitleAss = AVSubtitleType #{const SUBTITLE_ASS}
 
 -- | AVDiscard
 newtype AVDiscard = AVDiscard CInt deriving (Eq, Show, CEnum)
-#{enum AVDiscard, AVDiscard,
-	avdiscard_none  = AVDISCARD_NONE,
-	avdiscard_default = AVDISCARD_DEFAULT,
-	avdiscard_nonref = AVDISCARD_NONREF,
-	avdiscard_bidir = AVDISCARD_BIDIR,
-	avdiscard_nonintra = AVDISCARD_NONINTRA,
-	avdiscard_nonkey = AVDISCARD_NONKEY,
-	avdiscard_all = AVDISCARD_ALL
-}
+pattern AVDiscardNone = AVDiscard (#{const AVDISCARD_NONE})
+pattern AVDiscardDefault = AVDiscard #{const AVDISCARD_DEFAULT}
+pattern AVDiscardNonref = AVDiscard #{const AVDISCARD_NONREF}
+pattern AVDiscardBidir = AVDiscard #{const AVDISCARD_BIDIR}
+pattern AVDiscardNonintra = AVDiscard #{const AVDISCARD_NONINTRA}
+pattern AVDiscardNonkey = AVDiscard #{const AVDISCARD_NONKEY}
+pattern AVDiscardAll = AVDiscard #{const AVDISCARD_ALL}
 
 -- | FF_INPUT_BUFFER_PADDING_SIZE
-ff_input_buffer_padding_size :: Int
-ff_input_buffer_padding_size = #{const FF_INPUT_BUFFER_PADDING_SIZE}
+pattern FFInputBufferPaddingSize = #{const FF_INPUT_BUFFER_PADDING_SIZE}
 
 -- | Motion_Est_ID
 newtype Motion_Est_ID = Motion_Est_ID CInt deriving (Eq, Show, CEnum)
-#{enum Motion_Est_ID, Motion_Est_ID,
-	me_zero = ME_ZERO,
-	me_full = ME_FULL,
-	me_log = ME_LOG,
-	me_phods = ME_PHODS,
-	me_epzs = ME_EPZS,
-	me_x1 = ME_X1,
-	me_hex = ME_HEX,
-	me_umh = ME_UMH,
-	me_tesa = ME_TESA,
-	me_iter = ME_ITER
-}
+pattern MEZero = Motion_Est_ID #{const ME_ZERO}
+pattern MEFull = Motion_Est_ID #{const ME_FULL}
+pattern MELog = Motion_Est_ID #{const ME_LOG}
+pattern MEPhods = Motion_Est_ID #{const ME_PHODS}
+pattern MEEpzs = Motion_Est_ID #{const ME_EPZS}
+pattern MEX1 = Motion_Est_ID #{const ME_X1}
+pattern MEHex = Motion_Est_ID #{const ME_HEX}
+pattern MEUmh = Motion_Est_ID #{const ME_UMH}
+pattern METesa = Motion_Est_ID #{const ME_TESA}
+pattern MEIter = Motion_Est_ID #{const ME_ITER}
 
 -- | FF_MIN_BUFFER_SIZE
-ff_min_buffer_size :: Int
-ff_min_buffer_size = #{const FF_MIN_BUFFER_SIZE}
+pattern FFMinBufferSize = #{const FF_MIN_BUFFER_SIZE}
 
   
 -- | FF_COMPLIANCE_ constants
 newtype FFCompliance = FFCompliance CInt deriving (Eq, Show, CEnum)
-#{enum FFCompliance, FFCompliance,
-	ff_compliance_very_strict = FF_COMPLIANCE_VERY_STRICT,
-	ff_compliance_strict = FF_COMPLIANCE_STRICT,
-	ff_compliance_normal = FF_COMPLIANCE_NORMAL,
-	ff_compliance_unofficial = FF_COMPLIANCE_UNOFFICIAL,
-	ff_compliance_experimental = FF_COMPLIANCE_EXPERIMENTAL
-}
+pattern FFComplianceVeryStrict = FFCompliance #{const FF_COMPLIANCE_VERY_STRICT}
+pattern FFComplianceStrict = FFCompliance #{const FF_COMPLIANCE_STRICT}
+pattern FFComplianceNormal = FFCompliance #{const FF_COMPLIANCE_NORMAL}
+pattern FFComplianceUnofficial = FFCompliance (#{const FF_COMPLIANCE_UNOFFICIAL})
+pattern FFComplianceExperimental = FFCompliance (#{const FF_COMPLIANCE_EXPERIMENTAL})
 
 -- | FF_PROFILE_ constants
 newtype FFProfile = FFProfile CInt deriving (Eq, Show, CEnum)
-#{enum FFProfile, FFProfile,
-	ff_profile_unknown = FF_PROFILE_UNKNOWN,
-	ff_profile_reserved = FF_PROFILE_RESERVED,
-	ff_profile_aac_main = FF_PROFILE_AAC_MAIN,
-	ff_profile_aac_low = FF_PROFILE_AAC_LOW,
-	ff_profile_aac_ssr = FF_PROFILE_AAC_SSR,
-	ff_profile_aac_ltp = FF_PROFILE_AAC_LTP,
-	ff_profile_aac_he = FF_PROFILE_AAC_HE,
-	ff_profile_aac_he_v2 = FF_PROFILE_AAC_HE_V2,
-	ff_profile_aac_ld = FF_PROFILE_AAC_LD,
-	ff_profile_aac_eld = FF_PROFILE_AAC_ELD,
-	ff_profile_mpeg2_aac_low = FF_PROFILE_MPEG2_AAC_LOW,
-	ff_profile_mpeg2_aac_he = FF_PROFILE_MPEG2_AAC_HE,
-	ff_profile_dts = FF_PROFILE_DTS,
-	ff_profile_dts_es = FF_PROFILE_DTS_ES,
-	ff_profile_dts_96_24 = FF_PROFILE_DTS_96_24,
-	ff_profile_dts_hd_hra = FF_PROFILE_DTS_HD_HRA,
-	ff_profile_dts_hd_ma = FF_PROFILE_DTS_HD_MA,
-	ff_profile_mpeg2_422 = FF_PROFILE_MPEG2_422,
-	ff_profile_mpeg2_high = FF_PROFILE_MPEG2_HIGH,
-	ff_profile_mpeg2_ss = FF_PROFILE_MPEG2_SS,
-	ff_profile_mpeg2_snr_scalable = FF_PROFILE_MPEG2_SNR_SCALABLE,
-	ff_profile_mpeg2_main = FF_PROFILE_MPEG2_MAIN,
-	ff_profile_mpeg2_simple = FF_PROFILE_MPEG2_SIMPLE,
-	ff_profile_h264_constrained = FF_PROFILE_H264_CONSTRAINED,
-	ff_profile_h264_intra = FF_PROFILE_H264_INTRA,
-	ff_profile_h264_baseline = FF_PROFILE_H264_BASELINE,
-	ff_profile_h264_constrained_baseline = FF_PROFILE_H264_CONSTRAINED_BASELINE,
-	ff_profile_h264_main = FF_PROFILE_H264_MAIN,
-	ff_profile_h264_extended = FF_PROFILE_H264_EXTENDED,
-	ff_profile_h264_high = FF_PROFILE_H264_HIGH,
-	ff_profile_h264_high_10 = FF_PROFILE_H264_HIGH_10,
-	ff_profile_h264_high_10_intra = FF_PROFILE_H264_HIGH_10_INTRA,
-	ff_profile_h264_high_422 = FF_PROFILE_H264_HIGH_422,
-	ff_profile_h264_high_422_intra = FF_PROFILE_H264_HIGH_422_INTRA,
-	ff_profile_h264_high_444 = FF_PROFILE_H264_HIGH_444,
-	ff_profile_h264_high_444_predictive = FF_PROFILE_H264_HIGH_444_PREDICTIVE,
-	ff_profile_h264_high_444_intra = FF_PROFILE_H264_HIGH_444_INTRA,
-	ff_profile_h264_cavlc_444 = FF_PROFILE_H264_CAVLC_444,
-	ff_profile_vc1_simple = FF_PROFILE_VC1_SIMPLE,
-	ff_profile_vc1_main = FF_PROFILE_VC1_MAIN,
-	ff_profile_vc1_complex = FF_PROFILE_VC1_COMPLEX,
-	ff_profile_vc1_advanced = FF_PROFILE_VC1_ADVANCED,
-	ff_profile_mpeg4_simple = FF_PROFILE_MPEG4_SIMPLE,
-	ff_profile_mpeg4_simple_scalable = FF_PROFILE_MPEG4_SIMPLE_SCALABLE,
-	ff_profile_mpeg4_core = FF_PROFILE_MPEG4_CORE,
-	ff_profile_mpeg4_main = FF_PROFILE_MPEG4_MAIN,
-	ff_profile_mpeg4_n_bit = FF_PROFILE_MPEG4_N_BIT,
-	ff_profile_mpeg4_scalable_texture = FF_PROFILE_MPEG4_SCALABLE_TEXTURE,
-	ff_profile_mpeg4_simple_face_animation = FF_PROFILE_MPEG4_SIMPLE_FACE_ANIMATION,
-	ff_profile_mpeg4_basic_animated_texture = FF_PROFILE_MPEG4_BASIC_ANIMATED_TEXTURE,
-	ff_profile_mpeg4_hybrid = FF_PROFILE_MPEG4_HYBRID,
-	ff_profile_mpeg4_advanced_real_time = FF_PROFILE_MPEG4_ADVANCED_REAL_TIME,
-	ff_profile_mpeg4_core_scalable = FF_PROFILE_MPEG4_CORE_SCALABLE,
-	ff_profile_mpeg4_advanced_coding = FF_PROFILE_MPEG4_ADVANCED_CODING,
-	ff_profile_mpeg4_advanced_core = FF_PROFILE_MPEG4_ADVANCED_CORE,
-	ff_profile_mpeg4_advanced_scalable_texture = FF_PROFILE_MPEG4_ADVANCED_SCALABLE_TEXTURE,
-	ff_profile_mpeg4_simple_studio = FF_PROFILE_MPEG4_SIMPLE_STUDIO,
-	ff_profile_mpeg4_advanced_simple = FF_PROFILE_MPEG4_ADVANCED_SIMPLE,
-	ff_profile_jpeg2000_cstream_restriction_0 = FF_PROFILE_JPEG2000_CSTREAM_RESTRICTION_0,
-	ff_profile_jpeg2000_cstream_restriction_1 = FF_PROFILE_JPEG2000_CSTREAM_RESTRICTION_1,
-	ff_profile_jpeg2000_cstream_no_restriction = FF_PROFILE_JPEG2000_CSTREAM_NO_RESTRICTION,
-	ff_profile_jpeg2000_dcinema_2k = FF_PROFILE_JPEG2000_DCINEMA_2K,
-	ff_profile_jpeg2000_dcinema_4k = FF_PROFILE_JPEG2000_DCINEMA_4K,
-	ff_profile_hevc_main = FF_PROFILE_HEVC_MAIN,
-	ff_profile_hevc_main_10 = FF_PROFILE_HEVC_MAIN_10,
-	ff_profile_hevc_main_still_picture = FF_PROFILE_HEVC_MAIN_STILL_PICTURE,
-	ff_profile_hevc_rext = FF_PROFILE_HEVC_REXT
-}
+pattern FFProfileUnknown = FFProfile (#{const FF_PROFILE_UNKNOWN})
+pattern FFProfileReserved = FFProfile (#{const FF_PROFILE_RESERVED})
+pattern FFProfileAacMain = FFProfile #{const FF_PROFILE_AAC_MAIN}
+pattern FFProfileAacLow = FFProfile #{const FF_PROFILE_AAC_LOW}
+pattern FFProfileAacSsr = FFProfile #{const FF_PROFILE_AAC_SSR}
+pattern FFProfileAacLtp = FFProfile #{const FF_PROFILE_AAC_LTP}
+pattern FFProfileAacHe = FFProfile #{const FF_PROFILE_AAC_HE}
+pattern FFProfileAacHeV2 = FFProfile #{const FF_PROFILE_AAC_HE_V2}
+pattern FFProfileAacLd = FFProfile #{const FF_PROFILE_AAC_LD}
+pattern FFProfileAacEld = FFProfile #{const FF_PROFILE_AAC_ELD}
+pattern FFProfileMpeg2AacLow = FFProfile #{const FF_PROFILE_MPEG2_AAC_LOW}
+pattern FFProfileMpeg2AacHe = FFProfile #{const FF_PROFILE_MPEG2_AAC_HE}
+pattern FFProfileDts = FFProfile #{const FF_PROFILE_DTS}
+pattern FFProfileDtsEs = FFProfile #{const FF_PROFILE_DTS_ES}
+pattern FFProfileDts9624 = FFProfile #{const FF_PROFILE_DTS_96_24}
+pattern FFProfileDtsHdHra = FFProfile #{const FF_PROFILE_DTS_HD_HRA}
+pattern FFProfileDtsHdMa = FFProfile #{const FF_PROFILE_DTS_HD_MA}
+pattern FFProfileMpeg2422 = FFProfile #{const FF_PROFILE_MPEG2_422}
+pattern FFProfileMpeg2High = FFProfile #{const FF_PROFILE_MPEG2_HIGH}
+pattern FFProfileMpeg2Ss = FFProfile #{const FF_PROFILE_MPEG2_SS}
+pattern FFProfileMpeg2SnrScalable = FFProfile #{const FF_PROFILE_MPEG2_SNR_SCALABLE}
+pattern FFProfileMpeg2Main = FFProfile #{const FF_PROFILE_MPEG2_MAIN}
+pattern FFProfileMpeg2Simple = FFProfile #{const FF_PROFILE_MPEG2_SIMPLE}
+pattern FFProfileH264Constrained = FFProfile #{const FF_PROFILE_H264_CONSTRAINED}
+pattern FFProfileH264Intra = FFProfile #{const FF_PROFILE_H264_INTRA}
+pattern FFProfileH264Baseline = FFProfile #{const FF_PROFILE_H264_BASELINE}
+pattern FFProfileH264ConstrainedBaseline = FFProfile #{const FF_PROFILE_H264_CONSTRAINED_BASELINE}
+pattern FFProfileH264Main = FFProfile #{const FF_PROFILE_H264_MAIN}
+pattern FFProfileH264Extended = FFProfile #{const FF_PROFILE_H264_EXTENDED}
+pattern FFProfileH264High = FFProfile #{const FF_PROFILE_H264_HIGH}
+pattern FFProfileH264High10 = FFProfile #{const FF_PROFILE_H264_HIGH_10}
+pattern FFProfileH264High10Intra = FFProfile #{const FF_PROFILE_H264_HIGH_10_INTRA}
+pattern FFProfileH264High422 = FFProfile #{const FF_PROFILE_H264_HIGH_422}
+pattern FFProfileH264High422Intra = FFProfile #{const FF_PROFILE_H264_HIGH_422_INTRA}
+pattern FFProfileH264High444 = FFProfile #{const FF_PROFILE_H264_HIGH_444}
+pattern FFProfileH264High444Predictive = FFProfile #{const FF_PROFILE_H264_HIGH_444_PREDICTIVE}
+pattern FFProfileH264High444Intra = FFProfile #{const FF_PROFILE_H264_HIGH_444_INTRA}
+pattern FFProfileH264Cavlc444 = FFProfile #{const FF_PROFILE_H264_CAVLC_444}
+pattern FFProfileVc1Simple = FFProfile #{const FF_PROFILE_VC1_SIMPLE}
+pattern FFProfileVc1Main = FFProfile #{const FF_PROFILE_VC1_MAIN}
+pattern FFProfileVc1Complex = FFProfile #{const FF_PROFILE_VC1_COMPLEX}
+pattern FFProfileVc1Advanced = FFProfile #{const FF_PROFILE_VC1_ADVANCED}
+pattern FFProfileMpeg4Simple = FFProfile #{const FF_PROFILE_MPEG4_SIMPLE}
+pattern FFProfileMpeg4SimpleScalable = FFProfile #{const FF_PROFILE_MPEG4_SIMPLE_SCALABLE}
+pattern FFProfileMpeg4Core = FFProfile #{const FF_PROFILE_MPEG4_CORE}
+pattern FFProfileMpeg4Main = FFProfile #{const FF_PROFILE_MPEG4_MAIN}
+pattern FFProfileMpeg4NBit = FFProfile #{const FF_PROFILE_MPEG4_N_BIT}
+pattern FFProfileMpeg4ScalableTexture = FFProfile #{const FF_PROFILE_MPEG4_SCALABLE_TEXTURE}
+pattern FFProfileMpeg4SimpleFaceAnimation = FFProfile #{const FF_PROFILE_MPEG4_SIMPLE_FACE_ANIMATION}
+pattern FFProfileMpeg4BasicAnimatedTexture = FFProfile #{const FF_PROFILE_MPEG4_BASIC_ANIMATED_TEXTURE}
+pattern FFProfileMpeg4Hybrid = FFProfile #{const FF_PROFILE_MPEG4_HYBRID}
+pattern FFProfileMpeg4AdvancedRealTime = FFProfile #{const FF_PROFILE_MPEG4_ADVANCED_REAL_TIME}
+pattern FFProfileMpeg4CoreScalable = FFProfile #{const FF_PROFILE_MPEG4_CORE_SCALABLE}
+pattern FFProfileMpeg4AdvancedCoding = FFProfile #{const FF_PROFILE_MPEG4_ADVANCED_CODING}
+pattern FFProfileMpeg4AdvancedCore = FFProfile #{const FF_PROFILE_MPEG4_ADVANCED_CORE}
+pattern FFProfileMpeg4AdvancedScalableTexture = FFProfile #{const FF_PROFILE_MPEG4_ADVANCED_SCALABLE_TEXTURE}
+pattern FFProfileMpeg4SimpleStudio = FFProfile #{const FF_PROFILE_MPEG4_SIMPLE_STUDIO}
+pattern FFProfileMpeg4AdvancedSimple = FFProfile #{const FF_PROFILE_MPEG4_ADVANCED_SIMPLE}
+pattern FFProfileJpeg2000CstreamRestriction0 = FFProfile #{const FF_PROFILE_JPEG2000_CSTREAM_RESTRICTION_0}
+pattern FFProfileJpeg2000CstreamRestriction1 = FFProfile #{const FF_PROFILE_JPEG2000_CSTREAM_RESTRICTION_1}
+pattern FFProfileJpeg2000CstreamNoRestriction = FFProfile #{const FF_PROFILE_JPEG2000_CSTREAM_NO_RESTRICTION}
+pattern FFProfileJpeg2000Dcinema2k = FFProfile #{const FF_PROFILE_JPEG2000_DCINEMA_2K}
+pattern FFProfileJpeg2000Dcinema4k = FFProfile #{const FF_PROFILE_JPEG2000_DCINEMA_4K}
+pattern FFProfileHevcMain = FFProfile #{const FF_PROFILE_HEVC_MAIN}
+pattern FFProfileHevcMain10 = FFProfile #{const FF_PROFILE_HEVC_MAIN_10}
+pattern FFProfileHevcMainStillPicture = FFProfile #{const FF_PROFILE_HEVC_MAIN_STILL_PICTURE}
+pattern FFProfileHevcRext = FFProfile #{const FF_PROFILE_HEVC_REXT}
 
 --ff_profile_dts_express = FF_PROFILE_DTS_EXPRESS,
 --ff_profile_vp9_0 = FF_PROFILE_VP9_0,
@@ -1091,416 +1045,414 @@ newtype FFProfile = FFProfile CInt deriving (Eq, Show, CEnum)
 
 -- | AVCodecId
 newtype AVCodecID = AVCodecID CInt deriving (Eq, Show, CEnum, Storable)
-#{enum AVCodecID, AVCodecID,
-	av_codec_id_none = AV_CODEC_ID_NONE,
-	av_codec_id_mpeg1video = AV_CODEC_ID_MPEG1VIDEO,
-	av_codec_id_mpeg2video = AV_CODEC_ID_MPEG2VIDEO,
-	av_codec_id_h261 = AV_CODEC_ID_H261,
-	av_codec_id_h263 = AV_CODEC_ID_H263,
-	av_codec_id_rv10 = AV_CODEC_ID_RV10,
-	av_codec_id_rv20 = AV_CODEC_ID_RV20,
-	av_codec_id_mjpeg = AV_CODEC_ID_MJPEG,
-	av_codec_id_mjpegb = AV_CODEC_ID_MJPEGB,
-	av_codec_id_ljpeg = AV_CODEC_ID_LJPEG,
-	av_codec_id_sp5x = AV_CODEC_ID_SP5X,
-	av_codec_id_jpegls = AV_CODEC_ID_JPEGLS,
-	av_codec_id_mpeg4 = AV_CODEC_ID_MPEG4,
-	av_codec_id_rawvideo = AV_CODEC_ID_RAWVIDEO,
-	av_codec_id_msmpeg4v1 = AV_CODEC_ID_MSMPEG4V1,
-	av_codec_id_msmpeg4v2 = AV_CODEC_ID_MSMPEG4V2,
-	av_codec_id_msmpeg4v3 = AV_CODEC_ID_MSMPEG4V3,
-	av_codec_id_wmv1 = AV_CODEC_ID_WMV1,
-	av_codec_id_wmv2 = AV_CODEC_ID_WMV2,
-	av_codec_id_h263p = AV_CODEC_ID_H263P,
-	av_codec_id_h263i = AV_CODEC_ID_H263I,
-	av_codec_id_flv1 = AV_CODEC_ID_FLV1,
-	av_codec_id_svq1 = AV_CODEC_ID_SVQ1,
-	av_codec_id_svq3 = AV_CODEC_ID_SVQ3,
-	av_codec_id_dvvideo = AV_CODEC_ID_DVVIDEO,
-	av_codec_id_huffyuv = AV_CODEC_ID_HUFFYUV,
-	av_codec_id_cyuv = AV_CODEC_ID_CYUV,
-	av_codec_id_h264 = AV_CODEC_ID_H264,
-	av_codec_id_indeo3 = AV_CODEC_ID_INDEO3,
-	av_codec_id_vp3 = AV_CODEC_ID_VP3,
-	av_codec_id_theora = AV_CODEC_ID_THEORA,
-	av_codec_id_asv1 = AV_CODEC_ID_ASV1,
-	av_codec_id_asv2 = AV_CODEC_ID_ASV2,
-	av_codec_id_ffv1 = AV_CODEC_ID_FFV1,
-	av_codec_id_4xm = AV_CODEC_ID_4XM,
-	av_codec_id_vcr1 = AV_CODEC_ID_VCR1,
-	av_codec_id_cljr = AV_CODEC_ID_CLJR,
-	av_codec_id_mdec = AV_CODEC_ID_MDEC,
-	av_codec_id_roq = AV_CODEC_ID_ROQ,
-	av_codec_id_interplay_video = AV_CODEC_ID_INTERPLAY_VIDEO,
-	av_codec_id_xan_wc3 = AV_CODEC_ID_XAN_WC3,
-	av_codec_id_xan_wc4 = AV_CODEC_ID_XAN_WC4,
-	av_codec_id_rpza = AV_CODEC_ID_RPZA,
-	av_codec_id_cinepak = AV_CODEC_ID_CINEPAK,
-	av_codec_id_ws_vqa = AV_CODEC_ID_WS_VQA,
-	av_codec_id_msrle = AV_CODEC_ID_MSRLE,
-	av_codec_id_msvideo1 = AV_CODEC_ID_MSVIDEO1,
-	av_codec_id_idcin = AV_CODEC_ID_IDCIN,
-	av_codec_id_8bps = AV_CODEC_ID_8BPS,
-	av_codec_id_smc = AV_CODEC_ID_SMC,
-	av_codec_id_flic = AV_CODEC_ID_FLIC,
-	av_codec_id_truemotion1 = AV_CODEC_ID_TRUEMOTION1,
-	av_codec_id_vmdvideo = AV_CODEC_ID_VMDVIDEO,
-	av_codec_id_mszh = AV_CODEC_ID_MSZH,
-	av_codec_id_zlib = AV_CODEC_ID_ZLIB,
-	av_codec_id_qtrle = AV_CODEC_ID_QTRLE,
-	av_codec_id_tscc = AV_CODEC_ID_TSCC,
-	av_codec_id_ulti = AV_CODEC_ID_ULTI,
-	av_codec_id_qdraw = AV_CODEC_ID_QDRAW,
-	av_codec_id_vixl = AV_CODEC_ID_VIXL,
-	av_codec_id_qpeg = AV_CODEC_ID_QPEG,
-	av_codec_id_png = AV_CODEC_ID_PNG,
-	av_codec_id_ppm = AV_CODEC_ID_PPM,
-	av_codec_id_pbm = AV_CODEC_ID_PBM,
-	av_codec_id_pgm = AV_CODEC_ID_PGM,
-	av_codec_id_pgmyuv = AV_CODEC_ID_PGMYUV,
-	av_codec_id_pam = AV_CODEC_ID_PAM,
-	av_codec_id_ffvhuff = AV_CODEC_ID_FFVHUFF,
-	av_codec_id_rv30 = AV_CODEC_ID_RV30,
-	av_codec_id_rv40 = AV_CODEC_ID_RV40,
-	av_codec_id_vc1 = AV_CODEC_ID_VC1,
-	av_codec_id_wmv3 = AV_CODEC_ID_WMV3,
-	av_codec_id_loco = AV_CODEC_ID_LOCO,
-	av_codec_id_wnv1 = AV_CODEC_ID_WNV1,
-	av_codec_id_aasc = AV_CODEC_ID_AASC,
-	av_codec_id_indeo2 = AV_CODEC_ID_INDEO2,
-	av_codec_id_fraps = AV_CODEC_ID_FRAPS,
-	av_codec_id_truemotion2 = AV_CODEC_ID_TRUEMOTION2,
-	av_codec_id_bmp = AV_CODEC_ID_BMP,
-	av_codec_id_cscd = AV_CODEC_ID_CSCD,
-	av_codec_id_mmvideo = AV_CODEC_ID_MMVIDEO,
-	av_codec_id_zmbv = AV_CODEC_ID_ZMBV,
-	av_codec_id_avs = AV_CODEC_ID_AVS,
-	av_codec_id_smackvideo = AV_CODEC_ID_SMACKVIDEO,
-	av_codec_id_nuv = AV_CODEC_ID_NUV,
-	av_codec_id_kmvc = AV_CODEC_ID_KMVC,
-	av_codec_id_flashsv = AV_CODEC_ID_FLASHSV,
-	av_codec_id_cavs = AV_CODEC_ID_CAVS,
-	av_codec_id_jpeg2000 = AV_CODEC_ID_JPEG2000,
-	av_codec_id_vmnc = AV_CODEC_ID_VMNC,
-	av_codec_id_vp5 = AV_CODEC_ID_VP5,
-	av_codec_id_vp6 = AV_CODEC_ID_VP6,
-	av_codec_id_vp6f = AV_CODEC_ID_VP6F,
-	av_codec_id_targa = AV_CODEC_ID_TARGA,
-	av_codec_id_dsicinvideo = AV_CODEC_ID_DSICINVIDEO,
-	av_codec_id_tiertexseqvideo = AV_CODEC_ID_TIERTEXSEQVIDEO,
-	av_codec_id_tiff = AV_CODEC_ID_TIFF,
-	av_codec_id_gif = AV_CODEC_ID_GIF,
-	av_codec_id_dxa = AV_CODEC_ID_DXA,
-	av_codec_id_dnxhd = AV_CODEC_ID_DNXHD,
-	av_codec_id_thp = AV_CODEC_ID_THP,
-	av_codec_id_sgi = AV_CODEC_ID_SGI,
-	av_codec_id_c93 = AV_CODEC_ID_C93,
-	av_codec_id_bethsoftvid = AV_CODEC_ID_BETHSOFTVID,
-	av_codec_id_ptx = AV_CODEC_ID_PTX,
-	av_codec_id_txd = AV_CODEC_ID_TXD,
-	av_codec_id_vp6a = AV_CODEC_ID_VP6A,
-	av_codec_id_amv = AV_CODEC_ID_AMV,
-	av_codec_id_vb = AV_CODEC_ID_VB,
-	av_codec_id_pcx = AV_CODEC_ID_PCX,
-	av_codec_id_sunrast = AV_CODEC_ID_SUNRAST,
-	av_codec_id_indeo4 = AV_CODEC_ID_INDEO4,
-	av_codec_id_indeo5 = AV_CODEC_ID_INDEO5,
-	av_codec_id_mimic = AV_CODEC_ID_MIMIC,
-	av_codec_id_rl2 = AV_CODEC_ID_RL2,
-	av_codec_id_escape124 = AV_CODEC_ID_ESCAPE124,
-	av_codec_id_dirac = AV_CODEC_ID_DIRAC,
-	av_codec_id_bfi = AV_CODEC_ID_BFI,
-	av_codec_id_cmv = AV_CODEC_ID_CMV,
-	av_codec_id_motionpixels = AV_CODEC_ID_MOTIONPIXELS,
-	av_codec_id_tgv = AV_CODEC_ID_TGV,
-	av_codec_id_tgq = AV_CODEC_ID_TGQ,
-	av_codec_id_tqi = AV_CODEC_ID_TQI,
-	av_codec_id_aura = AV_CODEC_ID_AURA,
-	av_codec_id_aura2 = AV_CODEC_ID_AURA2,
-	av_codec_id_v210x = AV_CODEC_ID_V210X,
-	av_codec_id_tmv = AV_CODEC_ID_TMV,
-	av_codec_id_v210 = AV_CODEC_ID_V210,
-	av_codec_id_dpx = AV_CODEC_ID_DPX,
-	av_codec_id_mad = AV_CODEC_ID_MAD,
-	av_codec_id_frwu = AV_CODEC_ID_FRWU,
-	av_codec_id_flashsv2 = AV_CODEC_ID_FLASHSV2,
-	av_codec_id_cdgraphics = AV_CODEC_ID_CDGRAPHICS,
-	av_codec_id_r210 = AV_CODEC_ID_R210,
-	av_codec_id_anm = AV_CODEC_ID_ANM,
-	av_codec_id_binkvideo = AV_CODEC_ID_BINKVIDEO,
-	av_codec_id_iff_ilbm = AV_CODEC_ID_IFF_ILBM,
-	av_codec_id_iff_byterun1 = AV_CODEC_ID_IFF_BYTERUN1,
-	av_codec_id_kgv1 = AV_CODEC_ID_KGV1,
-	av_codec_id_yop = AV_CODEC_ID_YOP,
-	av_codec_id_vp8 = AV_CODEC_ID_VP8,
-	av_codec_id_pictor = AV_CODEC_ID_PICTOR,
-	av_codec_id_ansi = AV_CODEC_ID_ANSI,
-	av_codec_id_a64_multi = AV_CODEC_ID_A64_MULTI,
-	av_codec_id_a64_multi5 = AV_CODEC_ID_A64_MULTI5,
-	av_codec_id_r10k = AV_CODEC_ID_R10K,
-	av_codec_id_mxpeg = AV_CODEC_ID_MXPEG,
-	av_codec_id_lagarith = AV_CODEC_ID_LAGARITH,
-	av_codec_id_prores = AV_CODEC_ID_PRORES,
-	av_codec_id_jv = AV_CODEC_ID_JV,
-	av_codec_id_dfa = AV_CODEC_ID_DFA,
-	av_codec_id_wmv3image = AV_CODEC_ID_WMV3IMAGE,
-	av_codec_id_vc1image = AV_CODEC_ID_VC1IMAGE,
-	av_codec_id_utvideo = AV_CODEC_ID_UTVIDEO,
-	av_codec_id_bmv_video = AV_CODEC_ID_BMV_VIDEO,
-	av_codec_id_vble = AV_CODEC_ID_VBLE,
-	av_codec_id_dxtory = AV_CODEC_ID_DXTORY,
-	av_codec_id_v410 = AV_CODEC_ID_V410,
-	av_codec_id_xwd = AV_CODEC_ID_XWD,
-	av_codec_id_cdxl = AV_CODEC_ID_CDXL,
-	av_codec_id_xbm = AV_CODEC_ID_XBM,
-	av_codec_id_zerocodec = AV_CODEC_ID_ZEROCODEC,
-	av_codec_id_mss1 = AV_CODEC_ID_MSS1,
-	av_codec_id_msa1 = AV_CODEC_ID_MSA1,
-	av_codec_id_tscc2 = AV_CODEC_ID_TSCC2,
-	av_codec_id_mts2 = AV_CODEC_ID_MTS2,
-	av_codec_id_cllc = AV_CODEC_ID_CLLC,
-	av_codec_id_mss2 = AV_CODEC_ID_MSS2,
-	av_codec_id_vp9 = AV_CODEC_ID_VP9,
-	av_codec_id_aic = AV_CODEC_ID_AIC,
-	av_codec_id_escape130_deprecated = AV_CODEC_ID_ESCAPE130_DEPRECATED,
-	av_codec_id_g2m_deprecated = AV_CODEC_ID_G2M_DEPRECATED,
-	av_codec_id_webp_deprecated = AV_CODEC_ID_WEBP_DEPRECATED,
-	av_codec_id_hnm4_video = AV_CODEC_ID_HNM4_VIDEO,
-	av_codec_id_hevc_deprecated = AV_CODEC_ID_HEVC_DEPRECATED,
-	av_codec_id_fic = AV_CODEC_ID_FIC,
-	av_codec_id_alias_pix = AV_CODEC_ID_ALIAS_PIX,
-	av_codec_id_brender_pix_deprecated = AV_CODEC_ID_BRENDER_PIX_DEPRECATED,
-	av_codec_id_paf_video_deprecated = AV_CODEC_ID_PAF_VIDEO_DEPRECATED,
-	av_codec_id_exr_deprecated = AV_CODEC_ID_EXR_DEPRECATED,
-	av_codec_id_vp7_deprecated = AV_CODEC_ID_VP7_DEPRECATED,
-	av_codec_id_sanm_deprecated = AV_CODEC_ID_SANM_DEPRECATED,
-	av_codec_id_sgirle_deprecated = AV_CODEC_ID_SGIRLE_DEPRECATED,
-	av_codec_id_mvc1_deprecated = AV_CODEC_ID_MVC1_DEPRECATED,
-	av_codec_id_mvc2_deprecated = AV_CODEC_ID_MVC2_DEPRECATED,
-	av_codec_id_brender_pix = AV_CODEC_ID_BRENDER_PIX,
-	av_codec_id_y41p = AV_CODEC_ID_Y41P,
-	av_codec_id_escape130 = AV_CODEC_ID_ESCAPE130,
-	av_codec_id_exr = AV_CODEC_ID_EXR,
-	av_codec_id_avrp = AV_CODEC_ID_AVRP,
-	av_codec_id_012v = AV_CODEC_ID_012V,
-	av_codec_id_g2m = AV_CODEC_ID_G2M,
-	av_codec_id_avui = AV_CODEC_ID_AVUI,
-	av_codec_id_ayuv = AV_CODEC_ID_AYUV,
-	av_codec_id_targa_y216 = AV_CODEC_ID_TARGA_Y216,
-	av_codec_id_v308 = AV_CODEC_ID_V308,
-	av_codec_id_v408 = AV_CODEC_ID_V408,
-	av_codec_id_yuv4 = AV_CODEC_ID_YUV4,
-	av_codec_id_sanm = AV_CODEC_ID_SANM,
-	av_codec_id_paf_video = AV_CODEC_ID_PAF_VIDEO,
-	av_codec_id_avrn = AV_CODEC_ID_AVRN,
-	av_codec_id_cpia = AV_CODEC_ID_CPIA,
-	av_codec_id_xface = AV_CODEC_ID_XFACE,
-	av_codec_id_sgirle = AV_CODEC_ID_SGIRLE,
-	av_codec_id_mvc1 = AV_CODEC_ID_MVC1,
-	av_codec_id_mvc2 = AV_CODEC_ID_MVC2,
-	av_codec_id_snow = AV_CODEC_ID_SNOW,
-	av_codec_id_webp = AV_CODEC_ID_WEBP,
-	av_codec_id_smvjpeg = AV_CODEC_ID_SMVJPEG,
-	av_codec_id_hevc = AV_CODEC_ID_HEVC,
-	av_codec_id_h265 = AV_CODEC_ID_H265,
-	av_codec_id_vp7 = AV_CODEC_ID_VP7,
-	av_codec_id_apng = AV_CODEC_ID_APNG,
-	av_codec_id_first_audio = AV_CODEC_ID_FIRST_AUDIO,
-	av_codec_id_pcm_s16le = AV_CODEC_ID_PCM_S16LE,
-	av_codec_id_pcm_s16be = AV_CODEC_ID_PCM_S16BE,
-	av_codec_id_pcm_u16le = AV_CODEC_ID_PCM_U16LE,
-	av_codec_id_pcm_u16be = AV_CODEC_ID_PCM_U16BE,
-	av_codec_id_pcm_s8 = AV_CODEC_ID_PCM_S8,
-	av_codec_id_pcm_u8 = AV_CODEC_ID_PCM_U8,
-	av_codec_id_pcm_mulaw = AV_CODEC_ID_PCM_MULAW,
-	av_codec_id_pcm_alaw = AV_CODEC_ID_PCM_ALAW,
-	av_codec_id_pcm_s32le = AV_CODEC_ID_PCM_S32LE,
-	av_codec_id_pcm_s32be = AV_CODEC_ID_PCM_S32BE,
-	av_codec_id_pcm_u32le = AV_CODEC_ID_PCM_U32LE,
-	av_codec_id_pcm_u32be = AV_CODEC_ID_PCM_U32BE,
-	av_codec_id_pcm_s24le = AV_CODEC_ID_PCM_S24LE,
-	av_codec_id_pcm_s24be = AV_CODEC_ID_PCM_S24BE,
-	av_codec_id_pcm_u24le = AV_CODEC_ID_PCM_U24LE,
-	av_codec_id_pcm_u24be = AV_CODEC_ID_PCM_U24BE,
-	av_codec_id_pcm_s24daud = AV_CODEC_ID_PCM_S24DAUD,
-	av_codec_id_pcm_zork = AV_CODEC_ID_PCM_ZORK,
-	av_codec_id_pcm_s16le_planar = AV_CODEC_ID_PCM_S16LE_PLANAR,
-	av_codec_id_pcm_dvd = AV_CODEC_ID_PCM_DVD,
-	av_codec_id_pcm_f32be = AV_CODEC_ID_PCM_F32BE,
-	av_codec_id_pcm_f32le = AV_CODEC_ID_PCM_F32LE,
-	av_codec_id_pcm_f64be = AV_CODEC_ID_PCM_F64BE,
-	av_codec_id_pcm_f64le = AV_CODEC_ID_PCM_F64LE,
-	av_codec_id_pcm_bluray = AV_CODEC_ID_PCM_BLURAY,
-	av_codec_id_pcm_lxf = AV_CODEC_ID_PCM_LXF,
-	av_codec_id_s302m = AV_CODEC_ID_S302M,
-	av_codec_id_pcm_s8_planar = AV_CODEC_ID_PCM_S8_PLANAR,
-	av_codec_id_pcm_s24le_planar_deprecated = AV_CODEC_ID_PCM_S24LE_PLANAR_DEPRECATED,
-	av_codec_id_pcm_s32le_planar_deprecated = AV_CODEC_ID_PCM_S32LE_PLANAR_DEPRECATED,
-	av_codec_id_pcm_s24le_planar = AV_CODEC_ID_PCM_S24LE_PLANAR,
-	av_codec_id_pcm_s32le_planar = AV_CODEC_ID_PCM_S32LE_PLANAR,
-	av_codec_id_pcm_s16be_planar = AV_CODEC_ID_PCM_S16BE_PLANAR,
-	av_codec_id_adpcm_ima_qt = AV_CODEC_ID_ADPCM_IMA_QT,
-	av_codec_id_adpcm_ima_wav = AV_CODEC_ID_ADPCM_IMA_WAV,
-	av_codec_id_adpcm_ima_dk3 = AV_CODEC_ID_ADPCM_IMA_DK3,
-	av_codec_id_adpcm_ima_dk4 = AV_CODEC_ID_ADPCM_IMA_DK4,
-	av_codec_id_adpcm_ima_ws = AV_CODEC_ID_ADPCM_IMA_WS,
-	av_codec_id_adpcm_ima_smjpeg = AV_CODEC_ID_ADPCM_IMA_SMJPEG,
-	av_codec_id_adpcm_ms = AV_CODEC_ID_ADPCM_MS,
-	av_codec_id_adpcm_4xm = AV_CODEC_ID_ADPCM_4XM,
-	av_codec_id_adpcm_xa = AV_CODEC_ID_ADPCM_XA,
-	av_codec_id_adpcm_adx = AV_CODEC_ID_ADPCM_ADX,
-	av_codec_id_adpcm_ea = AV_CODEC_ID_ADPCM_EA,
-	av_codec_id_adpcm_g726 = AV_CODEC_ID_ADPCM_G726,
-	av_codec_id_adpcm_ct = AV_CODEC_ID_ADPCM_CT,
-	av_codec_id_adpcm_swf = AV_CODEC_ID_ADPCM_SWF,
-	av_codec_id_adpcm_yamaha = AV_CODEC_ID_ADPCM_YAMAHA,
-	av_codec_id_adpcm_sbpro_4 = AV_CODEC_ID_ADPCM_SBPRO_4,
-	av_codec_id_adpcm_sbpro_3 = AV_CODEC_ID_ADPCM_SBPRO_3,
-	av_codec_id_adpcm_sbpro_2 = AV_CODEC_ID_ADPCM_SBPRO_2,
-	av_codec_id_adpcm_thp = AV_CODEC_ID_ADPCM_THP,
-	av_codec_id_adpcm_ima_amv = AV_CODEC_ID_ADPCM_IMA_AMV,
-	av_codec_id_adpcm_ea_r1 = AV_CODEC_ID_ADPCM_EA_R1,
-	av_codec_id_adpcm_ea_r3 = AV_CODEC_ID_ADPCM_EA_R3,
-	av_codec_id_adpcm_ea_r2 = AV_CODEC_ID_ADPCM_EA_R2,
-	av_codec_id_adpcm_ima_ea_sead = AV_CODEC_ID_ADPCM_IMA_EA_SEAD,
-	av_codec_id_adpcm_ima_ea_eacs = AV_CODEC_ID_ADPCM_IMA_EA_EACS,
-	av_codec_id_adpcm_ea_xas = AV_CODEC_ID_ADPCM_EA_XAS,
-	av_codec_id_adpcm_ea_maxis_xa = AV_CODEC_ID_ADPCM_EA_MAXIS_XA,
-	av_codec_id_adpcm_ima_iss = AV_CODEC_ID_ADPCM_IMA_ISS,
-	av_codec_id_adpcm_g722 = AV_CODEC_ID_ADPCM_G722,
-	av_codec_id_adpcm_ima_apc = AV_CODEC_ID_ADPCM_IMA_APC,
-	av_codec_id_adpcm_vima_deprecated = AV_CODEC_ID_ADPCM_VIMA_DEPRECATED,
-	av_codec_id_adpcm_vima = AV_CODEC_ID_ADPCM_VIMA,
-	av_codec_id_adpcm_afc = AV_CODEC_ID_ADPCM_AFC,
-	av_codec_id_adpcm_ima_oki = AV_CODEC_ID_ADPCM_IMA_OKI,
-	av_codec_id_adpcm_dtk = AV_CODEC_ID_ADPCM_DTK,
-	av_codec_id_adpcm_ima_rad = AV_CODEC_ID_ADPCM_IMA_RAD,
-	av_codec_id_adpcm_g726le = AV_CODEC_ID_ADPCM_G726LE,
-	av_codec_id_amr_nb = AV_CODEC_ID_AMR_NB,
-	av_codec_id_amr_wb = AV_CODEC_ID_AMR_WB,
-	av_codec_id_ra_144 = AV_CODEC_ID_RA_144,
-	av_codec_id_ra_288 = AV_CODEC_ID_RA_288,
-	av_codec_id_roq_dpcm = AV_CODEC_ID_ROQ_DPCM,
-	av_codec_id_interplay_dpcm = AV_CODEC_ID_INTERPLAY_DPCM,
-	av_codec_id_xan_dpcm = AV_CODEC_ID_XAN_DPCM,
-	av_codec_id_sol_dpcm = AV_CODEC_ID_SOL_DPCM,
-	av_codec_id_mp2 = AV_CODEC_ID_MP2,
-	av_codec_id_mp3 = AV_CODEC_ID_MP3,
-	av_codec_id_aac = AV_CODEC_ID_AAC,
-	av_codec_id_ac3 = AV_CODEC_ID_AC3,
-	av_codec_id_dts = AV_CODEC_ID_DTS,
-	av_codec_id_vorbis = AV_CODEC_ID_VORBIS,
-	av_codec_id_dvaudio = AV_CODEC_ID_DVAUDIO,
-	av_codec_id_wmav1 = AV_CODEC_ID_WMAV1,
-	av_codec_id_wmav2 = AV_CODEC_ID_WMAV2,
-	av_codec_id_mace3 = AV_CODEC_ID_MACE3,
-	av_codec_id_mace6 = AV_CODEC_ID_MACE6,
-	av_codec_id_vmdaudio = AV_CODEC_ID_VMDAUDIO,
-	av_codec_id_flac = AV_CODEC_ID_FLAC,
-	av_codec_id_mp3adu = AV_CODEC_ID_MP3ADU,
-	av_codec_id_mp3on4 = AV_CODEC_ID_MP3ON4,
-	av_codec_id_shorten = AV_CODEC_ID_SHORTEN,
-	av_codec_id_alac = AV_CODEC_ID_ALAC,
-	av_codec_id_westwood_snd1 = AV_CODEC_ID_WESTWOOD_SND1,
-	av_codec_id_gsm = AV_CODEC_ID_GSM,
-	av_codec_id_qdm2 = AV_CODEC_ID_QDM2,
-	av_codec_id_cook = AV_CODEC_ID_COOK,
-	av_codec_id_truespeech = AV_CODEC_ID_TRUESPEECH,
-	av_codec_id_tta = AV_CODEC_ID_TTA,
-	av_codec_id_smackaudio = AV_CODEC_ID_SMACKAUDIO,
-	av_codec_id_qcelp = AV_CODEC_ID_QCELP,
-	av_codec_id_wavpack = AV_CODEC_ID_WAVPACK,
-	av_codec_id_dsicinaudio = AV_CODEC_ID_DSICINAUDIO,
-	av_codec_id_imc = AV_CODEC_ID_IMC,
-	av_codec_id_musepack7 = AV_CODEC_ID_MUSEPACK7,
-	av_codec_id_mlp = AV_CODEC_ID_MLP,
-	av_codec_id_gsm_ms = AV_CODEC_ID_GSM_MS,
-	av_codec_id_atrac3 = AV_CODEC_ID_ATRAC3,
-	av_codec_id_ape = AV_CODEC_ID_APE,
-	av_codec_id_nellymoser = AV_CODEC_ID_NELLYMOSER,
-	av_codec_id_musepack8 = AV_CODEC_ID_MUSEPACK8,
-	av_codec_id_speex = AV_CODEC_ID_SPEEX,
-	av_codec_id_wmavoice = AV_CODEC_ID_WMAVOICE,
-	av_codec_id_wmapro = AV_CODEC_ID_WMAPRO,
-	av_codec_id_wmalossless = AV_CODEC_ID_WMALOSSLESS,
-	av_codec_id_atrac3p = AV_CODEC_ID_ATRAC3P,
-	av_codec_id_eac3 = AV_CODEC_ID_EAC3,
-	av_codec_id_sipr = AV_CODEC_ID_SIPR,
-	av_codec_id_mp1 = AV_CODEC_ID_MP1,
-	av_codec_id_twinvq = AV_CODEC_ID_TWINVQ,
-	av_codec_id_truehd = AV_CODEC_ID_TRUEHD,
-	av_codec_id_mp4als = AV_CODEC_ID_MP4ALS,
-	av_codec_id_atrac1 = AV_CODEC_ID_ATRAC1,
-	av_codec_id_binkaudio_rdft = AV_CODEC_ID_BINKAUDIO_RDFT,
-	av_codec_id_binkaudio_dct = AV_CODEC_ID_BINKAUDIO_DCT,
-	av_codec_id_aac_latm = AV_CODEC_ID_AAC_LATM,
-	av_codec_id_qdmc = AV_CODEC_ID_QDMC,
-	av_codec_id_celt = AV_CODEC_ID_CELT,
-	av_codec_id_g723_1 = AV_CODEC_ID_G723_1,
-	av_codec_id_g729 = AV_CODEC_ID_G729,
-	av_codec_id_8svx_exp = AV_CODEC_ID_8SVX_EXP,
-	av_codec_id_8svx_fib = AV_CODEC_ID_8SVX_FIB,
-	av_codec_id_bmv_audio = AV_CODEC_ID_BMV_AUDIO,
-	av_codec_id_ralf = AV_CODEC_ID_RALF,
-	av_codec_id_iac = AV_CODEC_ID_IAC,
-	av_codec_id_ilbc = AV_CODEC_ID_ILBC,
-	av_codec_id_opus_deprecated = AV_CODEC_ID_OPUS_DEPRECATED,
-	av_codec_id_comfort_noise = AV_CODEC_ID_COMFORT_NOISE,
-	av_codec_id_tak_deprecated = AV_CODEC_ID_TAK_DEPRECATED,
-	av_codec_id_metasound = AV_CODEC_ID_METASOUND,
-	av_codec_id_paf_audio_deprecated = AV_CODEC_ID_PAF_AUDIO_DEPRECATED,
-	av_codec_id_on2avc = AV_CODEC_ID_ON2AVC,
-	av_codec_id_ffwavesynth = AV_CODEC_ID_FFWAVESYNTH,
-	av_codec_id_sonic = AV_CODEC_ID_SONIC,
-	av_codec_id_sonic_ls = AV_CODEC_ID_SONIC_LS,
-	av_codec_id_paf_audio = AV_CODEC_ID_PAF_AUDIO,
-	av_codec_id_opus = AV_CODEC_ID_OPUS,
-	av_codec_id_tak = AV_CODEC_ID_TAK,
-	av_codec_id_evrc = AV_CODEC_ID_EVRC,
-	av_codec_id_smv = AV_CODEC_ID_SMV,
-	av_codec_id_dsd_lsbf = AV_CODEC_ID_DSD_LSBF,
-	av_codec_id_dsd_msbf = AV_CODEC_ID_DSD_MSBF,
-	av_codec_id_dsd_lsbf_planar = AV_CODEC_ID_DSD_LSBF_PLANAR,
-	av_codec_id_dsd_msbf_planar = AV_CODEC_ID_DSD_MSBF_PLANAR,
-	av_codec_id_first_subtitle = AV_CODEC_ID_FIRST_SUBTITLE,
-	av_codec_id_dvd_subtitle = AV_CODEC_ID_DVD_SUBTITLE,
-	av_codec_id_dvb_subtitle = AV_CODEC_ID_DVB_SUBTITLE,
-	av_codec_id_text = AV_CODEC_ID_TEXT,
-	av_codec_id_xsub = AV_CODEC_ID_XSUB,
-	av_codec_id_ssa = AV_CODEC_ID_SSA,
-	av_codec_id_mov_text = AV_CODEC_ID_MOV_TEXT,
-	av_codec_id_hdmv_pgs_subtitle = AV_CODEC_ID_HDMV_PGS_SUBTITLE,
-	av_codec_id_dvb_teletext = AV_CODEC_ID_DVB_TELETEXT,
-	av_codec_id_srt = AV_CODEC_ID_SRT,
-	av_codec_id_microdvd = AV_CODEC_ID_MICRODVD,
-	av_codec_id_eia_608 = AV_CODEC_ID_EIA_608,
-	av_codec_id_jacosub = AV_CODEC_ID_JACOSUB,
-	av_codec_id_sami = AV_CODEC_ID_SAMI,
-	av_codec_id_realtext = AV_CODEC_ID_REALTEXT,
-	av_codec_id_stl = AV_CODEC_ID_STL,
-	av_codec_id_subviewer1 = AV_CODEC_ID_SUBVIEWER1,
-	av_codec_id_subviewer = AV_CODEC_ID_SUBVIEWER,
-	av_codec_id_subrip = AV_CODEC_ID_SUBRIP,
-	av_codec_id_webvtt = AV_CODEC_ID_WEBVTT,
-	av_codec_id_mpl2 = AV_CODEC_ID_MPL2,
-	av_codec_id_vplayer = AV_CODEC_ID_VPLAYER,
-	av_codec_id_pjs = AV_CODEC_ID_PJS,
-	av_codec_id_ass = AV_CODEC_ID_ASS,
-	av_codec_id_first_unknown = AV_CODEC_ID_FIRST_UNKNOWN,
-	av_codec_id_ttf = AV_CODEC_ID_TTF,
-	av_codec_id_bintext = AV_CODEC_ID_BINTEXT,
-	av_codec_id_xbin = AV_CODEC_ID_XBIN,
-	av_codec_id_idf = AV_CODEC_ID_IDF,
-	av_codec_id_otf = AV_CODEC_ID_OTF,
-	av_codec_id_smpte_klv = AV_CODEC_ID_SMPTE_KLV,
-	av_codec_id_dvd_nav = AV_CODEC_ID_DVD_NAV,
-	av_codec_id_timed_id3 = AV_CODEC_ID_TIMED_ID3,
-	av_codec_id_bin_data = AV_CODEC_ID_BIN_DATA,
-	av_codec_id_probe = AV_CODEC_ID_PROBE,
-	av_codec_id_mpeg2ts = AV_CODEC_ID_MPEG2TS,
-	av_codec_id_mpeg4systems = AV_CODEC_ID_MPEG4SYSTEMS,
-	av_codec_id_ffmetadata = AV_CODEC_ID_FFMETADATA
-}
+pattern AVCodecIdNone = AVCodecID #{const AV_CODEC_ID_NONE}
+pattern AVCodecIdMpeg1video = AVCodecID #{const AV_CODEC_ID_MPEG1VIDEO}
+pattern AVCodecIdMpeg2video = AVCodecID #{const AV_CODEC_ID_MPEG2VIDEO}
+pattern AVCodecIdH261 = AVCodecID #{const AV_CODEC_ID_H261}
+pattern AVCodecIdH263 = AVCodecID #{const AV_CODEC_ID_H263}
+pattern AVCodecIdRv10 = AVCodecID #{const AV_CODEC_ID_RV10}
+pattern AVCodecIdRv20 = AVCodecID #{const AV_CODEC_ID_RV20}
+pattern AVCodecIdMjpeg = AVCodecID #{const AV_CODEC_ID_MJPEG}
+pattern AVCodecIdMjpegb = AVCodecID #{const AV_CODEC_ID_MJPEGB}
+pattern AVCodecIdLjpeg = AVCodecID #{const AV_CODEC_ID_LJPEG}
+pattern AVCodecIdSp5x = AVCodecID #{const AV_CODEC_ID_SP5X}
+pattern AVCodecIdJpegls = AVCodecID #{const AV_CODEC_ID_JPEGLS}
+pattern AVCodecIdMpeg4 = AVCodecID #{const AV_CODEC_ID_MPEG4}
+pattern AVCodecIdRawvideo = AVCodecID #{const AV_CODEC_ID_RAWVIDEO}
+pattern AVCodecIdMsmpeg4v1 = AVCodecID #{const AV_CODEC_ID_MSMPEG4V1}
+pattern AVCodecIdMsmpeg4v2 = AVCodecID #{const AV_CODEC_ID_MSMPEG4V2}
+pattern AVCodecIdMsmpeg4v3 = AVCodecID #{const AV_CODEC_ID_MSMPEG4V3}
+pattern AVCodecIdWmv1 = AVCodecID #{const AV_CODEC_ID_WMV1}
+pattern AVCodecIdWmv2 = AVCodecID #{const AV_CODEC_ID_WMV2}
+pattern AVCodecIdH263p = AVCodecID #{const AV_CODEC_ID_H263P}
+pattern AVCodecIdH263i = AVCodecID #{const AV_CODEC_ID_H263I}
+pattern AVCodecIdFlv1 = AVCodecID #{const AV_CODEC_ID_FLV1}
+pattern AVCodecIdSvq1 = AVCodecID #{const AV_CODEC_ID_SVQ1}
+pattern AVCodecIdSvq3 = AVCodecID #{const AV_CODEC_ID_SVQ3}
+pattern AVCodecIdDvvideo = AVCodecID #{const AV_CODEC_ID_DVVIDEO}
+pattern AVCodecIdHuffyuv = AVCodecID #{const AV_CODEC_ID_HUFFYUV}
+pattern AVCodecIdCyuv = AVCodecID #{const AV_CODEC_ID_CYUV}
+pattern AVCodecIdH264 = AVCodecID #{const AV_CODEC_ID_H264}
+pattern AVCodecIdIndeo3 = AVCodecID #{const AV_CODEC_ID_INDEO3}
+pattern AVCodecIdVp3 = AVCodecID #{const AV_CODEC_ID_VP3}
+pattern AVCodecIdTheora = AVCodecID #{const AV_CODEC_ID_THEORA}
+pattern AVCodecIdAsv1 = AVCodecID #{const AV_CODEC_ID_ASV1}
+pattern AVCodecIdAsv2 = AVCodecID #{const AV_CODEC_ID_ASV2}
+pattern AVCodecIdFfv1 = AVCodecID #{const AV_CODEC_ID_FFV1}
+pattern AVCodecId4xm = AVCodecID #{const AV_CODEC_ID_4XM}
+pattern AVCodecIdVcr1 = AVCodecID #{const AV_CODEC_ID_VCR1}
+pattern AVCodecIdCljr = AVCodecID #{const AV_CODEC_ID_CLJR}
+pattern AVCodecIdMdec = AVCodecID #{const AV_CODEC_ID_MDEC}
+pattern AVCodecIdRoq = AVCodecID #{const AV_CODEC_ID_ROQ}
+pattern AVCodecIdInterplayVideo = AVCodecID #{const AV_CODEC_ID_INTERPLAY_VIDEO}
+pattern AVCodecIdXanWc3 = AVCodecID #{const AV_CODEC_ID_XAN_WC3}
+pattern AVCodecIdXanWc4 = AVCodecID #{const AV_CODEC_ID_XAN_WC4}
+pattern AVCodecIdRpza = AVCodecID #{const AV_CODEC_ID_RPZA}
+pattern AVCodecIdCinepak = AVCodecID #{const AV_CODEC_ID_CINEPAK}
+pattern AVCodecIdWsVqa = AVCodecID #{const AV_CODEC_ID_WS_VQA}
+pattern AVCodecIdMsrle = AVCodecID #{const AV_CODEC_ID_MSRLE}
+pattern AVCodecIdMsvideo1 = AVCodecID #{const AV_CODEC_ID_MSVIDEO1}
+pattern AVCodecIdIdcin = AVCodecID #{const AV_CODEC_ID_IDCIN}
+pattern AVCodecId8bps = AVCodecID #{const AV_CODEC_ID_8BPS}
+pattern AVCodecIdSmc = AVCodecID #{const AV_CODEC_ID_SMC}
+pattern AVCodecIdFlic = AVCodecID #{const AV_CODEC_ID_FLIC}
+pattern AVCodecIdTruemotion1 = AVCodecID #{const AV_CODEC_ID_TRUEMOTION1}
+pattern AVCodecIdVmdvideo = AVCodecID #{const AV_CODEC_ID_VMDVIDEO}
+pattern AVCodecIdMszh = AVCodecID #{const AV_CODEC_ID_MSZH}
+pattern AVCodecIdZlib = AVCodecID #{const AV_CODEC_ID_ZLIB}
+pattern AVCodecIdQtrle = AVCodecID #{const AV_CODEC_ID_QTRLE}
+pattern AVCodecIdTscc = AVCodecID #{const AV_CODEC_ID_TSCC}
+pattern AVCodecIdUlti = AVCodecID #{const AV_CODEC_ID_ULTI}
+pattern AVCodecIdQdraw = AVCodecID #{const AV_CODEC_ID_QDRAW}
+pattern AVCodecIdVixl = AVCodecID #{const AV_CODEC_ID_VIXL}
+pattern AVCodecIdQpeg = AVCodecID #{const AV_CODEC_ID_QPEG}
+pattern AVCodecIdPng = AVCodecID #{const AV_CODEC_ID_PNG}
+pattern AVCodecIdPpm = AVCodecID #{const AV_CODEC_ID_PPM}
+pattern AVCodecIdPbm = AVCodecID #{const AV_CODEC_ID_PBM}
+pattern AVCodecIdPgm = AVCodecID #{const AV_CODEC_ID_PGM}
+pattern AVCodecIdPgmyuv = AVCodecID #{const AV_CODEC_ID_PGMYUV}
+pattern AVCodecIdPam = AVCodecID #{const AV_CODEC_ID_PAM}
+pattern AVCodecIdFfvhuff = AVCodecID #{const AV_CODEC_ID_FFVHUFF}
+pattern AVCodecIdRv30 = AVCodecID #{const AV_CODEC_ID_RV30}
+pattern AVCodecIdRv40 = AVCodecID #{const AV_CODEC_ID_RV40}
+pattern AVCodecIdVc1 = AVCodecID #{const AV_CODEC_ID_VC1}
+pattern AVCodecIdWmv3 = AVCodecID #{const AV_CODEC_ID_WMV3}
+pattern AVCodecIdLoco = AVCodecID #{const AV_CODEC_ID_LOCO}
+pattern AVCodecIdWnv1 = AVCodecID #{const AV_CODEC_ID_WNV1}
+pattern AVCodecIdAasc = AVCodecID #{const AV_CODEC_ID_AASC}
+pattern AVCodecIdIndeo2 = AVCodecID #{const AV_CODEC_ID_INDEO2}
+pattern AVCodecIdFraps = AVCodecID #{const AV_CODEC_ID_FRAPS}
+pattern AVCodecIdTruemotion2 = AVCodecID #{const AV_CODEC_ID_TRUEMOTION2}
+pattern AVCodecIdBmp = AVCodecID #{const AV_CODEC_ID_BMP}
+pattern AVCodecIdCscd = AVCodecID #{const AV_CODEC_ID_CSCD}
+pattern AVCodecIdMmvideo = AVCodecID #{const AV_CODEC_ID_MMVIDEO}
+pattern AVCodecIdZmbv = AVCodecID #{const AV_CODEC_ID_ZMBV}
+pattern AVCodecIdAvs = AVCodecID #{const AV_CODEC_ID_AVS}
+pattern AVCodecIdSmackvideo = AVCodecID #{const AV_CODEC_ID_SMACKVIDEO}
+pattern AVCodecIdNuv = AVCodecID #{const AV_CODEC_ID_NUV}
+pattern AVCodecIdKmvc = AVCodecID #{const AV_CODEC_ID_KMVC}
+pattern AVCodecIdFlashsv = AVCodecID #{const AV_CODEC_ID_FLASHSV}
+pattern AVCodecIdCavs = AVCodecID #{const AV_CODEC_ID_CAVS}
+pattern AVCodecIdJpeg2000 = AVCodecID #{const AV_CODEC_ID_JPEG2000}
+pattern AVCodecIdVmnc = AVCodecID #{const AV_CODEC_ID_VMNC}
+pattern AVCodecIdVp5 = AVCodecID #{const AV_CODEC_ID_VP5}
+pattern AVCodecIdVp6 = AVCodecID #{const AV_CODEC_ID_VP6}
+pattern AVCodecIdVp6f = AVCodecID #{const AV_CODEC_ID_VP6F}
+pattern AVCodecIdTarga = AVCodecID #{const AV_CODEC_ID_TARGA}
+pattern AVCodecIdDsicinvideo = AVCodecID #{const AV_CODEC_ID_DSICINVIDEO}
+pattern AVCodecIdTiertexseqvideo = AVCodecID #{const AV_CODEC_ID_TIERTEXSEQVIDEO}
+pattern AVCodecIdTiff = AVCodecID #{const AV_CODEC_ID_TIFF}
+pattern AVCodecIdGif = AVCodecID #{const AV_CODEC_ID_GIF}
+pattern AVCodecIdDxa = AVCodecID #{const AV_CODEC_ID_DXA}
+pattern AVCodecIdDnxhd = AVCodecID #{const AV_CODEC_ID_DNXHD}
+pattern AVCodecIdThp = AVCodecID #{const AV_CODEC_ID_THP}
+pattern AVCodecIdSgi = AVCodecID #{const AV_CODEC_ID_SGI}
+pattern AVCodecIdC93 = AVCodecID #{const AV_CODEC_ID_C93}
+pattern AVCodecIdBethsoftvid = AVCodecID #{const AV_CODEC_ID_BETHSOFTVID}
+pattern AVCodecIdPtx = AVCodecID #{const AV_CODEC_ID_PTX}
+pattern AVCodecIdTxd = AVCodecID #{const AV_CODEC_ID_TXD}
+pattern AVCodecIdVp6a = AVCodecID #{const AV_CODEC_ID_VP6A}
+pattern AVCodecIdAmv = AVCodecID #{const AV_CODEC_ID_AMV}
+pattern AVCodecIdVb = AVCodecID #{const AV_CODEC_ID_VB}
+pattern AVCodecIdPcx = AVCodecID #{const AV_CODEC_ID_PCX}
+pattern AVCodecIdSunrast = AVCodecID #{const AV_CODEC_ID_SUNRAST}
+pattern AVCodecIdIndeo4 = AVCodecID #{const AV_CODEC_ID_INDEO4}
+pattern AVCodecIdIndeo5 = AVCodecID #{const AV_CODEC_ID_INDEO5}
+pattern AVCodecIdMimic = AVCodecID #{const AV_CODEC_ID_MIMIC}
+pattern AVCodecIdRl2 = AVCodecID #{const AV_CODEC_ID_RL2}
+pattern AVCodecIdEscape124 = AVCodecID #{const AV_CODEC_ID_ESCAPE124}
+pattern AVCodecIdDirac = AVCodecID #{const AV_CODEC_ID_DIRAC}
+pattern AVCodecIdBfi = AVCodecID #{const AV_CODEC_ID_BFI}
+pattern AVCodecIdCmv = AVCodecID #{const AV_CODEC_ID_CMV}
+pattern AVCodecIdMotionpixels = AVCodecID #{const AV_CODEC_ID_MOTIONPIXELS}
+pattern AVCodecIdTgv = AVCodecID #{const AV_CODEC_ID_TGV}
+pattern AVCodecIdTgq = AVCodecID #{const AV_CODEC_ID_TGQ}
+pattern AVCodecIdTqi = AVCodecID #{const AV_CODEC_ID_TQI}
+pattern AVCodecIdAura = AVCodecID #{const AV_CODEC_ID_AURA}
+pattern AVCodecIdAura2 = AVCodecID #{const AV_CODEC_ID_AURA2}
+pattern AVCodecIdV210x = AVCodecID #{const AV_CODEC_ID_V210X}
+pattern AVCodecIdTmv = AVCodecID #{const AV_CODEC_ID_TMV}
+pattern AVCodecIdV210 = AVCodecID #{const AV_CODEC_ID_V210}
+pattern AVCodecIdDpx = AVCodecID #{const AV_CODEC_ID_DPX}
+pattern AVCodecIdMad = AVCodecID #{const AV_CODEC_ID_MAD}
+pattern AVCodecIdFrwu = AVCodecID #{const AV_CODEC_ID_FRWU}
+pattern AVCodecIdFlashsv2 = AVCodecID #{const AV_CODEC_ID_FLASHSV2}
+pattern AVCodecIdCdgraphics = AVCodecID #{const AV_CODEC_ID_CDGRAPHICS}
+pattern AVCodecIdR210 = AVCodecID #{const AV_CODEC_ID_R210}
+pattern AVCodecIdAnm = AVCodecID #{const AV_CODEC_ID_ANM}
+pattern AVCodecIdBinkvideo = AVCodecID #{const AV_CODEC_ID_BINKVIDEO}
+pattern AVCodecIdIffIlbm = AVCodecID #{const AV_CODEC_ID_IFF_ILBM}
+pattern AVCodecIdIffByterun1 = AVCodecID #{const AV_CODEC_ID_IFF_BYTERUN1}
+pattern AVCodecIdKgv1 = AVCodecID #{const AV_CODEC_ID_KGV1}
+pattern AVCodecIdYop = AVCodecID #{const AV_CODEC_ID_YOP}
+pattern AVCodecIdVp8 = AVCodecID #{const AV_CODEC_ID_VP8}
+pattern AVCodecIdPictor = AVCodecID #{const AV_CODEC_ID_PICTOR}
+pattern AVCodecIdAnsi = AVCodecID #{const AV_CODEC_ID_ANSI}
+pattern AVCodecIdA64Multi = AVCodecID #{const AV_CODEC_ID_A64_MULTI}
+pattern AVCodecIdA64Multi5 = AVCodecID #{const AV_CODEC_ID_A64_MULTI5}
+pattern AVCodecIdR10k = AVCodecID #{const AV_CODEC_ID_R10K}
+pattern AVCodecIdMxpeg = AVCodecID #{const AV_CODEC_ID_MXPEG}
+pattern AVCodecIdLagarith = AVCodecID #{const AV_CODEC_ID_LAGARITH}
+pattern AVCodecIdProres = AVCodecID #{const AV_CODEC_ID_PRORES}
+pattern AVCodecIdJv = AVCodecID #{const AV_CODEC_ID_JV}
+pattern AVCodecIdDfa = AVCodecID #{const AV_CODEC_ID_DFA}
+pattern AVCodecIdWmv3image = AVCodecID #{const AV_CODEC_ID_WMV3IMAGE}
+pattern AVCodecIdVc1image = AVCodecID #{const AV_CODEC_ID_VC1IMAGE}
+pattern AVCodecIdUtvideo = AVCodecID #{const AV_CODEC_ID_UTVIDEO}
+pattern AVCodecIdBmvVideo = AVCodecID #{const AV_CODEC_ID_BMV_VIDEO}
+pattern AVCodecIdVble = AVCodecID #{const AV_CODEC_ID_VBLE}
+pattern AVCodecIdDxtory = AVCodecID #{const AV_CODEC_ID_DXTORY}
+pattern AVCodecIdV410 = AVCodecID #{const AV_CODEC_ID_V410}
+pattern AVCodecIdXwd = AVCodecID #{const AV_CODEC_ID_XWD}
+pattern AVCodecIdCdxl = AVCodecID #{const AV_CODEC_ID_CDXL}
+pattern AVCodecIdXbm = AVCodecID #{const AV_CODEC_ID_XBM}
+pattern AVCodecIdZerocodec = AVCodecID #{const AV_CODEC_ID_ZEROCODEC}
+pattern AVCodecIdMss1 = AVCodecID #{const AV_CODEC_ID_MSS1}
+pattern AVCodecIdMsa1 = AVCodecID #{const AV_CODEC_ID_MSA1}
+pattern AVCodecIdTscc2 = AVCodecID #{const AV_CODEC_ID_TSCC2}
+pattern AVCodecIdMts2 = AVCodecID #{const AV_CODEC_ID_MTS2}
+pattern AVCodecIdCllc = AVCodecID #{const AV_CODEC_ID_CLLC}
+pattern AVCodecIdMss2 = AVCodecID #{const AV_CODEC_ID_MSS2}
+pattern AVCodecIdVp9 = AVCodecID #{const AV_CODEC_ID_VP9}
+pattern AVCodecIdAic = AVCodecID #{const AV_CODEC_ID_AIC}
+pattern AVCodecIdEscape130Deprecated = AVCodecID #{const AV_CODEC_ID_ESCAPE130_DEPRECATED}
+pattern AVCodecIdG2mDeprecated = AVCodecID #{const AV_CODEC_ID_G2M_DEPRECATED}
+pattern AVCodecIdWebpDeprecated = AVCodecID #{const AV_CODEC_ID_WEBP_DEPRECATED}
+pattern AVCodecIdHnm4Video = AVCodecID #{const AV_CODEC_ID_HNM4_VIDEO}
+pattern AVCodecIdHevcDeprecated = AVCodecID #{const AV_CODEC_ID_HEVC_DEPRECATED}
+pattern AVCodecIdFic = AVCodecID #{const AV_CODEC_ID_FIC}
+pattern AVCodecIdAliasPix = AVCodecID #{const AV_CODEC_ID_ALIAS_PIX}
+pattern AVCodecIdBrenderPixDeprecated = AVCodecID #{const AV_CODEC_ID_BRENDER_PIX_DEPRECATED}
+pattern AVCodecIdPafVideoDeprecated = AVCodecID #{const AV_CODEC_ID_PAF_VIDEO_DEPRECATED}
+pattern AVCodecIdExrDeprecated = AVCodecID #{const AV_CODEC_ID_EXR_DEPRECATED}
+pattern AVCodecIdVp7Deprecated = AVCodecID #{const AV_CODEC_ID_VP7_DEPRECATED}
+pattern AVCodecIdSanmDeprecated = AVCodecID #{const AV_CODEC_ID_SANM_DEPRECATED}
+pattern AVCodecIdSgirleDeprecated = AVCodecID #{const AV_CODEC_ID_SGIRLE_DEPRECATED}
+pattern AVCodecIdMvc1Deprecated = AVCodecID #{const AV_CODEC_ID_MVC1_DEPRECATED}
+pattern AVCodecIdMvc2Deprecated = AVCodecID #{const AV_CODEC_ID_MVC2_DEPRECATED}
+pattern AVCodecIdBrenderPix = AVCodecID #{const AV_CODEC_ID_BRENDER_PIX}
+pattern AVCodecIdY41p = AVCodecID #{const AV_CODEC_ID_Y41P}
+pattern AVCodecIdEscape130 = AVCodecID #{const AV_CODEC_ID_ESCAPE130}
+pattern AVCodecIdExr = AVCodecID #{const AV_CODEC_ID_EXR}
+pattern AVCodecIdAvrp = AVCodecID #{const AV_CODEC_ID_AVRP}
+pattern AVCodecId012v = AVCodecID #{const AV_CODEC_ID_012V}
+pattern AVCodecIdG2m = AVCodecID #{const AV_CODEC_ID_G2M}
+pattern AVCodecIdAvui = AVCodecID #{const AV_CODEC_ID_AVUI}
+pattern AVCodecIdAyuv = AVCodecID #{const AV_CODEC_ID_AYUV}
+pattern AVCodecIdTargaY216 = AVCodecID #{const AV_CODEC_ID_TARGA_Y216}
+pattern AVCodecIdV308 = AVCodecID #{const AV_CODEC_ID_V308}
+pattern AVCodecIdV408 = AVCodecID #{const AV_CODEC_ID_V408}
+pattern AVCodecIdYuv4 = AVCodecID #{const AV_CODEC_ID_YUV4}
+pattern AVCodecIdSanm = AVCodecID #{const AV_CODEC_ID_SANM}
+pattern AVCodecIdPafVideo = AVCodecID #{const AV_CODEC_ID_PAF_VIDEO}
+pattern AVCodecIdAvrn = AVCodecID #{const AV_CODEC_ID_AVRN}
+pattern AVCodecIdCpia = AVCodecID #{const AV_CODEC_ID_CPIA}
+pattern AVCodecIdXface = AVCodecID #{const AV_CODEC_ID_XFACE}
+pattern AVCodecIdSgirle = AVCodecID #{const AV_CODEC_ID_SGIRLE}
+pattern AVCodecIdMvc1 = AVCodecID #{const AV_CODEC_ID_MVC1}
+pattern AVCodecIdMvc2 = AVCodecID #{const AV_CODEC_ID_MVC2}
+pattern AVCodecIdSnow = AVCodecID #{const AV_CODEC_ID_SNOW}
+pattern AVCodecIdWebp = AVCodecID #{const AV_CODEC_ID_WEBP}
+pattern AVCodecIdSmvjpeg = AVCodecID #{const AV_CODEC_ID_SMVJPEG}
+pattern AVCodecIdHevc = AVCodecID #{const AV_CODEC_ID_HEVC}
+pattern AVCodecIdH265 = AVCodecID #{const AV_CODEC_ID_H265}
+pattern AVCodecIdVp7 = AVCodecID #{const AV_CODEC_ID_VP7}
+pattern AVCodecIdApng = AVCodecID #{const AV_CODEC_ID_APNG}
+pattern AVCodecIdFirstAudio = AVCodecID #{const AV_CODEC_ID_FIRST_AUDIO}
+pattern AVCodecIdPcmS16le = AVCodecID #{const AV_CODEC_ID_PCM_S16LE}
+pattern AVCodecIdPcmS16be = AVCodecID #{const AV_CODEC_ID_PCM_S16BE}
+pattern AVCodecIdPcmU16le = AVCodecID #{const AV_CODEC_ID_PCM_U16LE}
+pattern AVCodecIdPcmU16be = AVCodecID #{const AV_CODEC_ID_PCM_U16BE}
+pattern AVCodecIdPcmS8 = AVCodecID #{const AV_CODEC_ID_PCM_S8}
+pattern AVCodecIdPcmU8 = AVCodecID #{const AV_CODEC_ID_PCM_U8}
+pattern AVCodecIdPcmMulaw = AVCodecID #{const AV_CODEC_ID_PCM_MULAW}
+pattern AVCodecIdPcmAlaw = AVCodecID #{const AV_CODEC_ID_PCM_ALAW}
+pattern AVCodecIdPcmS32le = AVCodecID #{const AV_CODEC_ID_PCM_S32LE}
+pattern AVCodecIdPcmS32be = AVCodecID #{const AV_CODEC_ID_PCM_S32BE}
+pattern AVCodecIdPcmU32le = AVCodecID #{const AV_CODEC_ID_PCM_U32LE}
+pattern AVCodecIdPcmU32be = AVCodecID #{const AV_CODEC_ID_PCM_U32BE}
+pattern AVCodecIdPcmS24le = AVCodecID #{const AV_CODEC_ID_PCM_S24LE}
+pattern AVCodecIdPcmS24be = AVCodecID #{const AV_CODEC_ID_PCM_S24BE}
+pattern AVCodecIdPcmU24le = AVCodecID #{const AV_CODEC_ID_PCM_U24LE}
+pattern AVCodecIdPcmU24be = AVCodecID #{const AV_CODEC_ID_PCM_U24BE}
+pattern AVCodecIdPcmS24daud = AVCodecID #{const AV_CODEC_ID_PCM_S24DAUD}
+pattern AVCodecIdPcmZork = AVCodecID #{const AV_CODEC_ID_PCM_ZORK}
+pattern AVCodecIdPcmS16lePlanar = AVCodecID #{const AV_CODEC_ID_PCM_S16LE_PLANAR}
+pattern AVCodecIdPcmDvd = AVCodecID #{const AV_CODEC_ID_PCM_DVD}
+pattern AVCodecIdPcmF32be = AVCodecID #{const AV_CODEC_ID_PCM_F32BE}
+pattern AVCodecIdPcmF32le = AVCodecID #{const AV_CODEC_ID_PCM_F32LE}
+pattern AVCodecIdPcmF64be = AVCodecID #{const AV_CODEC_ID_PCM_F64BE}
+pattern AVCodecIdPcmF64le = AVCodecID #{const AV_CODEC_ID_PCM_F64LE}
+pattern AVCodecIdPcmBluray = AVCodecID #{const AV_CODEC_ID_PCM_BLURAY}
+pattern AVCodecIdPcmLxf = AVCodecID #{const AV_CODEC_ID_PCM_LXF}
+pattern AVCodecIdS302m = AVCodecID #{const AV_CODEC_ID_S302M}
+pattern AVCodecIdPcmS8Planar = AVCodecID #{const AV_CODEC_ID_PCM_S8_PLANAR}
+pattern AVCodecIdPcmS24lePlanarDeprecated = AVCodecID #{const AV_CODEC_ID_PCM_S24LE_PLANAR_DEPRECATED}
+pattern AVCodecIdPcmS32lePlanarDeprecated = AVCodecID #{const AV_CODEC_ID_PCM_S32LE_PLANAR_DEPRECATED}
+pattern AVCodecIdPcmS24lePlanar = AVCodecID #{const AV_CODEC_ID_PCM_S24LE_PLANAR}
+pattern AVCodecIdPcmS32lePlanar = AVCodecID #{const AV_CODEC_ID_PCM_S32LE_PLANAR}
+pattern AVCodecIdPcmS16bePlanar = AVCodecID #{const AV_CODEC_ID_PCM_S16BE_PLANAR}
+pattern AVCodecIdAdpcmImaQt = AVCodecID #{const AV_CODEC_ID_ADPCM_IMA_QT}
+pattern AVCodecIdAdpcmImaWav = AVCodecID #{const AV_CODEC_ID_ADPCM_IMA_WAV}
+pattern AVCodecIdAdpcmImaDk3 = AVCodecID #{const AV_CODEC_ID_ADPCM_IMA_DK3}
+pattern AVCodecIdAdpcmImaDk4 = AVCodecID #{const AV_CODEC_ID_ADPCM_IMA_DK4}
+pattern AVCodecIdAdpcmImaWs = AVCodecID #{const AV_CODEC_ID_ADPCM_IMA_WS}
+pattern AVCodecIdAdpcmImaSmjpeg = AVCodecID #{const AV_CODEC_ID_ADPCM_IMA_SMJPEG}
+pattern AVCodecIdAdpcmMs = AVCodecID #{const AV_CODEC_ID_ADPCM_MS}
+pattern AVCodecIdAdpcm4xm = AVCodecID #{const AV_CODEC_ID_ADPCM_4XM}
+pattern AVCodecIdAdpcmXa = AVCodecID #{const AV_CODEC_ID_ADPCM_XA}
+pattern AVCodecIdAdpcmAdx = AVCodecID #{const AV_CODEC_ID_ADPCM_ADX}
+pattern AVCodecIdAdpcmEa = AVCodecID #{const AV_CODEC_ID_ADPCM_EA}
+pattern AVCodecIdAdpcmG726 = AVCodecID #{const AV_CODEC_ID_ADPCM_G726}
+pattern AVCodecIdAdpcmCt = AVCodecID #{const AV_CODEC_ID_ADPCM_CT}
+pattern AVCodecIdAdpcmSwf = AVCodecID #{const AV_CODEC_ID_ADPCM_SWF}
+pattern AVCodecIdAdpcmYamaha = AVCodecID #{const AV_CODEC_ID_ADPCM_YAMAHA}
+pattern AVCodecIdAdpcmSbpro4 = AVCodecID #{const AV_CODEC_ID_ADPCM_SBPRO_4}
+pattern AVCodecIdAdpcmSbpro3 = AVCodecID #{const AV_CODEC_ID_ADPCM_SBPRO_3}
+pattern AVCodecIdAdpcmSbpro2 = AVCodecID #{const AV_CODEC_ID_ADPCM_SBPRO_2}
+pattern AVCodecIdAdpcmThp = AVCodecID #{const AV_CODEC_ID_ADPCM_THP}
+pattern AVCodecIdAdpcmImaAmv = AVCodecID #{const AV_CODEC_ID_ADPCM_IMA_AMV}
+pattern AVCodecIdAdpcmEaR1 = AVCodecID #{const AV_CODEC_ID_ADPCM_EA_R1}
+pattern AVCodecIdAdpcmEaR3 = AVCodecID #{const AV_CODEC_ID_ADPCM_EA_R3}
+pattern AVCodecIdAdpcmEaR2 = AVCodecID #{const AV_CODEC_ID_ADPCM_EA_R2}
+pattern AVCodecIdAdpcmImaEaSead = AVCodecID #{const AV_CODEC_ID_ADPCM_IMA_EA_SEAD}
+pattern AVCodecIdAdpcmImaEaEacs = AVCodecID #{const AV_CODEC_ID_ADPCM_IMA_EA_EACS}
+pattern AVCodecIdAdpcmEaXas = AVCodecID #{const AV_CODEC_ID_ADPCM_EA_XAS}
+pattern AVCodecIdAdpcmEaMaxisXa = AVCodecID #{const AV_CODEC_ID_ADPCM_EA_MAXIS_XA}
+pattern AVCodecIdAdpcmImaIss = AVCodecID #{const AV_CODEC_ID_ADPCM_IMA_ISS}
+pattern AVCodecIdAdpcmG722 = AVCodecID #{const AV_CODEC_ID_ADPCM_G722}
+pattern AVCodecIdAdpcmImaApc = AVCodecID #{const AV_CODEC_ID_ADPCM_IMA_APC}
+pattern AVCodecIdAdpcmVimaDeprecated = AVCodecID #{const AV_CODEC_ID_ADPCM_VIMA_DEPRECATED}
+pattern AVCodecIdAdpcmVima = AVCodecID #{const AV_CODEC_ID_ADPCM_VIMA}
+pattern AVCodecIdAdpcmAfc = AVCodecID #{const AV_CODEC_ID_ADPCM_AFC}
+pattern AVCodecIdAdpcmImaOki = AVCodecID #{const AV_CODEC_ID_ADPCM_IMA_OKI}
+pattern AVCodecIdAdpcmDtk = AVCodecID #{const AV_CODEC_ID_ADPCM_DTK}
+pattern AVCodecIdAdpcmImaRad = AVCodecID #{const AV_CODEC_ID_ADPCM_IMA_RAD}
+pattern AVCodecIdAdpcmG726le = AVCodecID #{const AV_CODEC_ID_ADPCM_G726LE}
+pattern AVCodecIdAmrNb = AVCodecID #{const AV_CODEC_ID_AMR_NB}
+pattern AVCodecIdAmrWb = AVCodecID #{const AV_CODEC_ID_AMR_WB}
+pattern AVCodecIdRa144 = AVCodecID #{const AV_CODEC_ID_RA_144}
+pattern AVCodecIdRa288 = AVCodecID #{const AV_CODEC_ID_RA_288}
+pattern AVCodecIdRoqDpcm = AVCodecID #{const AV_CODEC_ID_ROQ_DPCM}
+pattern AVCodecIdInterplayDpcm = AVCodecID #{const AV_CODEC_ID_INTERPLAY_DPCM}
+pattern AVCodecIdXanDpcm = AVCodecID #{const AV_CODEC_ID_XAN_DPCM}
+pattern AVCodecIdSolDpcm = AVCodecID #{const AV_CODEC_ID_SOL_DPCM}
+pattern AVCodecIdMp2 = AVCodecID #{const AV_CODEC_ID_MP2}
+pattern AVCodecIdMp3 = AVCodecID #{const AV_CODEC_ID_MP3}
+pattern AVCodecIdAac = AVCodecID #{const AV_CODEC_ID_AAC}
+pattern AVCodecIdAc3 = AVCodecID #{const AV_CODEC_ID_AC3}
+pattern AVCodecIdDts = AVCodecID #{const AV_CODEC_ID_DTS}
+pattern AVCodecIdVorbis = AVCodecID #{const AV_CODEC_ID_VORBIS}
+pattern AVCodecIdDvaudio = AVCodecID #{const AV_CODEC_ID_DVAUDIO}
+pattern AVCodecIdWmav1 = AVCodecID #{const AV_CODEC_ID_WMAV1}
+pattern AVCodecIdWmav2 = AVCodecID #{const AV_CODEC_ID_WMAV2}
+pattern AVCodecIdMace3 = AVCodecID #{const AV_CODEC_ID_MACE3}
+pattern AVCodecIdMace6 = AVCodecID #{const AV_CODEC_ID_MACE6}
+pattern AVCodecIdVmdaudio = AVCodecID #{const AV_CODEC_ID_VMDAUDIO}
+pattern AVCodecIdFlac = AVCodecID #{const AV_CODEC_ID_FLAC}
+pattern AVCodecIdMp3adu = AVCodecID #{const AV_CODEC_ID_MP3ADU}
+pattern AVCodecIdMp3on4 = AVCodecID #{const AV_CODEC_ID_MP3ON4}
+pattern AVCodecIdShorten = AVCodecID #{const AV_CODEC_ID_SHORTEN}
+pattern AVCodecIdAlac = AVCodecID #{const AV_CODEC_ID_ALAC}
+pattern AVCodecIdWestwoodSnd1 = AVCodecID #{const AV_CODEC_ID_WESTWOOD_SND1}
+pattern AVCodecIdGsm = AVCodecID #{const AV_CODEC_ID_GSM}
+pattern AVCodecIdQdm2 = AVCodecID #{const AV_CODEC_ID_QDM2}
+pattern AVCodecIdCook = AVCodecID #{const AV_CODEC_ID_COOK}
+pattern AVCodecIdTruespeech = AVCodecID #{const AV_CODEC_ID_TRUESPEECH}
+pattern AVCodecIdTta = AVCodecID #{const AV_CODEC_ID_TTA}
+pattern AVCodecIdSmackaudio = AVCodecID #{const AV_CODEC_ID_SMACKAUDIO}
+pattern AVCodecIdQcelp = AVCodecID #{const AV_CODEC_ID_QCELP}
+pattern AVCodecIdWavpack = AVCodecID #{const AV_CODEC_ID_WAVPACK}
+pattern AVCodecIdDsicinaudio = AVCodecID #{const AV_CODEC_ID_DSICINAUDIO}
+pattern AVCodecIdImc = AVCodecID #{const AV_CODEC_ID_IMC}
+pattern AVCodecIdMusepack7 = AVCodecID #{const AV_CODEC_ID_MUSEPACK7}
+pattern AVCodecIdMlp = AVCodecID #{const AV_CODEC_ID_MLP}
+pattern AVCodecIdGsmMs = AVCodecID #{const AV_CODEC_ID_GSM_MS}
+pattern AVCodecIdAtrac3 = AVCodecID #{const AV_CODEC_ID_ATRAC3}
+pattern AVCodecIdApe = AVCodecID #{const AV_CODEC_ID_APE}
+pattern AVCodecIdNellymoser = AVCodecID #{const AV_CODEC_ID_NELLYMOSER}
+pattern AVCodecIdMusepack8 = AVCodecID #{const AV_CODEC_ID_MUSEPACK8}
+pattern AVCodecIdSpeex = AVCodecID #{const AV_CODEC_ID_SPEEX}
+pattern AVCodecIdWmavoice = AVCodecID #{const AV_CODEC_ID_WMAVOICE}
+pattern AVCodecIdWmapro = AVCodecID #{const AV_CODEC_ID_WMAPRO}
+pattern AVCodecIdWmalossless = AVCodecID #{const AV_CODEC_ID_WMALOSSLESS}
+pattern AVCodecIdAtrac3p = AVCodecID #{const AV_CODEC_ID_ATRAC3P}
+pattern AVCodecIdEac3 = AVCodecID #{const AV_CODEC_ID_EAC3}
+pattern AVCodecIdSipr = AVCodecID #{const AV_CODEC_ID_SIPR}
+pattern AVCodecIdMp1 = AVCodecID #{const AV_CODEC_ID_MP1}
+pattern AVCodecIdTwinvq = AVCodecID #{const AV_CODEC_ID_TWINVQ}
+pattern AVCodecIdTruehd = AVCodecID #{const AV_CODEC_ID_TRUEHD}
+pattern AVCodecIdMp4als = AVCodecID #{const AV_CODEC_ID_MP4ALS}
+pattern AVCodecIdAtrac1 = AVCodecID #{const AV_CODEC_ID_ATRAC1}
+pattern AVCodecIdBinkaudioRdft = AVCodecID #{const AV_CODEC_ID_BINKAUDIO_RDFT}
+pattern AVCodecIdBinkaudioDct = AVCodecID #{const AV_CODEC_ID_BINKAUDIO_DCT}
+pattern AVCodecIdAacLatm = AVCodecID #{const AV_CODEC_ID_AAC_LATM}
+pattern AVCodecIdQdmc = AVCodecID #{const AV_CODEC_ID_QDMC}
+pattern AVCodecIdCelt = AVCodecID #{const AV_CODEC_ID_CELT}
+pattern AVCodecIdG723_1 = AVCodecID #{const AV_CODEC_ID_G723_1}
+pattern AVCodecIdG729 = AVCodecID #{const AV_CODEC_ID_G729}
+pattern AVCodecId8svxExp = AVCodecID #{const AV_CODEC_ID_8SVX_EXP}
+pattern AVCodecId8svxFib = AVCodecID #{const AV_CODEC_ID_8SVX_FIB}
+pattern AVCodecIdBmvAudio = AVCodecID #{const AV_CODEC_ID_BMV_AUDIO}
+pattern AVCodecIdRalf = AVCodecID #{const AV_CODEC_ID_RALF}
+pattern AVCodecIdIac = AVCodecID #{const AV_CODEC_ID_IAC}
+pattern AVCodecIdIlbc = AVCodecID #{const AV_CODEC_ID_ILBC}
+pattern AVCodecIdOpusDeprecated = AVCodecID #{const AV_CODEC_ID_OPUS_DEPRECATED}
+pattern AVCodecIdComfortNoise = AVCodecID #{const AV_CODEC_ID_COMFORT_NOISE}
+pattern AVCodecIdTakDeprecated = AVCodecID #{const AV_CODEC_ID_TAK_DEPRECATED}
+pattern AVCodecIdMetasound = AVCodecID #{const AV_CODEC_ID_METASOUND}
+pattern AVCodecIdPafAudioDeprecated = AVCodecID #{const AV_CODEC_ID_PAF_AUDIO_DEPRECATED}
+pattern AVCodecIdOn2avc = AVCodecID #{const AV_CODEC_ID_ON2AVC}
+pattern AVCodecIdFfwavesynth = AVCodecID #{const AV_CODEC_ID_FFWAVESYNTH}
+pattern AVCodecIdSonic = AVCodecID #{const AV_CODEC_ID_SONIC}
+pattern AVCodecIdSonicLs = AVCodecID #{const AV_CODEC_ID_SONIC_LS}
+pattern AVCodecIdPafAudio = AVCodecID #{const AV_CODEC_ID_PAF_AUDIO}
+pattern AVCodecIdOpus = AVCodecID #{const AV_CODEC_ID_OPUS}
+pattern AVCodecIdTak = AVCodecID #{const AV_CODEC_ID_TAK}
+pattern AVCodecIdEvrc = AVCodecID #{const AV_CODEC_ID_EVRC}
+pattern AVCodecIdSmv = AVCodecID #{const AV_CODEC_ID_SMV}
+pattern AVCodecIdDsdLsbf = AVCodecID #{const AV_CODEC_ID_DSD_LSBF}
+pattern AVCodecIdDsdMsbf = AVCodecID #{const AV_CODEC_ID_DSD_MSBF}
+pattern AVCodecIdDsdLsbfPlanar = AVCodecID #{const AV_CODEC_ID_DSD_LSBF_PLANAR}
+pattern AVCodecIdDsdMsbfPlanar = AVCodecID #{const AV_CODEC_ID_DSD_MSBF_PLANAR}
+pattern AVCodecIdFirstSubtitle = AVCodecID #{const AV_CODEC_ID_FIRST_SUBTITLE}
+pattern AVCodecIdDvdSubtitle = AVCodecID #{const AV_CODEC_ID_DVD_SUBTITLE}
+pattern AVCodecIdDvbSubtitle = AVCodecID #{const AV_CODEC_ID_DVB_SUBTITLE}
+pattern AVCodecIdText = AVCodecID #{const AV_CODEC_ID_TEXT}
+pattern AVCodecIdXsub = AVCodecID #{const AV_CODEC_ID_XSUB}
+pattern AVCodecIdSsa = AVCodecID #{const AV_CODEC_ID_SSA}
+pattern AVCodecIdMovText = AVCodecID #{const AV_CODEC_ID_MOV_TEXT}
+pattern AVCodecIdHdmvPgsSubtitle = AVCodecID #{const AV_CODEC_ID_HDMV_PGS_SUBTITLE}
+pattern AVCodecIdDvbTeletext = AVCodecID #{const AV_CODEC_ID_DVB_TELETEXT}
+pattern AVCodecIdSrt = AVCodecID #{const AV_CODEC_ID_SRT}
+pattern AVCodecIdMicrodvd = AVCodecID #{const AV_CODEC_ID_MICRODVD}
+pattern AVCodecIdEia608 = AVCodecID #{const AV_CODEC_ID_EIA_608}
+pattern AVCodecIdJacosub = AVCodecID #{const AV_CODEC_ID_JACOSUB}
+pattern AVCodecIdSami = AVCodecID #{const AV_CODEC_ID_SAMI}
+pattern AVCodecIdRealtext = AVCodecID #{const AV_CODEC_ID_REALTEXT}
+pattern AVCodecIdStl = AVCodecID #{const AV_CODEC_ID_STL}
+pattern AVCodecIdSubviewer1 = AVCodecID #{const AV_CODEC_ID_SUBVIEWER1}
+pattern AVCodecIdSubviewer = AVCodecID #{const AV_CODEC_ID_SUBVIEWER}
+pattern AVCodecIdSubrip = AVCodecID #{const AV_CODEC_ID_SUBRIP}
+pattern AVCodecIdWebvtt = AVCodecID #{const AV_CODEC_ID_WEBVTT}
+pattern AVCodecIdMpl2 = AVCodecID #{const AV_CODEC_ID_MPL2}
+pattern AVCodecIdVplayer = AVCodecID #{const AV_CODEC_ID_VPLAYER}
+pattern AVCodecIdPjs = AVCodecID #{const AV_CODEC_ID_PJS}
+pattern AVCodecIdAss = AVCodecID #{const AV_CODEC_ID_ASS}
+pattern AVCodecIdFirstUnknown = AVCodecID #{const AV_CODEC_ID_FIRST_UNKNOWN}
+pattern AVCodecIdTtf = AVCodecID #{const AV_CODEC_ID_TTF}
+pattern AVCodecIdBintext = AVCodecID #{const AV_CODEC_ID_BINTEXT}
+pattern AVCodecIdXbin = AVCodecID #{const AV_CODEC_ID_XBIN}
+pattern AVCodecIdIdf = AVCodecID #{const AV_CODEC_ID_IDF}
+pattern AVCodecIdOtf = AVCodecID #{const AV_CODEC_ID_OTF}
+pattern AVCodecIdSmpteKlv = AVCodecID #{const AV_CODEC_ID_SMPTE_KLV}
+pattern AVCodecIdDvdNav = AVCodecID #{const AV_CODEC_ID_DVD_NAV}
+pattern AVCodecIdTimedId3 = AVCodecID #{const AV_CODEC_ID_TIMED_ID3}
+pattern AVCodecIdBinData = AVCodecID #{const AV_CODEC_ID_BIN_DATA}
+pattern AVCodecIdProbe = AVCodecID #{const AV_CODEC_ID_PROBE}
+pattern AVCodecIdMpeg2ts = AVCodecID #{const AV_CODEC_ID_MPEG2TS}
+pattern AVCodecIdMpeg4systems = AVCodecID #{const AV_CODEC_ID_MPEG4SYSTEMS}
+pattern AVCodecIdFfmetadata = AVCodecID #{const AV_CODEC_ID_FFMETADATA}
 
 -- AV_CODEC_ID_HQX
 -- AV_CODEC_ID_TDSC

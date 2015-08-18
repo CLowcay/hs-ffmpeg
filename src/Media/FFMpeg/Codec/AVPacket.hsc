@@ -298,46 +298,46 @@ packDict ptr dict =
 		copyArray (castPtr ptr) x size 
 
 instance AVPacketSideDataPayload AVPacketSideDataPalette where
-	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType av_pkt_data_palette
-	getPayloadType _ = av_pkt_data_palette
+	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType AVPktDataPalette
+	getPayloadType _ = AVPktDataPalette
 	getPayloadSize (AVPacketSideDataPalette s) = return$ B.length s
 	peekPayload ptr size = AVPacketSideDataPalette <$> B.packCStringLen (castPtr ptr, size)
 	pokePayload ptr (AVPacketSideDataPalette s) =
 		B.unsafeUseAsCString s$ \ps -> copyArray (castPtr ptr) ps (B.length s)
 instance AVPacketSideDataPayload AVPacketSideDataNewExtradata where
-	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType av_pkt_data_new_extradata
-	getPayloadType _ = av_pkt_data_new_extradata
+	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType AVPktDataNewExtradata
+	getPayloadType _ = AVPktDataNewExtradata
 	getPayloadSize (AVPacketSideDataNewExtradata s) = return$ B.length s
 	peekPayload ptr size = AVPacketSideDataNewExtradata <$> B.packCStringLen (castPtr ptr, size)
 	pokePayload ptr (AVPacketSideDataNewExtradata s) =
 		B.unsafeUseAsCString s$ \ps -> copyArray (castPtr ptr) ps (B.length s)
 instance AVPacketSideDataPayload AVPacketSideDataParamChange where
-	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType av_pkt_data_param_change
-	getPayloadType _ = av_pkt_data_param_change
+	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType AVPktDataParamChange
+	getPayloadType _ = AVPktDataParamChange
 	getPayloadSize x = return$ sizeOf x
 	peekPayload ptr _ = peek ptr
 	pokePayload = poke
 instance AVPacketSideDataPayload AVPacketSideDataH263MbInfo where
-	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType av_pkt_data_h263_mb_info
-	getPayloadType _ = av_pkt_data_h263_mb_info
+	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType AVPktDataH263MbInfo
+	getPayloadType _ = AVPktDataH263MbInfo
 	getPayloadSize x = return$ sizeOf x
 	peekPayload ptr _ = peek ptr
 	pokePayload = poke
 instance AVPacketSideDataPayload AVPacketSideDataReplayGain where
-	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType av_pkt_data_replaygain
-	getPayloadType _ = av_pkt_data_replaygain
+	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType AVPktDataReplayGain
+	getPayloadType _ = AVPktDataReplayGain
 	getPayloadSize x = return$ sizeOf x
 	peekPayload ptr _ = peek ptr
 	pokePayload = poke
 instance AVPacketSideDataPayload AVPacketSideDataDisplayMatrix where
-	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType av_pkt_data_displaymatrix
-	getPayloadType _ = av_pkt_data_displaymatrix
+	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType AVPktDataDisplayMatrix
+	getPayloadType _ = AVPktDataDisplayMatrix
 	getPayloadSize x = return$ sizeOf x
 	peekPayload ptr _ = peek ptr
 	pokePayload = poke
 instance AVPacketSideDataPayload AVPacketSideDataStereo3d where
-	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType av_pkt_data_stereo3d
-	getPayloadType _ = av_pkt_data_stereo3d
+	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType AVPktDataStereo3d
+	getPayloadType _ = AVPktDataStereo3d
 	getPayloadSize x = return$ sizeOf x
 	peekPayload ptr _ = peek ptr
 	pokePayload = poke
@@ -354,53 +354,53 @@ instance AVPacketSideDataPayload AVPacketSideDataStereo3d where
 --	peekPayload ptr _ = peek ptr
 --	pokePayload = poke
 instance AVPacketSideDataPayload AVPacketSideDataSkipSamples where
-	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType av_pkt_data_skip_samples
-	getPayloadType _ = av_pkt_data_skip_samples
+	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType AVPktDataSkipSamples
+	getPayloadType _ = AVPktDataSkipSamples
 	getPayloadSize x = return$ sizeOf x
 	peekPayload ptr _ = peek ptr
 	pokePayload = poke
 instance AVPacketSideDataPayload AVPacketSideDataJpDualmono where
-	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType av_pkt_data_jp_dualmono
-	getPayloadType _ = av_pkt_data_jp_dualmono
+	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType AVPktDataJpDualmono
+	getPayloadType _ = AVPktDataJpDualmono
 	getPayloadSize x = return$ sizeOf x
 	peekPayload ptr _ = peek ptr
 	pokePayload = poke
 instance AVPacketSideDataPayload AVPacketSideDataStringsMetadata where
-	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType av_pkt_data_strings_metadata
-	getPayloadType _ = av_pkt_data_strings_metadata
+	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType AVPktDataStringsMetadata
+	getPayloadType _ = AVPktDataStringsMetadata
 	getPayloadSize (AVPacketSideDataStringsMetadata d) = getPackedDictSize d
 	peekPayload ptr size = AVPacketSideDataStringsMetadata <$> getPackedDict (castPtr ptr) size
 	pokePayload ptr (AVPacketSideDataStringsMetadata d) = packDict (castPtr ptr) d
 instance AVPacketSideDataPayload AVPacketSideDataSubtitlePosition where
-	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType av_pkt_data_subtitle_position
-	getPayloadType _ = av_pkt_data_subtitle_position
+	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType AVPktDataSubtitlePosition
+	getPayloadType _ = AVPktDataSubtitlePosition
 	getPayloadSize x = return$ sizeOf x
 	peekPayload ptr _ = peek ptr
 	pokePayload = poke
 instance AVPacketSideDataPayload AVPacketSideDataMatroskaBlockadditional where
-	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType av_pkt_data_matroska_blockadditional
-	getPayloadType _ = av_pkt_data_matroska_blockadditional
+	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType AVPktDataMatroskaBlockadditional
+	getPayloadType _ = AVPktDataMatroskaBlockadditional
 	getPayloadSize (AVPacketSideDataMatroskaBlockadditional s) = return$ B.length s
 	peekPayload ptr size = AVPacketSideDataMatroskaBlockadditional <$> B.packCStringLen (castPtr ptr, size)
 	pokePayload ptr (AVPacketSideDataMatroskaBlockadditional s) =
 		B.unsafeUseAsCString s$ \ps -> copyArray (castPtr ptr) ps (B.length s)
 instance AVPacketSideDataPayload AVPacketSideDataWebvttIdentifier where
-	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType av_pkt_data_webvtt_identifier
-	getPayloadType _ = av_pkt_data_webvtt_identifier
+	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType AVPktDataWebvttIdentifier
+	getPayloadType _ = AVPktDataWebvttIdentifier
 	getPayloadSize (AVPacketSideDataWebvttIdentifier s) = return$ length s
 	peekPayload ptr size = AVPacketSideDataWebvttIdentifier <$> peekCStringLen (castPtr ptr, size)
 	pokePayload ptr (AVPacketSideDataWebvttIdentifier s) =
 		withCStringLen s$ \(ps, len) -> copyArray (castPtr ptr) ps len
 instance AVPacketSideDataPayload AVPacketSideDataWebvttSettings where
-	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType av_pkt_data_webvtt_settings
-	getPayloadType _ = av_pkt_data_webvtt_settings
+	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType AVPktDataWebvttSettings
+	getPayloadType _ = AVPktDataWebvttSettings
 	getPayloadSize (AVPacketSideDataWebvttSettings s) = return$ length s
 	peekPayload ptr size = AVPacketSideDataWebvttSettings <$> peekCStringLen (castPtr ptr, size)
 	pokePayload ptr (AVPacketSideDataWebvttSettings s) =
 		withCStringLen s$ \(ps, len) -> copyArray (castPtr ptr) ps len
 instance AVPacketSideDataPayload AVPacketSideDataMetadataUpdate where
-	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType av_pkt_data_metadata_update
-	getPayloadType _ = av_pkt_data_metadata_update
+	peekAVPacketSideDataPtr = (first castPtr <$>).peekAVPacketSideDataPtrType AVPktDataMetadataUpdate
+	getPayloadType _ = AVPktDataMetadataUpdate
 	getPayloadSize (AVPacketSideDataMetadataUpdate d) = getPackedDictSize d
 	peekPayload ptr size = AVPacketSideDataMetadataUpdate <$> getPackedDict (castPtr ptr) size
 	pokePayload ptr (AVPacketSideDataMetadataUpdate d) = packDict (castPtr ptr) d

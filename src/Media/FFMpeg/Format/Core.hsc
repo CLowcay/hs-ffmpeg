@@ -256,35 +256,35 @@ class AVPacketSideDataPayload a => AVStreamSideDataPayload a where
 	peekAVStreamSideDataPtr :: Ptr AVStream -> IO (Ptr a, Int)
 
 instance AVStreamSideDataPayload AVPacketSideDataPalette where
-	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType av_pkt_data_palette
+	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType AVPktDataPalette
 instance AVStreamSideDataPayload AVPacketSideDataNewExtradata where
-	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType av_pkt_data_new_extradata
+	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType AVPktDataNewExtradata
 instance AVStreamSideDataPayload AVPacketSideDataParamChange where
-	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType av_pkt_data_param_change
+	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType AVPktDataParamChange
 instance AVStreamSideDataPayload AVPacketSideDataH263MbInfo where
-	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType av_pkt_data_h263_mb_info
+	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType AVPktDataH263MbInfo
 instance AVStreamSideDataPayload AVPacketSideDataReplayGain where
-	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType av_pkt_data_replaygain
+	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType AVPktDataReplayGain
 instance AVStreamSideDataPayload AVPacketSideDataDisplayMatrix where
-	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType av_pkt_data_displaymatrix
+	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType AVPktDataDisplayMatrix
 instance AVStreamSideDataPayload AVPacketSideDataStereo3d where
-	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType av_pkt_data_stereo3d
+	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType AVPktDataStereo3d
 instance AVStreamSideDataPayload AVPacketSideDataSkipSamples where
-	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType av_pkt_data_skip_samples
+	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType AVPktDataSkipSamples
 instance AVStreamSideDataPayload AVPacketSideDataJpDualmono where
-	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType av_pkt_data_jp_dualmono
+	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType AVPktDataJpDualmono
 instance AVStreamSideDataPayload AVPacketSideDataStringsMetadata where
-	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType av_pkt_data_strings_metadata
+	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType AVPktDataStringsMetadata
 instance AVStreamSideDataPayload AVPacketSideDataSubtitlePosition where
-	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType av_pkt_data_subtitle_position
+	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType AVPktDataSubtitlePosition
 instance AVStreamSideDataPayload AVPacketSideDataMatroskaBlockadditional where
-	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType av_pkt_data_matroska_blockadditional
+	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType AVPktDataMatroskaBlockadditional
 instance AVStreamSideDataPayload AVPacketSideDataWebvttIdentifier where
-	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType av_pkt_data_webvtt_identifier
+	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType AVPktDataWebvttIdentifier
 instance AVStreamSideDataPayload AVPacketSideDataWebvttSettings where
-	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType av_pkt_data_webvtt_settings
+	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType AVPktDataWebvttSettings
 instance AVStreamSideDataPayload AVPacketSideDataMetadataUpdate where
-	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType av_pkt_data_metadata_update
+	peekAVStreamSideDataPtr = (first castPtr <$>).peekAVStreamSideDataPtrType AVPktDataMetadataUpdate
 
 -- | Get side data associated with an AVStream
 streamGetSideData :: forall a m. (MonadIO m, AVStreamSideDataPayload a) =>
@@ -323,7 +323,7 @@ codecGetID :: TagTable -> Word -> Maybe AVCodecID
 codecGetID table tag = unsafePerformIO$ do
 	cid <- with (getTable table)$ \ptr ->
 		toCEnum.fromIntegral <$> av_codec_get_id ptr (fromIntegral tag)
-	if cid == av_codec_id_none then return Nothing else return$ Just cid
+	if cid == AVCodecIdNone then return Nothing else return$ Just cid
 
 -- | Get the tag associated with a codec
 codecGetTag :: TagTable -> AVCodecID -> Maybe Word

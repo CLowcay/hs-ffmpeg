@@ -191,7 +191,7 @@ encodeSubtitle ctx pkt1 pkt2 subtitle = do
 			rescaleQ (fromIntegral newEndDisplayTime) (1 % 1000) pktTimebase
 	
 	-- write the extra packet for DVB subtitles
-	when (codecID == av_codec_id_dvb_subtitle)$ do
+	when (codecID == AVCodecIdDvbSubtitle)$ do
 		allocBufferRef subtitleOutMaxSize$ \pavbuff -> do
 			(pbuff, size) <- getBufferData pavbuff
 			nrects <- liftIO (#{peek AVSubtitle, num_rects} psub :: IO CUInt)
@@ -213,7 +213,7 @@ encodeSubtitle ctx pkt1 pkt2 subtitle = do
 			packetSetDuration pkt2$ fromIntegral$
 				rescaleQ (fromIntegral newEndDisplayTime) (1 % 1000) pktTimebase
 
-	if (codecID == av_codec_id_dvb_subtitle) then return 2 else return 1
+	if (codecID == AVCodecIdDvbSubtitle) then return 2 else return 1
 
 	where
 		subtitleOutMaxSize = 1024 * 1024

@@ -201,7 +201,7 @@ guessCodec (AVOutputFormat ouf) mshortName mfilename mmimeType mt = do
 		withCStringOrNull mfilename$ \pfilename ->
 		withCStringOrNull mmimeType$ \pmimeType -> toCEnum <$>
 			av_guess_codec ouf pshortName pfilename pmimeType (fromCEnum mt)
-	if r == av_codec_id_none then return Nothing else return$ Just r
+	if r == AVCodecIdNone then return Nothing else return$ Just r
 
 -- | Simultaneously measure the dts and wall time of the last packet that was
 -- output.
