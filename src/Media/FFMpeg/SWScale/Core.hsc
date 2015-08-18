@@ -275,10 +275,10 @@ getSwsContext
 
 	where
 		cflags = (fromCEnum alg) .|. (fromCEnum (mconcat flags)) .|. case cdrop of
-			Sws_src_v_chr_drop_0 -> 0
-			Sws_src_v_chr_drop_1 -> 1 `unsafeShiftL` #{const SWS_SRC_V_CHR_DROP_SHIFT}
-			Sws_src_v_chr_drop_2 -> 2 `unsafeShiftL` #{const SWS_SRC_V_CHR_DROP_SHIFT}
-			Sws_src_v_chr_drop_3 -> 3 `unsafeShiftL` #{const SWS_SRC_V_CHR_DROP_SHIFT}
+			SwsSrcVChrDrop0 -> 0
+			SwsSrcVChrDrop1 -> 1 `unsafeShiftL` #{const SWS_SRC_V_CHR_DROP_SHIFT}
+			SwsSrcVChrDrop2 -> 2 `unsafeShiftL` #{const SWS_SRC_V_CHR_DROP_SHIFT}
+			SwsSrcVChrDrop3 -> 3 `unsafeShiftL` #{const SWS_SRC_V_CHR_DROP_SHIFT}
 		withParams action = case mparams of
 			Nothing -> action nullPtr
 			Just (x, y) -> withArray [x, y] action
