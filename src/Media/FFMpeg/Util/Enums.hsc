@@ -209,7 +209,17 @@ module Media.FFMpeg.Util.Enums (
 	pattern FFComplianceStrict,
 	pattern FFComplianceNormal,
 	pattern FFComplianceUnofficial,
-	pattern FFComplianceExperimental
+	pattern FFComplianceExperimental,
+
+	AVEF,
+	pattern AVEFCrccheck,
+	pattern AVEFBitstream,
+	pattern AVEFBuffer,
+	pattern AVEFExplode,
+	pattern AVEFIgnore_err,
+	pattern AVEFCareful,
+	pattern AVEFCompliant,
+	pattern AVEFAggressive
 ) where
 
 import Control.Applicative
@@ -476,4 +486,15 @@ pattern FFComplianceStrict = FFCompliance #{const FF_COMPLIANCE_STRICT}
 pattern FFComplianceNormal = FFCompliance #{const FF_COMPLIANCE_NORMAL}
 pattern FFComplianceUnofficial = FFCompliance (#{const FF_COMPLIANCE_UNOFFICIAL})
 pattern FFComplianceExperimental = FFCompliance (#{const FF_COMPLIANCE_EXPERIMENTAL})
+
+-- | AV_EF flags
+newtype AVEF = AVEF CInt deriving (Eq, Show, CEnum, CFlags, Storable)
+pattern AVEFCrccheck = AVEF (#{const AV_EF_CRCCHECK})
+pattern AVEFBitstream = AVEF (#{const AV_EF_BITSTREAM})
+pattern AVEFBuffer = AVEF (#{const AV_EF_BUFFER})
+pattern AVEFExplode = AVEF (#{const AV_EF_EXPLODE})
+pattern AVEFIgnore_err = AVEF (#{const AV_EF_IGNORE_ERR})
+pattern AVEFCareful = AVEF (#{const AV_EF_CAREFUL})
+pattern AVEFCompliant = AVEF (#{const AV_EF_COMPLIANT})
+pattern AVEFAggressive = AVEF (#{const AV_EF_AGGRESSIVE})
 

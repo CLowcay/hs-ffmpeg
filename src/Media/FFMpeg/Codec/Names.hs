@@ -383,7 +383,7 @@ codec_codec_tag = OptionName "codec_tag"
 -- | Option "bug" for AVCodecContext of type AVOptTypeFlags-bug.
 -- work around not autodetected encoder bugs
 -- default value is AVOptionFlags 1.
-codec_bug :: OptionName AVCodecContext CInt
+codec_bug :: OptionName AVCodecContext FFBug
 codec_bug = OptionName "bug"
 
 -- | Option "strict" for AVCodecContext of type AVOptTypeInt-strict.
@@ -401,7 +401,7 @@ codec_b_qoffset = OptionName "b_qoffset"
 -- | Option "err_detect" for AVCodecContext of type AVOptTypeFlags-err_detect.
 -- set error detection flags
 -- default value is AVOptionFlags 0.
-codec_err_detect :: OptionName AVCodecContext CInt
+codec_err_detect :: OptionName AVCodecContext AVEF
 codec_err_detect = OptionName "err_detect"
 
 -- | Option "has_b_frames" for AVCodecContext of type AVOptTypeInt.
@@ -494,7 +494,7 @@ codec_rc_init_cplx = OptionName "rc_init_cplx"
 -- | Option "dct" for AVCodecContext of type AVOptTypeInt-dct.
 -- DCT algorithm
 -- default value is AVOptionInt 0.
-codec_dct :: OptionName AVCodecContext CInt
+codec_dct :: OptionName AVCodecContext FFDCT
 codec_dct = OptionName "dct"
 
 -- | Option "lumi_mask" for AVCodecContext of type AVOptTypeFloat.
@@ -530,7 +530,7 @@ codec_dark_mask = OptionName "dark_mask"
 -- | Option "idct" for AVCodecContext of type AVOptTypeInt-idct.
 -- select IDCT implementation
 -- default value is AVOptionInt 0.
-codec_idct :: OptionName AVCodecContext CInt
+codec_idct :: OptionName AVCodecContext FFIdct
 codec_idct = OptionName "idct"
 
 -- | Option "slice_count" for AVCodecContext of type AVOptTypeInt.
@@ -541,7 +541,7 @@ codec_slice_count = OptionName "slice_count"
 -- | Option "ec" for AVCodecContext of type AVOptTypeFlags-ec.
 -- set error concealment strategy
 -- default value is AVOptionFlags 3.
-codec_ec :: OptionName AVCodecContext CInt
+codec_ec :: OptionName AVCodecContext FFEC
 codec_ec = OptionName "ec"
 
 -- | Option "bits_per_coded_sample" for AVCodecContext of type AVOptTypeInt.
@@ -552,7 +552,7 @@ codec_bits_per_coded_sample = OptionName "bits_per_coded_sample"
 -- | Option "pred" for AVCodecContext of type AVOptTypeInt-pred.
 -- prediction method
 -- default value is AVOptionInt 0.
-codec_pred :: OptionName AVCodecContext CInt
+codec_pred :: OptionName AVCodecContext FFPred
 codec_pred = OptionName "pred"
 
 -- | Option "aspect" for AVCodecContext of type AVOptTypeRational.
@@ -563,7 +563,7 @@ codec_aspect = OptionName "aspect"
 -- | Option "debug" for AVCodecContext of type AVOptTypeFlags-debug.
 -- print specific debug info
 -- default value is AVOptionFlags 0.
-codec_debug :: OptionName AVCodecContext CInt
+codec_debug :: OptionName AVCodecContext FFDebug
 codec_debug = OptionName "debug"
 
 -- | Option "vismv" for AVCodecContext of type AVOptTypeFlags-debug_mv.
@@ -662,7 +662,7 @@ codec_global_quality = OptionName "global_quality"
 
 -- | Option "coder" for AVCodecContext of type AVOptTypeInt-coder.
 -- default value is AVOptionInt 0.
-codec_coder :: OptionName AVCodecContext CInt
+codec_coder :: OptionName AVCodecContext FFCoderType
 codec_coder = OptionName "coder"
 
 -- | Option "context" for AVCodecContext of type AVOptTypeInt.
@@ -684,7 +684,7 @@ codec_xvmc_acceleration = OptionName "xvmc_acceleration"
 -- | Option "mbd" for AVCodecContext of type AVOptTypeInt-mbd.
 -- macroblock decision algorithm (high quality mode)
 -- default value is AVOptionInt 0.
-codec_mbd :: OptionName AVCodecContext CInt
+codec_mbd :: OptionName AVCodecContext FFMBDecision
 codec_mbd = OptionName "mbd"
 
 -- | Option "stream_codec_tag" for AVCodecContext of type AVOptTypeInt.
@@ -781,7 +781,7 @@ codec_profile = OptionName "profile"
 
 -- | Option "level" for AVCodecContext of type AVOptTypeInt-level.
 -- default value is AVOptionInt (-99).
-codec_level :: OptionName AVCodecContext CInt
+codec_level :: OptionName AVCodecContext FFLevel
 codec_level = OptionName "level"
 
 -- | Option "lowres" for AVCodecContext of type AVOptTypeInt.
@@ -1011,7 +1011,7 @@ codec_slices = OptionName "slices"
 -- | Option "thread_type" for AVCodecContext of type AVOptTypeFlags-thread_type.
 -- select multithreading type
 -- default value is AVOptionFlags 3.
-codec_thread_type :: OptionName AVCodecContext CInt
+codec_thread_type :: OptionName AVCodecContext FFThread
 codec_thread_type = OptionName "thread_type"
 
 -- | Option "audio_service_type" for AVCodecContext of type AVOptTypeInt-audio_service_type.
@@ -1038,7 +1038,7 @@ codec_sub_charenc = OptionName "sub_charenc"
 -- | Option "sub_charenc_mode" for AVCodecContext of type AVOptTypeFlags-sub_charenc_mode.
 -- set input text subtitles character encoding mode
 -- default value is AVOptionFlags 0.
-codec_sub_charenc_mode :: OptionName AVCodecContext CInt
+codec_sub_charenc_mode :: OptionName AVCodecContext FFSubCharencMode
 codec_sub_charenc_mode = OptionName "sub_charenc_mode"
 
 -- | Option "refcounted_frames" for AVCodecContext of type AVOptTypeInt.

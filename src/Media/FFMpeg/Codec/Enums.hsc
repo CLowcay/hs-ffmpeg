@@ -296,6 +296,110 @@ module Media.FFMpeg.Codec.Enums (
 	pattern FFProfileHevcMainStillPicture,
 	pattern FFProfileHevcRext,
 
+	FFBug,
+	pattern FFBugAutodetect,
+	pattern FFBugOldMsmpeg4,
+	pattern FFBugXvidIlace,
+	pattern FFBugUmp4,
+	pattern FFBugNoPadding,
+	pattern FFBugAmv,
+	pattern FFBugAcVlc,
+	pattern FFBugQpelChroma,
+	pattern FFBugStdQpel,
+	pattern FFBugQpelChroma2,
+	pattern FFBugDirectBlocksize,
+	pattern FFBugEdge,
+	pattern FFBugHpelChroma,
+	pattern FFBugDcClip,
+	pattern FFBugMs,
+	pattern FFBugTruncated,
+
+	FFDCT,
+	pattern FFDCTAuto,
+	pattern FFDCTFastint,
+	pattern FFDCTInt,
+	pattern FFDCTMmx,
+	pattern FFDCTAltivec,
+	pattern FFDCTFaan,
+
+	FFIdct,
+	pattern FFIdctAuto,
+	pattern FFIdctInt,
+	pattern FFIdctSimple,
+	pattern FFIdctSimplemmx,
+	pattern FFIdctArm,
+	pattern FFIdctAltivec,
+	pattern FFIdctSh4,
+	pattern FFIdctSimplearm,
+	pattern FFIdctIpp,
+	pattern FFIdctXvid,
+	pattern FFIdctXvidmmx,
+	pattern FFIdctSimplearmv5te,
+	pattern FFIdctSimplearmv6,
+	pattern FFIdctSimplevis,
+	pattern FFIdctFaan,
+	pattern FFIdctSimpleneon,
+	pattern FFIdctSimplealpha,
+	pattern FFIdctSimpleauto,
+
+	FFEC,
+	pattern FFECGuessMvs,
+	pattern FFECDeblock,
+	pattern FFECFavorInter,
+
+	FFPred,
+	pattern FFPredLeft,
+	pattern FFPredPlane,
+	pattern FFPredMedian,
+
+	FFDebug,
+	pattern FFDebugPictInfo,
+	pattern FFDebugRc,
+	pattern FFDebugBitstream,
+	pattern FFDebugMbType,
+	pattern FFDebugQp,
+	pattern FFDebugMv,
+	pattern FFDebugDctCoeff,
+	pattern FFDebugSkip,
+	pattern FFDebugStartcode,
+	pattern FFDebugPts,
+	pattern FFDebugEr,
+	pattern FFDebugMmco,
+	pattern FFDebugBugs,
+	pattern FFDebugVisQp,
+	pattern FFDebugVisMbType,
+	pattern FFDebugBuffers,
+	pattern FFDebugThreads,
+	--pattern FFDebugGreenMd,
+	pattern FFDebugNomc,
+	pattern FFDebugVisMvPFor,
+	pattern FFDebugVisMvBFor,
+	pattern FFDebugVisMvBBack,
+
+	FFCoderType,
+	pattern FFCoderTypeVlc,
+	pattern FFCoderTypeAc,
+	pattern FFCoderTypeRaw,
+	pattern FFCoderTypeRle,
+	pattern FFCoderTypeDeflate,
+
+	FFMBDecision,
+	pattern FFMBDecisionSimple,
+	pattern FFMBDecisionBits,
+	pattern FFMBDecisionRd,
+
+	FFLevel,
+	pattern FFLevelUnknown,
+
+	FFSubCharencMode,
+	pattern FFSubCharencModeDoNothing,
+	pattern FFSubCharencModeAutomatic,
+	pattern FFSubCharencModePreDecoder,
+
+	FFThread,
+	pattern FFThreadFrame,
+	pattern FFThreadSlice,
+
 	AVCodecID,
 	pattern AVCodecIdNone,
 	pattern AVCodecIdMpeg1video,
@@ -1026,6 +1130,121 @@ pattern FFProfileHevcRext = FFProfile #{const FF_PROFILE_HEVC_REXT}
 --ff_profile_vp9_1 = FF_PROFILE_VP9_1,
 --ff_profile_vp9_2 = FF_PROFILE_VP9_2,
 --ff_profile_vp9_3 = FF_PROFILE_VP9_3,
+
+-- | FF_BUG flags
+newtype FFBug = FFBug CInt deriving (Eq, Show, CEnum, CFlags, Storable)
+pattern FFBugAutodetect = FFBug (#{const FF_BUG_AUTODETECT})
+pattern FFBugOldMsmpeg4 = FFBug (#{const FF_BUG_OLD_MSMPEG4})
+pattern FFBugXvidIlace = FFBug (#{const FF_BUG_XVID_ILACE})
+pattern FFBugUmp4 = FFBug (#{const FF_BUG_UMP4})
+pattern FFBugNoPadding = FFBug (#{const FF_BUG_NO_PADDING})
+pattern FFBugAmv = FFBug (#{const FF_BUG_AMV})
+pattern FFBugAcVlc = FFBug (#{const FF_BUG_AC_VLC})
+pattern FFBugQpelChroma = FFBug (#{const FF_BUG_QPEL_CHROMA})
+pattern FFBugStdQpel = FFBug (#{const FF_BUG_STD_QPEL})
+pattern FFBugQpelChroma2 = FFBug (#{const FF_BUG_QPEL_CHROMA2})
+pattern FFBugDirectBlocksize = FFBug (#{const FF_BUG_DIRECT_BLOCKSIZE})
+pattern FFBugEdge = FFBug (#{const FF_BUG_EDGE})
+pattern FFBugHpelChroma = FFBug (#{const FF_BUG_HPEL_CHROMA})
+pattern FFBugDcClip = FFBug (#{const FF_BUG_DC_CLIP})
+pattern FFBugMs = FFBug (#{const FF_BUG_MS})
+pattern FFBugTruncated = FFBug (#{const FF_BUG_TRUNCATED})
+
+-- | FFDCT flags
+newtype FFDCT = FFDCT CInt deriving (Eq, Show, CEnum, Storable)
+pattern FFDCTAuto = FFDCT (#{const FF_DCT_AUTO})
+pattern FFDCTFastint = FFDCT (#{const FF_DCT_FASTINT})
+pattern FFDCTInt = FFDCT (#{const FF_DCT_INT})
+pattern FFDCTMmx = FFDCT (#{const FF_DCT_MMX})
+pattern FFDCTAltivec = FFDCT (#{const FF_DCT_ALTIVEC})
+pattern FFDCTFaan = FFDCT (#{const FF_DCT_FAAN})
+
+-- | FFIdct flags
+newtype FFIdct = FFIdct CInt deriving (Eq, Show, CEnum, Storable)
+pattern FFIdctAuto = FFIdct (#{const FF_IDCT_AUTO})
+pattern FFIdctInt = FFIdct (#{const FF_IDCT_INT})
+pattern FFIdctSimple = FFIdct (#{const FF_IDCT_SIMPLE})
+pattern FFIdctSimplemmx = FFIdct (#{const FF_IDCT_SIMPLEMMX})
+pattern FFIdctArm = FFIdct (#{const FF_IDCT_ARM})
+pattern FFIdctAltivec = FFIdct (#{const FF_IDCT_ALTIVEC})
+pattern FFIdctSh4 = FFIdct (#{const FF_IDCT_SH4})
+pattern FFIdctSimplearm = FFIdct (#{const FF_IDCT_SIMPLEARM})
+pattern FFIdctIpp = FFIdct (#{const FF_IDCT_IPP})
+pattern FFIdctXvid = FFIdct (#{const FF_IDCT_XVID})
+pattern FFIdctXvidmmx = FFIdct (#{const FF_IDCT_XVIDMMX})
+pattern FFIdctSimplearmv5te = FFIdct (#{const FF_IDCT_SIMPLEARMV5TE})
+pattern FFIdctSimplearmv6 = FFIdct (#{const FF_IDCT_SIMPLEARMV6})
+pattern FFIdctSimplevis = FFIdct (#{const FF_IDCT_SIMPLEVIS})
+pattern FFIdctFaan = FFIdct (#{const FF_IDCT_FAAN})
+pattern FFIdctSimpleneon = FFIdct (#{const FF_IDCT_SIMPLENEON})
+pattern FFIdctSimplealpha = FFIdct (#{const FF_IDCT_SIMPLEALPHA})
+pattern FFIdctSimpleauto = FFIdct (#{const FF_IDCT_SIMPLEAUTO})
+
+-- | FF_EC_ constants
+newtype FFEC = FFEC CInt deriving (Eq, Show, CEnum, Storable)
+pattern FFECGuessMvs = FFEC (#{const FF_EC_GUESS_MVS})
+pattern FFECDeblock = FFEC (#{const FF_EC_DEBLOCK})
+pattern FFECFavorInter = FFEC (#{const FF_EC_FAVOR_INTER})
+
+-- | FF_PRED_ constants
+newtype FFPred = FFPred CInt deriving (Eq, Show, CEnum, Storable)
+pattern FFPredLeft = FFPred (#{const FF_PRED_LEFT})
+pattern FFPredPlane = FFPred (#{const FF_PRED_PLANE})
+pattern FFPredMedian = FFPred (#{const FF_PRED_MEDIAN})
+
+-- | FF_DEBUG_ flags
+newtype FFDebug = FFDebug CInt deriving (Eq, Show, CEnum, CFlags, Storable)
+pattern FFDebugPictInfo = FFDebug (#{const FF_DEBUG_PICT_INFO})
+pattern FFDebugRc = FFDebug (#{const FF_DEBUG_RC})
+pattern FFDebugBitstream = FFDebug (#{const FF_DEBUG_BITSTREAM})
+pattern FFDebugMbType = FFDebug (#{const FF_DEBUG_MB_TYPE})
+pattern FFDebugQp = FFDebug (#{const FF_DEBUG_QP})
+pattern FFDebugMv = FFDebug (#{const FF_DEBUG_MV})
+pattern FFDebugDctCoeff = FFDebug (#{const FF_DEBUG_DCT_COEFF})
+pattern FFDebugSkip = FFDebug (#{const FF_DEBUG_SKIP})
+pattern FFDebugStartcode = FFDebug (#{const FF_DEBUG_STARTCODE})
+pattern FFDebugPts = FFDebug (#{const FF_DEBUG_PTS})
+pattern FFDebugEr = FFDebug (#{const FF_DEBUG_ER})
+pattern FFDebugMmco = FFDebug (#{const FF_DEBUG_MMCO})
+pattern FFDebugBugs = FFDebug (#{const FF_DEBUG_BUGS})
+pattern FFDebugVisQp = FFDebug (#{const FF_DEBUG_VIS_QP})
+pattern FFDebugVisMbType = FFDebug (#{const FF_DEBUG_VIS_MB_TYPE})
+pattern FFDebugBuffers = FFDebug (#{const FF_DEBUG_BUFFERS})
+pattern FFDebugThreads = FFDebug (#{const FF_DEBUG_THREADS})
+--pattern FFDebugGreenMd = FFDebug (#{const FF_DEBUG_GREEN_MD})
+pattern FFDebugNomc = FFDebug (#{const FF_DEBUG_NOMC})
+pattern FFDebugVisMvPFor = FFDebug (#{const FF_DEBUG_VIS_MV_P_FOR})
+pattern FFDebugVisMvBFor = FFDebug (#{const FF_DEBUG_VIS_MV_B_FOR})
+pattern FFDebugVisMvBBack = FFDebug (#{const FF_DEBUG_VIS_MV_B_BACK})
+
+-- | FF_CODER_TYPE constants
+newtype FFCoderType = FFCoderType CInt deriving (Eq, Show, CEnum, Storable)
+pattern FFCoderTypeVlc = FFCoderType (#{const FF_CODER_TYPE_VLC})
+pattern FFCoderTypeAc = FFCoderType (#{const FF_CODER_TYPE_AC})
+pattern FFCoderTypeRaw = FFCoderType (#{const FF_CODER_TYPE_RAW})
+pattern FFCoderTypeRle = FFCoderType (#{const FF_CODER_TYPE_RLE})
+pattern FFCoderTypeDeflate = FFCoderType (#{const FF_CODER_TYPE_DEFLATE})
+
+-- | FF_MB_DECISION constants
+newtype FFMBDecision = FFMBDecision CInt deriving (Eq, Show, CEnum, Storable)
+pattern FFMBDecisionSimple = FFMBDecision (#{const FF_MB_DECISION_SIMPLE})
+pattern FFMBDecisionBits = FFMBDecision (#{const FF_MB_DECISION_BITS})
+pattern FFMBDecisionRd = FFMBDecision (#{const FF_MB_DECISION_RD})
+
+-- | FF_LEVEL_ constants
+newtype FFLevel = FFLevel CInt deriving (Eq, Show, CEnum, Storable)
+pattern FFLevelUnknown = FFLevel (#{const FF_LEVEL_UNKNOWN})
+
+-- | FF_SUB_CHARENC_MODE_ constants
+newtype FFSubCharencMode = FFSubCharencMode CInt deriving (Eq, Show, CEnum, Storable)
+pattern FFSubCharencModeDoNothing = FFSubCharencMode (#{const FF_SUB_CHARENC_MODE_DO_NOTHING})
+pattern FFSubCharencModeAutomatic = FFSubCharencMode (#{const FF_SUB_CHARENC_MODE_AUTOMATIC})
+pattern FFSubCharencModePreDecoder = FFSubCharencMode (#{const FF_SUB_CHARENC_MODE_PRE_DECODER})
+
+-- | FF_THREAD_ constants
+newtype FFThread = FFThread CInt deriving (Eq, Show, CEnum, Storable)
+pattern FFThreadFrame = FFThread (#{const FF_THREAD_FRAME})
+pattern FFThreadSlice = FFThread (#{const FF_THREAD_SLICE})
 
 -- | AVCodecId
 newtype AVCodecID = AVCodecID CInt deriving (Eq, Show, CEnum, Storable)

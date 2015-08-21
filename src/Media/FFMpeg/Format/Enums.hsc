@@ -84,12 +84,16 @@ module Media.FFMpeg.Format.Enums (
 
 	AVIOFlag,
 	pattern AVIOFlagNonblock,
-	pattern AVIOFlagDirect
+	pattern AVIOFlagDirect,
+
+	FFFDebug,
+	pattern FFFDebugTs
 ) where
 
 #include "ffmpeg.h"
 
 import Foreign.C.Types
+import Foreign.Storable
 
 import Media.FFMpeg.Internal.Common
 
@@ -170,7 +174,11 @@ pattern AVSeekFlagAny = AVSeekFlag (#{const AVSEEK_FLAG_ANY})
 pattern AVSeekFlagFrame = AVSeekFlag (#{const AVSEEK_FLAG_FRAME})
 
 -- | AVIO_FLAG_ flags
-newtype AVIOFlag = AVIOFlag CInt deriving (Eq, Show, CEnum, CFlags)
+newtype AVIOFlag = AVIOFlag CInt deriving (Eq, Show, CEnum, CFlags, Storable)
 pattern AVIOFlagNonblock = AVIOFlag (#{const AVIO_FLAG_NONBLOCK})
 pattern AVIOFlagDirect = AVIOFlag (#{const AVIO_FLAG_DIRECT})
+
+-- | FF_FDEBUG_ flags
+newtype FFFDebug = FFFDebug CInt deriving (Eq, Show, CEnum, CFlags, Storable)
+pattern FFFDebugTs = FFFDebug (#{const FF_FDEBUG_TS}) 
 

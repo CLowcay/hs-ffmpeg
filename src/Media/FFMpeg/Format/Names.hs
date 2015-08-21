@@ -26,7 +26,6 @@ module Media.FFMpeg.Format.Names (
 	format_audio_preload,
 	format_chunk_duration,
 	format_chunk_size,
-	format_f_err_detect,
 	format_err_detect,
 	format_use_wallclock_as_timestamps,
 	format_skip_initial_bytes,
@@ -115,7 +114,7 @@ format_rtbufsize = OptionName "rtbufsize"
 -- | Option "fdebug" for AVFormatContext of type AVOptTypeFlags-fdebug.
 -- print specific debug info
 -- default value is AVOptionFlags 0.
-format_fdebug :: OptionName AVFormatContext CInt
+format_fdebug :: OptionName AVFormatContext FFFDebug
 format_fdebug = OptionName "fdebug"
 
 -- | Option "max_delay" for AVFormatContext of type AVOptTypeInt.
@@ -154,16 +153,10 @@ format_chunk_duration = OptionName "chunk_duration"
 format_chunk_size :: OptionName AVFormatContext CInt
 format_chunk_size = OptionName "chunk_size"
 
--- | Option "f_err_detect" for AVFormatContext of type AVOptTypeFlags-err_detect.
--- set error detection flags (deprecated; use err_detect, save via avconv)
--- default value is AVOptionFlags 1.
-format_f_err_detect :: OptionName AVFormatContext CInt
-format_f_err_detect = OptionName "f_err_detect"
-
 -- | Option "err_detect" for AVFormatContext of type AVOptTypeFlags-err_detect.
 -- set error detection flags
 -- default value is AVOptionFlags 1.
-format_err_detect :: OptionName AVFormatContext CInt
+format_err_detect :: OptionName AVFormatContext AVEF
 format_err_detect = OptionName "err_detect"
 
 -- | Option "use_wallclock_as_timestamps" for AVFormatContext of type AVOptTypeInt.
