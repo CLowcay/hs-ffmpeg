@@ -14,7 +14,7 @@ Bindings to libavformat.
 -}
 
 module Media.FFMpeg.Format.Enums (
-	AVFmtFlag,
+	AVFmt,
 	pattern AVFmtNeednumber,
 	pattern AVFmtShowIds,
 	pattern AVFmtRawpicture,
@@ -54,7 +54,7 @@ module Media.FFMpeg.Format.Enums (
 	pattern AVPtsWrapAddOffset,
 	pattern AVPtsWrapSubOffset,
 
-	AVFMTFlag,
+	AVFmtFlag,
 	pattern AVFmtFlagGenpts,
 	pattern AVFmtFlagIgnidx,
 	pattern AVFmtFlagNonblock,
@@ -71,7 +71,7 @@ module Media.FFMpeg.Format.Enums (
 	pattern AVFmtFlagPrivOpt,
 	pattern AVFmtFlagKeepSideData,
 
-	AVFMTAvoidNegTS,
+	AVFmtAvoidNegTS,
 	pattern AVFmtAvoidNegTsAuto,
 	pattern AVFmtAvoidNegTsMakeNonNegative,
 	pattern AVFmtAvoidNegTsMakeZero,
@@ -94,24 +94,24 @@ import Foreign.C.Types
 import Media.FFMpeg.Internal.Common
 
 -- | AVFMT_ flags
-newtype AVFmtFlag = AVFmtFlag CInt deriving (Eq, Show, CEnum, CFlags)
-pattern AVFmtNeednumber = AVFmtFlag (#{const AVFMT_NEEDNUMBER})
-pattern AVFmtShowIds = AVFmtFlag (#{const AVFMT_SHOW_IDS})
-pattern AVFmtRawpicture = AVFmtFlag (#{const AVFMT_RAWPICTURE})
-pattern AVFmtGlobalheader = AVFmtFlag (#{const AVFMT_GLOBALHEADER})
-pattern AVFmtNotimestamps = AVFmtFlag (#{const AVFMT_NOTIMESTAMPS})
-pattern AVFmtGenericIndex = AVFmtFlag (#{const AVFMT_GENERIC_INDEX})
-pattern AVFmtTsDiscont = AVFmtFlag (#{const AVFMT_TS_DISCONT})
-pattern AVFmtVariableFps = AVFmtFlag (#{const AVFMT_VARIABLE_FPS})
-pattern AVFmtNodimensions = AVFmtFlag (#{const AVFMT_NODIMENSIONS})
-pattern AVFmtNostreams = AVFmtFlag (#{const AVFMT_NOSTREAMS})
-pattern AVFmtNobinsearch = AVFmtFlag (#{const AVFMT_NOBINSEARCH})
-pattern AVFmtNogensearch = AVFmtFlag (#{const AVFMT_NOGENSEARCH})
-pattern AVFmtNoByteSeek = AVFmtFlag (#{const AVFMT_NO_BYTE_SEEK})
-pattern AVFmtAllowFlush = AVFmtFlag (#{const AVFMT_ALLOW_FLUSH})
-pattern AVFmtTsNonstrict = AVFmtFlag (#{const AVFMT_TS_NONSTRICT})
-pattern AVFmtTsNegative = AVFmtFlag (#{const AVFMT_TS_NEGATIVE})
-pattern AVFmtSeekToPts = AVFmtFlag (#{const AVFMT_SEEK_TO_PTS})
+newtype AVFmt = AVFmt CInt deriving (Eq, Show, CEnum, CFlags)
+pattern AVFmtNeednumber = AVFmt (#{const AVFMT_NEEDNUMBER})
+pattern AVFmtShowIds = AVFmt (#{const AVFMT_SHOW_IDS})
+pattern AVFmtRawpicture = AVFmt (#{const AVFMT_RAWPICTURE})
+pattern AVFmtGlobalheader = AVFmt (#{const AVFMT_GLOBALHEADER})
+pattern AVFmtNotimestamps = AVFmt (#{const AVFMT_NOTIMESTAMPS})
+pattern AVFmtGenericIndex = AVFmt (#{const AVFMT_GENERIC_INDEX})
+pattern AVFmtTsDiscont = AVFmt (#{const AVFMT_TS_DISCONT})
+pattern AVFmtVariableFps = AVFmt (#{const AVFMT_VARIABLE_FPS})
+pattern AVFmtNodimensions = AVFmt (#{const AVFMT_NODIMENSIONS})
+pattern AVFmtNostreams = AVFmt (#{const AVFMT_NOSTREAMS})
+pattern AVFmtNobinsearch = AVFmt (#{const AVFMT_NOBINSEARCH})
+pattern AVFmtNogensearch = AVFmt (#{const AVFMT_NOGENSEARCH})
+pattern AVFmtNoByteSeek = AVFmt (#{const AVFMT_NO_BYTE_SEEK})
+pattern AVFmtAllowFlush = AVFmt (#{const AVFMT_ALLOW_FLUSH})
+pattern AVFmtTsNonstrict = AVFmt (#{const AVFMT_TS_NONSTRICT})
+pattern AVFmtTsNegative = AVFmt (#{const AVFMT_TS_NEGATIVE})
+pattern AVFmtSeekToPts = AVFmt (#{const AVFMT_SEEK_TO_PTS})
 
 -- | AV_DISPOSITION_ flags
 newtype AVDispositionFlag = AVDispositionFlag CInt deriving (Eq, Show, CEnum, CFlags)
@@ -137,7 +137,7 @@ pattern AVPtsWrapAddOffset = AVPTSWrap (#{const AV_PTS_WRAP_ADD_OFFSET})
 pattern AVPtsWrapSubOffset = AVPTSWrap (#{const AV_PTS_WRAP_SUB_OFFSET})
 
 -- | AVFMT_FLAG_ flags
-newtype AVFMTFlag = AVFMTFlag CInt deriving (Eq, Show, CEnum, CFlags)
+newtype AVFmtFlag = AVFMTFlag CInt deriving (Eq, Show, CEnum, CFlags)
 pattern AVFmtFlagGenpts = AVFMTFlag (#{const AVFMT_FLAG_GENPTS})
 pattern AVFmtFlagIgnidx = AVFMTFlag (#{const AVFMT_FLAG_IGNIDX})
 pattern AVFmtFlagNonblock = AVFMTFlag (#{const AVFMT_FLAG_NONBLOCK})
@@ -157,7 +157,7 @@ pattern AVFmtFlagKeepSideData = AVFMTFlag (#{const AVFMT_FLAG_KEEP_SIDE_DATA})
 -- avfmt_flag_fast_seek = AVFMT_FLAG_FAST_SEEK
 
 -- | AVFMT_AVOID_NEG_TS_ constants
-newtype AVFMTAvoidNegTS = AVFMTAvoidNegTS CInt deriving (Eq, Show, CEnum)
+newtype AVFmtAvoidNegTS = AVFMTAvoidNegTS CInt deriving (Eq, Show, CEnum)
 pattern AVFmtAvoidNegTsAuto = AVFMTAvoidNegTS (#{const AVFMT_AVOID_NEG_TS_AUTO})
 pattern AVFmtAvoidNegTsMakeNonNegative = AVFMTAvoidNegTS (#{const AVFMT_AVOID_NEG_TS_MAKE_NON_NEGATIVE})
 pattern AVFmtAvoidNegTsMakeZero = AVFMTAvoidNegTS (#{const AVFMT_AVOID_NEG_TS_MAKE_ZERO})

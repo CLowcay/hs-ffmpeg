@@ -29,7 +29,7 @@ module Media.FFMpeg.Codec.AVPacket (
 	av_packet_get_side_data,
 	av_packet_merge_side_data,
 	av_packet_split_side_data,
-	av_packet_side_data_name,
+	--av_packet_side_data_name,
 	av_packet_pack_dictionary,
 	av_packet_unpack_dictionary,
 	av_packet_free_side_data,
@@ -72,7 +72,7 @@ module Media.FFMpeg.Codec.AVPacket (
 	packetGetSideData,
 	packetFreeSideDataType,
 	packetFreeSideData,
-	packetSideDataName,
+	--packetSideDataName,
 	packetRescaleTS,
 	newPacketFromBuffer
 ) where
@@ -118,7 +118,7 @@ foreign import ccall "av_packet_shrink_side_data" av_packet_shrink_side_data :: 
 foreign import ccall "av_packet_get_side_data" av_packet_get_side_data :: Ptr AVPacket -> CInt -> Ptr CInt -> IO (Ptr Word8)
 foreign import ccall "av_packet_merge_side_data" av_packet_merge_side_data :: Ptr AVPacket -> IO CInt
 foreign import ccall "av_packet_split_side_data" av_packet_split_side_data :: Ptr AVPacket -> IO CInt
-foreign import ccall "av_packet_side_data_name" av_packet_side_data_name :: CInt -> CString
+--foreign import ccall "av_packet_side_data_name" av_packet_side_data_name :: CInt -> CString
 foreign import ccall "av_packet_pack_dictionary" av_packet_pack_dictionary :: UnderlyingType AVDictionary -> Ptr CInt -> IO (Ptr Word8)
 foreign import ccall "av_packet_unpack_dictionary" av_packet_unpack_dictionary :: Ptr Word8 -> CInt -> Ptr (UnderlyingType AVDictionary) -> IO CInt
 foreign import ccall "av_packet_free_side_data" av_packet_free_side_data :: Ptr AVPacket -> IO ()
@@ -474,10 +474,10 @@ packetFreeSideData :: MonadIO m => AVPacket -> m ()
 packetFreeSideData pkt = liftIO$ withThis pkt av_packet_free_side_data
 
 -- | Get a string representation of a side data type
-packetSideDataName :: AVPacketSideDataType -> String
-packetSideDataName =
-	-- safe because av_packet_side_data_name returns a const string
-	unsafePerformIO.peekCString.av_packet_side_data_name.fromCEnum
+-- packetSideDataName :: AVPacketSideDataType -> String
+-- packetSideDataName =
+-- 	-- safe because av_packet_side_data_name returns a const string
+-- 	unsafePerformIO.peekCString.av_packet_side_data_name.fromCEnum
 
 -- | Change the timebase of a packet, rescaling the timestamps
 packetRescaleTS :: MonadIO m => AVPacket -> Rational -> Rational -> m ()

@@ -80,7 +80,7 @@ format_packetsize = OptionName "packetsize"
 
 -- | Option "fflags" for AVFormatContext of type AVOptTypeFlags-fflags.
 -- default value is AVOptionFlags 512.
-format_fflags :: OptionName AVFormatContext CInt
+format_fflags :: OptionName AVFormatContext AVFmtFlag
 format_fflags = OptionName "fflags"
 
 -- | Option "seek2any" for AVFormatContext of type AVOptTypeInt.
@@ -211,7 +211,7 @@ format_max_interleave_delta = OptionName "max_interleave_delta"
 -- how strictly to follow the standards (deprecated; use strict, save via
 -- avconv)
 -- default value is AVOptionInt 0.
-format_f_strict :: OptionName AVFormatContext CInt
+format_f_strict :: OptionName AVFormatContext FFCompliance
 format_f_strict = OptionName "f_strict"
 
 -- | Option "strict" for AVFormatContext of type AVOptTypeInt-strict.
@@ -229,7 +229,7 @@ format_max_ts_probe = OptionName "max_ts_probe"
 -- | Option "avoid_negative_ts" for AVFormatContext of type AVOptTypeInt-avoid_negative_ts.
 -- shift timestamps so they start at 0
 -- default value is AVOptionInt (-1).
-format_avoid_negative_ts :: OptionName AVFormatContext CInt
+format_avoid_negative_ts :: OptionName AVFormatContext AVFmtAvoidNegTS
 format_avoid_negative_ts = OptionName "avoid_negative_ts"
 
 -- | Option "dump_separator" for AVFormatContext of type AVOptTypeString.

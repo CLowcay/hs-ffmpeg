@@ -223,7 +223,7 @@ codec_flags = OptionName "flags"
 -- | Option "me_method" for AVCodecContext of type AVOptTypeInt-me_method.
 -- set motion estimation method
 -- default value is AVOptionInt 5.
-codec_me_method :: OptionName AVCodecContext CInt
+codec_me_method :: OptionName AVCodecContext Motion_Est_ID
 codec_me_method = OptionName "me_method"
 
 -- | Option "time_base" for AVCodecContext of type AVOptTypeRational.
@@ -389,7 +389,7 @@ codec_bug = OptionName "bug"
 -- | Option "strict" for AVCodecContext of type AVOptTypeInt-strict.
 -- how strictly to follow the standards
 -- default value is AVOptionInt 0.
-codec_strict :: OptionName AVCodecContext CInt
+codec_strict :: OptionName AVCodecContext FFCompliance
 codec_strict = OptionName "strict"
 
 -- | Option "b_qoffset" for AVCodecContext of type AVOptTypeFloat.
@@ -776,7 +776,7 @@ codec_skip_bottom = OptionName "skip_bottom"
 
 -- | Option "profile" for AVCodecContext of type AVOptTypeInt-profile.
 -- default value is AVOptionInt (-99).
-codec_profile :: OptionName AVCodecContext CInt
+codec_profile :: OptionName AVCodecContext FFProfile
 codec_profile = OptionName "profile"
 
 -- | Option "level" for AVCodecContext of type AVOptTypeInt-level.
@@ -1017,7 +1017,7 @@ codec_thread_type = OptionName "thread_type"
 -- | Option "audio_service_type" for AVCodecContext of type AVOptTypeInt-audio_service_type.
 -- audio service type
 -- default value is AVOptionInt 0.
-codec_audio_service_type :: OptionName AVCodecContext CInt
+codec_audio_service_type :: OptionName AVCodecContext AVAudioServiceType
 codec_audio_service_type = OptionName "audio_service_type"
 
 -- | Option "request_sample_fmt" for AVCodecContext of type AVOptTypeSampleFmt-request_sample_fmt.
@@ -1060,7 +1060,7 @@ codec_skip_alpha = OptionName "skip_alpha"
 -- | Option "field_order" for AVCodecContext of type AVOptTypeInt-field_order.
 -- Field order
 -- default value is AVOptionInt 0.
-codec_field_order :: OptionName AVCodecContext CInt
+codec_field_order :: OptionName AVCodecContext AVFieldOrder
 codec_field_order = OptionName "field_order"
 
 -- | Option "dump_separator" for AVCodecContext of type AVOptTypeString.

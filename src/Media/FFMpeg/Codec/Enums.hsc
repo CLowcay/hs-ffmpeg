@@ -227,13 +227,6 @@ module Media.FFMpeg.Codec.Enums (
 
 	pattern FFMinBufferSize,
 
-	FFCompliance,
-	pattern FFComplianceVeryStrict,
-	pattern FFComplianceStrict,
-	pattern FFComplianceNormal,
-	pattern FFComplianceUnofficial,
-	pattern FFComplianceExperimental,
-
 	FFProfile,
 	pattern FFProfileUnknown,
 	pattern FFProfileReserved,
@@ -957,15 +950,6 @@ pattern MEIter = Motion_Est_ID #{const ME_ITER}
 
 -- | FF_MIN_BUFFER_SIZE
 pattern FFMinBufferSize = #{const FF_MIN_BUFFER_SIZE}
-
-  
--- | FF_COMPLIANCE_ constants
-newtype FFCompliance = FFCompliance CInt deriving (Eq, Show, CEnum)
-pattern FFComplianceVeryStrict = FFCompliance #{const FF_COMPLIANCE_VERY_STRICT}
-pattern FFComplianceStrict = FFCompliance #{const FF_COMPLIANCE_STRICT}
-pattern FFComplianceNormal = FFCompliance #{const FF_COMPLIANCE_NORMAL}
-pattern FFComplianceUnofficial = FFCompliance (#{const FF_COMPLIANCE_UNOFFICIAL})
-pattern FFComplianceExperimental = FFCompliance (#{const FF_COMPLIANCE_EXPERIMENTAL})
 
 -- | FF_PROFILE_ constants
 newtype FFProfile = FFProfile CInt deriving (Eq, Show, CEnum)

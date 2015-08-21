@@ -202,7 +202,14 @@ module Media.FFMpeg.Util.Enums (
 	pattern AVPictureTypeS,
 	pattern AVPictureTypeSi,
 	pattern AVPictureTypeSp,
-	pattern AVPictureTypeBi
+	pattern AVPictureTypeBi,
+
+	FFCompliance,
+	pattern FFComplianceVeryStrict,
+	pattern FFComplianceStrict,
+	pattern FFComplianceNormal,
+	pattern FFComplianceUnofficial,
+	pattern FFComplianceExperimental
 ) where
 
 import Control.Applicative
@@ -461,4 +468,12 @@ pattern AVPictureTypeS = AVPictureType (#{const AV_PICTURE_TYPE_S})
 pattern AVPictureTypeSi = AVPictureType (#{const AV_PICTURE_TYPE_SI})
 pattern AVPictureTypeSp = AVPictureType (#{const AV_PICTURE_TYPE_SP})
 pattern AVPictureTypeBi = AVPictureType (#{const AV_PICTURE_TYPE_BI})
+  
+-- | FF_COMPLIANCE_ constants
+newtype FFCompliance = FFCompliance CInt deriving (Eq, Show, CEnum)
+pattern FFComplianceVeryStrict = FFCompliance #{const FF_COMPLIANCE_VERY_STRICT}
+pattern FFComplianceStrict = FFCompliance #{const FF_COMPLIANCE_STRICT}
+pattern FFComplianceNormal = FFCompliance #{const FF_COMPLIANCE_NORMAL}
+pattern FFComplianceUnofficial = FFCompliance (#{const FF_COMPLIANCE_UNOFFICIAL})
+pattern FFComplianceExperimental = FFCompliance (#{const FF_COMPLIANCE_EXPERIMENTAL})
 

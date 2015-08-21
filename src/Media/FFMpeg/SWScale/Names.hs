@@ -40,7 +40,7 @@ import Media.FFMpeg.Util
 -- | Option "sws_flags" for SwsContext of type AVOptTypeFlags-sws_flags.
 -- scaler flags
 -- default value is AVOptionFlags 4.
-sws_sws_flags :: OptionName SwsContext CInt
+sws_sws_flags :: OptionName SwsContext SwsFlags
 sws_sws_flags = OptionName "sws_flags"
 
 -- | Option "srcw" for SwsContext of type AVOptTypeInt.

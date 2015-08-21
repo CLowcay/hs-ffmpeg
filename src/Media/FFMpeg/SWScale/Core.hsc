@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
 
 {- |
@@ -26,6 +27,9 @@ module Media.FFMpeg.SWScale.Core (
 	isSupportedInput,
 	isSupportedOutput,
 	isSupportedEndiannessConversion,
+
+	SwsFlags,
+	encodeSwsFlags,
 
 	getCoefficients,
 	newSwsContext,
@@ -253,35 +257,41 @@ newSwsContext srcFilter dstFilter = do
 getSwsContext :: (MonadIO m, MonadError String m) =>
 	(Int, Int, PixelFormat)          -- ^ Source (width, height, format)
 	-> (Int, Int, PixelFormat)       -- ^ Destination (width, height, format)
-	-> ScaleAlgorithm                  -- ^ Scaling algorithm
-	-> ([ScaleFlag], ChromaDrop)        -- ^ Scaling options
-	-> SwsFilter                       -- ^ Source filter
-	-> SwsFilter                       -- ^ Destination filter
-	-> Maybe (Double, Double)          -- ^ Optional parameters for the scaling algorithm
+	-> SwsFlags                      -- ^ Use encodeSwsFlags to produce this value
+	-> SwsFilter                     -- ^ Source filter
+	-> SwsFilter                     -- ^ Destination filter
+	-> Maybe (Double, Double)        -- ^ Optional parameters for the scaling algorithm
 	-> m SwsContext
 getSwsContext
 	(srcW, srcH, srcPF) (dstW, dstH, dstPF)
-	alg (flags, cdrop) srcFilter dstFilter mparams = do
+	flags srcFilter dstFilter mparams = do
 		p <-
 			withThis srcFilter$ \psrcFilter ->
 			withThis dstFilter$ \pdstFilter ->
 			liftIO.withParams$ \pparams -> sws_getContext
 				(fromIntegral srcW) (fromIntegral srcH) (fromCEnum srcPF)
 				(fromIntegral dstW) (fromIntegral dstH) (fromCEnum dstPF)
-				cflags psrcFilter pdstFilter pparams
+				(fromCEnum flags) psrcFilter pdstFilter pparams
 
 		if p == nullPtr then throwError "getSwsContext: sws_getContext returned a null pointer"
 		else liftIO$ SwsContext <$> newForeignPtr psws_freeContext p
 
 	where
-		cflags = (fromCEnum alg) .|. (fromCEnum (mconcat flags)) .|. case cdrop of
-			SwsSrcVChrDrop0 -> 0
-			SwsSrcVChrDrop1 -> 1 `unsafeShiftL` #{const SWS_SRC_V_CHR_DROP_SHIFT}
-			SwsSrcVChrDrop2 -> 2 `unsafeShiftL` #{const SWS_SRC_V_CHR_DROP_SHIFT}
-			SwsSrcVChrDrop3 -> 3 `unsafeShiftL` #{const SWS_SRC_V_CHR_DROP_SHIFT}
 		withParams action = case mparams of
 			Nothing -> action nullPtr
 			Just (x, y) -> withArray [x, y] action
+
+-- | The flags field for a SwsContext
+newtype SwsFlags = SwsFlags CInt deriving (Eq, CEnum)
+
+-- | Encode information about the scaling algorithm to use into SwsFlags
+encodeSwsFlags :: (ScaleAlgorithm, [ScaleFlag], ChromaDrop) -> SwsFlags
+encodeSwsFlags (alg, flags, cdrop) = SwsFlags$
+	(fromCEnum alg) .|. (fromCEnum (mconcat flags)) .|. case cdrop of
+		SwsSrcVChrDrop0 -> 0
+		SwsSrcVChrDrop1 -> 1 `unsafeShiftL` #{const SWS_SRC_V_CHR_DROP_SHIFT}
+		SwsSrcVChrDrop2 -> 2 `unsafeShiftL` #{const SWS_SRC_V_CHR_DROP_SHIFT}
+		SwsSrcVChrDrop3 -> 3 `unsafeShiftL` #{const SWS_SRC_V_CHR_DROP_SHIFT}
 
 -- | scale an image slice
 scale :: (MonadIO m, HasAVPicture src, HasAVPicture dst) =>
