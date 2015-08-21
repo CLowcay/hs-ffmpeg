@@ -28,7 +28,7 @@ module Media.FFMpeg.Codec.Core (
 	codecSetPktTimebase,
 	codecGetCodecDescriptor,
 	codecSetCodecDescriptor,
-	codecGetCodecProperties,
+	--codecGetCodecProperties,
 	codecGetLowres,
 	codecSetLowres,
 	codecGetSeekPreroll,
@@ -89,7 +89,7 @@ foreign import ccall "b_av_codec_get_pkt_timebase" av_codec_get_pkt_timebase :: 
 foreign import ccall "b_av_codec_set_pkt_timebase" av_codec_set_pkt_timebase :: Ptr AVCodecContext -> CInt -> CInt -> IO ()
 foreign import ccall "av_codec_get_codec_descriptor" av_codec_get_codec_descriptor :: Ptr AVCodecContext -> IO (Ptr AVCodecDescriptor)
 foreign import ccall "av_codec_set_codec_descriptor" av_codec_set_codec_descriptor :: Ptr AVCodecContext -> Ptr AVCodecDescriptor -> IO ()
-foreign import ccall "av_codec_get_codec_properties" av_codec_get_codec_properties :: Ptr AVCodecContext -> IO CUInt
+--foreign import ccall "av_codec_get_codec_properties" av_codec_get_codec_properties :: Ptr AVCodecContext -> IO CUInt
 foreign import ccall "av_codec_get_lowres" av_codec_get_lowres :: Ptr AVCodecContext -> IO CInt
 foreign import ccall "av_codec_set_lowres" av_codec_set_lowres :: Ptr AVCodecContext -> CInt -> IO ()
 foreign import ccall "av_codec_get_seek_preroll" av_codec_get_seek_preroll :: Ptr AVCodecContext -> IO CInt
@@ -345,9 +345,9 @@ codecSetCodecDescriptor ctx d = withThis ctx$ \pctx -> liftIO$ do
 	av_codec_set_codec_descriptor pctx pcd
 
 -- | Get the properties flags from a codec context
-codecGetCodecProperties :: MonadIO m => AVCodecContext -> m AVCodecProp
-codecGetCodecProperties ctx = withThis ctx$ \pctx -> liftIO$
-	toCEnum.fromIntegral <$> av_codec_get_codec_properties pctx
+-- codecGetCodecProperties :: MonadIO m => AVCodecContext -> m AVCodecProp
+-- codecGetCodecProperties ctx = withThis ctx$ \pctx -> liftIO$
+-- 	toCEnum.fromIntegral <$> av_codec_get_codec_properties pctx
 
 -- | Get the lowres field from a codec context
 codecGetLowres :: MonadIO m => AVCodecContext -> m Int

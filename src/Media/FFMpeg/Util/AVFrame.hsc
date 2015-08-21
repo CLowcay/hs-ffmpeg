@@ -108,9 +108,9 @@ foreign import ccall "av_frame_set_color_range" av_frame_set_color_range :: Ptr 
 
 foreign import ccall "av_get_colorspace_name" av_get_colorspace_name :: CInt -> CString
 foreign import ccall "av_get_picture_type_char" av_get_picture_type_char :: CInt -> CChar
-foreign import ccall "avcodec_frame_alloc" avcodec_frame_alloc :: IO (Ptr ())
-foreign import ccall "avcodec_frame_free" avcodec_frame_free :: Ptr () -> IO ()
-foreign import ccall "&avcodec_frame_free" pavcodec_frame_free :: FunPtr (Ptr () -> IO ())
+foreign import ccall "av_frame_alloc" av_frame_alloc :: IO (Ptr ())
+foreign import ccall "av_frame_free" av_frame_free :: Ptr () -> IO ()
+foreign import ccall "&av_frame_free" pav_frame_free :: FunPtr (Ptr () -> IO ())
 
 foreign import ccall "av_frame_ref" av_frame_ref :: Ptr AVFrame -> Ptr AVFrame -> IO CInt
 foreign import ccall "av_frame_clone" av_frame_clone :: Ptr AVFrame -> IO (Ptr())
@@ -249,11 +249,11 @@ getPictureTypeChar t = castCCharToChar$ av_get_picture_type_char (fromCEnum t)
 -- allocated.
 frameAlloc :: (MonadIO m, MonadError String m) => m AVFrame
 frameAlloc = do
-	pFrame <- liftIO$ avcodec_frame_alloc
+	pFrame <- liftIO$ av_frame_alloc
 	if (pFrame == nullPtr) then do
 		throwError "allocAVFrame: failed to allocate AVFrame"
 	else liftIO$
-		(AVFrame . castForeignPtr) <$> newForeignPtr pavcodec_frame_free pFrame
+		(AVFrame . castForeignPtr) <$> newForeignPtr pav_frame_free pFrame
 
 -- | Copy the data from one AVFrame to another.  If the frame is reference
 -- counted, then a new reference is created, otherwise the data is actually
@@ -278,7 +278,7 @@ frameClone src = do
 	if r == nullPtr then
 		throwError$ "frameClone: av_frame_clone returned a null pointer"
 	else liftIO$
-		(AVFrame . castForeignPtr) <$> newForeignPtr pavcodec_frame_free r
+		(AVFrame . castForeignPtr) <$> newForeignPtr pav_frame_free r
 
 -- | Reset a frame to its default uninitialised state, unreferencing any
 -- reference counted buffers.
