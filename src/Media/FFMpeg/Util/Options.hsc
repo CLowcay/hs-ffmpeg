@@ -140,7 +140,7 @@ data AVOption a t = AVOption {
 data AVOptionConst a t = AVOptionConst {
 		const_name :: String,
 		const_option :: OptionName a t,
-		const_help :: String,
+		const_help :: Maybe String,
 		const_type :: AVOptType,
 		const_value :: t
 	}
@@ -240,7 +240,7 @@ decodeAVConst opt po = do
 	if _type /= AVOptTypeConst then return Nothing
 	else liftIO$ do
 		_name <- peekCString =<< #{peek AVOption, name} po
-		_help <- peekCString =<< #{peek AVOption, help} po
+		_help <- ((traverse peekCString).justPtr) =<< #{peek AVOption, help} po
 		_option <- OptionName <$> (peekCString =<< #{peek AVOption, unit} po)
 
 		_value <- parseDefaultValue po (option_type opt)
