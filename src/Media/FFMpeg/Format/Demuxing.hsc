@@ -80,7 +80,7 @@ openInput path mif mdict = do
 		withThis path$ \ppath -> liftIO$
 			alloca$ \ppdict ->
 			alloca$ \pctx -> do
-				pdict0 <- peek ppdict0
+				pdict0 <- if ppdict0 == nullPtr then return nullPtr else peek ppdict0
 				av_dict_copy ppdict pdict0 0
 				r <- avformat_open_input pctx ppath pif ppdict
 				ctx <- peek pctx
