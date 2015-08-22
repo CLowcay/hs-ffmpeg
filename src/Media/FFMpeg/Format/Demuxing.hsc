@@ -21,7 +21,7 @@ module Media.FFMpeg.Format.Demuxing (
 	readFrame,
 	seekKeyframe,
 	seekFile,
-	formatFlush,
+	--formatFlush,
 	readPlay,
 	readPause
 ) where
@@ -58,7 +58,7 @@ foreign import ccall "av_find_best_stream" av_find_best_stream :: Ptr AVFormatCo
 foreign import ccall "av_read_frame" av_read_frame :: Ptr AVFormatContext -> Ptr AVPacket -> IO CInt
 foreign import ccall "av_seek_frame" av_seek_frame :: Ptr AVFormatContext -> CInt -> Int64 -> CInt -> IO CInt
 foreign import ccall "avformat_seek_file" avformat_seek_file :: Ptr AVFormatContext -> CInt -> Int64 -> Int64 -> Int64 -> CInt -> IO CInt
-foreign import ccall "avformat_flush" avformat_flush :: Ptr AVFormatContext -> IO CInt
+--foreign import ccall "avformat_flush" avformat_flush :: Ptr AVFormatContext -> IO CInt
 foreign import ccall "av_read_play" av_read_play :: Ptr AVFormatContext -> IO CInt
 foreign import ccall "av_read_pause" av_read_pause :: Ptr AVFormatContext -> IO CInt
 foreign import ccall "&b_avformat_close_input" pavformat_close_input :: FunPtr (Ptr () -> IO ())
@@ -185,11 +185,11 @@ seekFile ctx (StreamIndex idx) (AVTimestamp min_ts, AVTimestamp ts, AVTimestamp 
 	where cflags = fromCEnum$ mconcat flags
 
 -- | Discard all internally buffered data
-formatFlush :: (MonadIO m, MonadError String m) => AVFormatContext -> m ()
-formatFlush ctx = do
-	r <- liftIO.withThis ctx$ avformat_flush
-	when (r < 0)$ throwError$
-		"formatFlush: avformat_flush failed with error code " ++ (show r)
+-- formatFlush :: (MonadIO m, MonadError String m) => AVFormatContext -> m ()
+-- formatFlush ctx = do
+-- 	r <- liftIO.withThis ctx$ avformat_flush
+-- 	when (r < 0)$ throwError$
+-- 		"formatFlush: avformat_flush failed with error code " ++ (show r)
 
 -- | Start playing a network stream
 readPlay :: (MonadIO m, MonadError String m) => AVFormatContext -> m ()

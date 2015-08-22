@@ -49,7 +49,9 @@ module Media.FFMpeg.Format.Core (
 	dumpFormat,
 	queryCodec,
 	guessSampleAspectRatio,
-	guessFrameRate
+	guessFrameRate,
+
+	getMetadata
 ) where
 
 #include "ffmpeg.h"
@@ -403,3 +405,10 @@ guessFrameRate ctx stream frame = liftIO$ do
 
 	if num == 0 && den == 1 then return Nothing else return.Just$ num % den
 
+-- | Get metadata from an AVFormatContext.  Minor revisions to ffmpeg can break
+-- binary compatibility, but not source compatibility, if you use this function.
+getMetadata :: MonadIO m => AVFormatContext -> m AVDictionary
+getMetadata ctx = withThis ctx$ \pctx -> do
+	pdict <- liftIO$ #{peek AVFormatContext, metadata} pctx
+	unsafeDictCopyFromPtr pdict []
+	

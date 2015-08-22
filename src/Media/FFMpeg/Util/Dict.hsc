@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE TypeFamilies #-}
 
 {- |
@@ -23,10 +24,11 @@ module Media.FFMpeg.Util.Dict (
 	av_dict_get_string,
 	av_dict_free,
 
-	av_dict_match_case,
-	av_dict_ignore_suffix,
-	av_dict_dont_overwrite,
-	av_dict_append,
+	DictFlag,
+	pattern AVDictMatchCase,
+	pattern AVDictIgnoreSuffix,
+	pattern AVDictDontOverwrite,
+	pattern AVDictAppend,
 
 	AVDictionary,
 	newAVDictionary,
@@ -71,12 +73,10 @@ foreign import ccall "av_freep" av_freep :: Ptr a -> IO ()
 
 -- | Flags
 newtype DictFlag = DictFlag CInt deriving (Eq, Show, CEnum, CFlags)
-#{enum DictFlag, DictFlag,
-	av_dict_match_case = AV_DICT_MATCH_CASE,
-	av_dict_ignore_suffix = AV_DICT_IGNORE_SUFFIX,
-	av_dict_dont_overwrite = AV_DICT_DONT_OVERWRITE,
-	av_dict_append = AV_DICT_APPEND
-}
+pattern AVDictMatchCase = DictFlag (#{const AV_DICT_MATCH_CASE})
+pattern AVDictIgnoreSuffix = DictFlag (#{const AV_DICT_IGNORE_SUFFIX})
+pattern AVDictDontOverwrite = DictFlag (#{const AV_DICT_DONT_OVERWRITE})
+pattern AVDictAppend = DictFlag (#{const AV_DICT_APPEND})
 
 -- | AVDictionary type
 newtype AVDictionary = AVDictionary (ForeignPtr (Ptr AVDictionary))

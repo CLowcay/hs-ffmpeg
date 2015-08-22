@@ -34,7 +34,6 @@ module Media.FFMpeg.Format.Names (
 	format_metadata_header_padding,
 	format_output_ts_offset,
 	format_max_interleave_delta,
-	format_f_strict,
 	format_strict,
 	format_max_ts_probe,
 	format_avoid_negative_ts,
@@ -200,17 +199,10 @@ format_output_ts_offset = OptionName "output_ts_offset"
 format_max_interleave_delta :: OptionName AVFormatContext Int64
 format_max_interleave_delta = OptionName "max_interleave_delta"
 
--- | Option "f_strict" for AVFormatContext of type AVOptTypeInt-strict.
--- how strictly to follow the standards (deprecated; use strict, save via
--- avconv)
--- default value is AVOptionInt 0.
-format_f_strict :: OptionName AVFormatContext FFCompliance
-format_f_strict = OptionName "f_strict"
-
 -- | Option "strict" for AVFormatContext of type AVOptTypeInt-strict.
 -- how strictly to follow the standards
 -- default value is AVOptionInt 0.
-format_strict :: OptionName AVFormatContext CInt
+format_strict :: OptionName AVFormatContext FFCompliance
 format_strict = OptionName "strict"
 
 -- | Option "max_ts_probe" for AVFormatContext of type AVOptTypeInt.
