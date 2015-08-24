@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -39,7 +40,10 @@ module Media.FFMpeg.Util.Dict (
 	dictSetInt,
 	dictCopy,
 	dictGetString,
-	unsafeDictCopyFromPtr
+	unsafeDictCopyFromPtr,
+
+	getDictField,
+	setDictField
 ) where
 
 #include "ffmpeg.h"
@@ -216,4 +220,19 @@ unsafeDictCopyFromPtr src flags = do
 			av_dict_copy ppd src cflags
 	return dst
 	where cflags = fromCEnum$ mconcat flags
+
+-- | Get the metadata field from an AVStream
+getDictField :: (MonadIO m, ExternalPointer a) => a -> Field a AVDictionary ro -> m AVDictionary
+getDictField x (Field offset) = do
+	pd <- liftIO$ withThis x$ \px -> peekByteOff px offset
+	unsafeDictCopyFromPtr pd []
+
+-- | Set the metadata field of an AVStream
+setDictField :: (MonadIO m, ExternalPointer a) => a -> Field a AVDictionary ReadWrite -> AVDictionary -> m ()
+setDictField x (Field offset) dict =
+	withThis x$ \px ->
+	withThis dict$ \ppdict -> do
+		liftIO.av_dict_free$ px `plusPtr` offset
+		pdict <- liftIO$ peek ppdict
+		liftIO$ av_dict_copy (px `plusPtr` offset) pdict 0
 
