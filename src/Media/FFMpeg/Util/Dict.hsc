@@ -33,6 +33,7 @@ module Media.FFMpeg.Util.Dict (
 	AVDictionary,
 	newAVDictionary,
 	dictGet,
+	dictGetAll,
 	dictCount,
 	dictSet,
 	dictSetInt,
@@ -115,6 +116,10 @@ dictGet dict key flags = liftIO$
 				return (k, v)
 
 	where cflags = fromCEnum$ mconcat flags
+
+-- | Get all entries in a dictionary
+dictGetAll :: MonadIO m => AVDictionary -> m [(String, String)]
+dictGetAll dict = dictGet dict "" [AVDictIgnoreSuffix]
 
 -- | Count the number of entries in a dictionary
 dictCount :: MonadIO m => AVDictionary -> m Int
