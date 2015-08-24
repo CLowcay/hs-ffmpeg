@@ -92,6 +92,9 @@ module Media.FFMpeg.Format.Enums (
 	AVStreamEventFlag,
 	pattern AVStreamEventFlagMetadataUpdated,
 
+	AVFmtEventFlag,
+	pattern AVFmtEventFlagMetadataUpdated,
+
 	AVStreamParseType,
 	pattern AVStreamParseNone,
 	pattern AVStreamParseFull,
@@ -103,7 +106,10 @@ module Media.FFMpeg.Format.Enums (
 	AVDurationEstimationMethod,
 	pattern AVFmtDurationFromPts,
 	pattern AVFmtDurationFromStream,
-	pattern AVFmtDurationFromBitrate
+	pattern AVFmtDurationFromBitrate,
+
+	AVFmtCtx,
+	pattern AVFmtCtxNoheader
 ) where
 
 #include "ffmpeg.h"
@@ -202,6 +208,10 @@ pattern FFFDebugTs = FFFDebug (#{const FF_FDEBUG_TS})
 newtype AVStreamEventFlag = AVStreamEventFlag CInt deriving (Eq, Show, CEnum, CFlags, Storable)
 pattern AVStreamEventFlagMetadataUpdated = AVStreamEventFlag (#{const AVSTREAM_EVENT_FLAG_METADATA_UPDATED})
 
+-- | AVFMT_EVENT_FLAG_ flags
+newtype AVFmtEventFlag = AVFmtEventFlag CInt deriving (Eq, Show, CEnum, CFlags, Storable)
+pattern AVFmtEventFlagMetadataUpdated = AVFmtEventFlag (#{const AVFMT_EVENT_FLAG_METADATA_UPDATED})
+
 -- | AVStreamParseType enum
 newtype AVStreamParseType = AVStreamParseType CInt deriving (Eq, Show, CEnum, Storable)
 pattern AVStreamParseNone = AVStreamParseType (#{const AVSTREAM_PARSE_NONE})
@@ -216,4 +226,8 @@ newtype AVDurationEstimationMethod = AVDurationEstimationMethod CInt deriving (E
 pattern AVFmtDurationFromPts = AVDurationEstimationMethod (#{const AVFMT_DURATION_FROM_PTS})
 pattern AVFmtDurationFromStream = AVDurationEstimationMethod (#{const AVFMT_DURATION_FROM_STREAM})
 pattern AVFmtDurationFromBitrate = AVDurationEstimationMethod (#{const AVFMT_DURATION_FROM_BITRATE})
+
+-- | AVFMTCTX_ flags
+newtype AVFmtCtx = AVFmtCtx CInt deriving (Eq, Show, CEnum, CFlags, Storable)
+pattern AVFmtCtxNoheader = AVFmtCtx (#{const AVFMTCTX_NOHEADER})
 

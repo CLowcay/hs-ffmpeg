@@ -51,7 +51,6 @@ module Media.FFMpeg.Format.Core (
 	queryCodec,
 	guessSampleAspectRatio,
 	guessFrameRate,
-	getStreamEventFlags,
 	getStreamRFrameRate,
 	setStreamRFrameRate,
 	getStreamRecommendedEncoderConfiguration,
@@ -65,8 +64,8 @@ module Media.FFMpeg.Format.Core (
 	formatSetAudioCodec,
 	formatGetSubtitleCodec,
 	formatSetSubtitleCodec,
-	formatGetDataCodec,
-	formatSetDataCodec,
+	--formatGetDataCodec,
+	--formatSetDataCodec,
 	formatGetMetadataHeaderPadding,
 	formatSetMetadataHeaderPadding,
 	formatInjectGlobalSideData,
@@ -465,13 +464,6 @@ getMetadata ctx = withThis ctx$ \pctx -> do
 	pdict <- liftIO$ #{peek AVFormatContext, metadata} pctx
 	unsafeDictCopyFromPtr pdict []
 	
--- | Get and reset the event_flags field in an AVStream
-getStreamEventFlags :: MonadIO m => AVStream -> m AVStreamEventFlag
-getStreamEventFlags s = withThis s$ \ps -> do
-	r <- liftIO$ #{peek AVStream, event_flags} ps
-	liftIO$ #{poke AVStream, event_flags} ps (0 :: CInt)
-	return r
-
 -- | Get the r_frame_rate field from an AVStream
 getStreamRFrameRate :: MonadIO m => AVStream -> m (Maybe AVRational)
 getStreamRFrameRate s =
@@ -535,15 +527,15 @@ formatSetSubtitleCodec ctx cd =
 	withThis ctx$ \pctx ->
 	withThis cd$ \pcd -> liftIO$ av_format_set_subtitle_codec pctx pcd
 
--- | Get the data codec
-formatGetDataCodec :: MonadIO m => AVFormatContext -> m AVCodec
-formatGetDataCodec ctx = liftIO$ AVCodec <$> withThis ctx av_format_get_data_codec
+-- Get the data codec
+-- formatGetDataCodec :: MonadIO m => AVFormatContext -> m AVCodec
+-- formatGetDataCodec ctx = liftIO$ AVCodec <$> withThis ctx av_format_get_data_codec
 
--- | Set the data codec
-formatSetDataCodec :: MonadIO m => AVFormatContext -> AVCodec -> m ()
-formatSetDataCodec ctx cd =
-	withThis ctx$ \pctx ->
-	withThis cd$ \pcd -> liftIO$ av_format_set_data_codec pctx pcd
+-- Set the data codec
+--formatSetDataCodec :: MonadIO m => AVFormatContext -> AVCodec -> m ()
+--formatSetDataCodec ctx cd =
+--	withThis ctx$ \pctx ->
+--	withThis cd$ \pcd -> liftIO$ av_format_set_data_codec pctx pcd
 
 -- | Get the metadata_header_padding field
 formatGetMetadataHeaderPadding :: MonadIO m => AVFormatContext -> m Int
