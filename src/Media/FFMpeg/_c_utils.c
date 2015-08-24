@@ -91,3 +91,11 @@ int b_image_check_sar(unsigned int w, unsigned int h, int num, int den) {
 	return av_image_check_sar(w, h, sar);
 }
 
+void b_av_stream_get_r_frame_rate (const AVStream *s, AVRational *r) {
+	*r = av_stream_get_r_frame_rate(s);
+}
+
+void b_av_stream_set_r_frame_rate (AVStream *s, AVRational *r) {
+	av_stream_set_r_frame_rate(s, *r);
+}
+

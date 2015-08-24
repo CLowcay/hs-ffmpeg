@@ -22,7 +22,8 @@ module Media.FFMpeg.Format.Core (
 	AVProgram,
 
 	getStreams,
-	--getPrograms,
+	withStream,
+	getPrograms,
 
 	avformatConfiguration,
 	avformatLicense,
@@ -50,8 +51,26 @@ module Media.FFMpeg.Format.Core (
 	queryCodec,
 	guessSampleAspectRatio,
 	guessFrameRate,
+	getStreamEventFlags,
+	getStreamRFrameRate,
+	setStreamRFrameRate,
+	getStreamRecommendedEncoderConfiguration,
+	setStreamRecommendedEncoderConfiguration,
+	getStreamEndPTS,
 
-	getMetadata
+	formatGetProbeScore,
+	formatGetVideoCodec,
+	formatSetVideoCodec,
+	formatGetAudioCodec,
+	formatSetAudioCodec,
+	formatGetSubtitleCodec,
+	formatSetSubtitleCodec,
+	formatGetDataCodec,
+	formatSetDataCodec,
+	formatGetMetadataHeaderPadding,
+	formatSetMetadataHeaderPadding,
+	formatInjectGlobalSideData,
+	formatGetDurationEstimationMethod
 ) where
 
 #include "ffmpeg.h"
@@ -74,6 +93,8 @@ import Foreign.Storable
 import System.IO.Unsafe
 
 import Media.FFMpeg.Codec
+import Media.FFMpeg.Codec.Core
+import Media.FFMpeg.Format.Enums
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util
 
@@ -155,6 +176,27 @@ foreign import ccall "av_guess_frame_rate" av_guess_frame_rate ::
 foreign import ccall "avformat_match_stream_specifier" avformat_match_stream_specifier :: Ptr AVFormatContext -> Ptr AVStream -> CString -> IO CInt
 foreign import ccall "avformat_queue_attached_pictures" avformat_queue_attached_pictures :: Ptr AVFormatContext -> IO CInt
 
+foreign import ccall "b_av_stream_get_r_frame_rate" av_stream_get_r_frame_rate :: Ptr AVStream -> Ptr (Maybe AVRational) -> IO ()
+foreign import ccall "b_av_stream_set_r_frame_rate" av_stream_set_r_frame_rate :: Ptr AVStream -> Ptr (Maybe AVRational) -> IO ()
+foreign import ccall "av_stream_get_parser" av_stream_get_parser :: AVStream -> IO (Ptr ())
+foreign import ccall "av_stream_get_recommended_encoder_configuration" av_stream_get_recommended_encoder_configuration :: Ptr AVStream -> IO CString
+foreign import ccall "av_stream_set_recommended_encoder_configuration" av_stream_set_recommended_encoder_configuration :: Ptr AVStream -> CString -> IO ()
+foreign import ccall "av_stream_get_end_pts" av_stream_get_end_pts :: Ptr AVStream -> IO Int64
+
+foreign import ccall "av_format_get_probe_score" av_format_get_probe_score :: Ptr AVFormatContext -> IO CInt
+foreign import ccall "av_format_get_video_codec" av_format_get_video_codec :: Ptr AVFormatContext -> IO (Ptr AVCodec)
+foreign import ccall "av_format_set_video_codec" av_format_set_video_codec :: Ptr AVFormatContext -> Ptr AVCodec -> IO ()
+foreign import ccall "av_format_get_audio_codec" av_format_get_audio_codec :: Ptr AVFormatContext -> IO (Ptr AVCodec)
+foreign import ccall "av_format_set_audio_codec" av_format_set_audio_codec :: Ptr AVFormatContext -> Ptr AVCodec -> IO ()
+foreign import ccall "av_format_get_subtitle_codec" av_format_get_subtitle_codec :: Ptr AVFormatContext -> IO (Ptr AVCodec)
+foreign import ccall "av_format_set_subtitle_codec" av_format_set_subtitle_codec :: Ptr AVFormatContext -> Ptr AVCodec -> IO ()
+foreign import ccall "av_format_get_data_codec" av_format_get_data_codec :: Ptr AVFormatContext -> IO (Ptr AVCodec)
+foreign import ccall "av_format_set_data_codec" av_format_set_data_codec :: Ptr AVFormatContext -> Ptr AVCodec -> IO ()
+foreign import ccall "av_format_get_metadata_header_padding" av_format_get_metadata_header_padding :: Ptr AVFormatContext -> IO CInt
+foreign import ccall "av_format_set_metadata_header_padding" av_format_set_metadata_header_padding :: Ptr AVFormatContext -> CInt -> IO ()
+foreign import ccall "av_format_inject_global_side_data" av_format_inject_global_side_data :: Ptr AVFormatContext -> IO ()
+foreign import ccall "av_fmt_ctx_get_duration_estimation_method" av_fmt_ctx_get_duration_estimation_method :: Ptr AVFormatContext -> IO CInt
+
 -- | Get the stream indexes from a format context
 getStreams :: MonadIO m => AVFormatContext -> m [StreamIndex]
 getStreams ctx = do
@@ -162,12 +204,23 @@ getStreams ctx = do
 		(#{peek AVFormatContext, nb_streams} pctx :: IO CUInt)
 	return$ (StreamIndex).fromIntegral <$> [0..(nbStreams - 1)]
 
+-- | Perform an action with an AVStream
+withStream :: (MonadIO m, MonadError String m) =>
+	AVFormatContext -> StreamIndex -> (AVStream -> m b) -> m b
+withStream ctx (StreamIndex idx) action = withThis ctx$ \pctx -> do
+	ns <- liftIO$ #{peek AVFormatContext, nb_streams} pctx
+	when (idx < 0 || idx >= ns)$ throwError$
+		"withStream: stream index out of range " ++ (show idx)
+	pstreams <- liftIO$ #{peek AVFormatContext, streams} pctx
+	action =<< (liftIO$ AVStream <$> peekElemOff pstreams (fromIntegral idx))
+
 -- | Get all the programs from a format context
-{-getPrograms :: MonadIO m => AVFormatContext -> m [ProgramID]
+getPrograms :: MonadIO m => AVFormatContext -> m [ProgramID]
 getPrograms ctx = withThis ctx$ \pctx -> liftIO$ do
 	nb_programs <- #{peek AVFormatContext, nb_programs} pctx :: IO CUInt
-	forM [0..(nb_programs - 1)]$ \ppro ->
-		ProgramID <$> (#{peek AVProgram, id} ppro :: IO CInt)-}
+	ppro <- liftIO$ #{peek AVFormatContext, programs} pctx
+	forM [0..(nb_programs - 1)]$ \i ->
+		ProgramID <$> (#{peek AVProgram, id} =<< peekElemOff ppro (fromIntegral i))
 
 -- | The avformat configuration string
 avformatConfiguration :: String
@@ -412,3 +465,102 @@ getMetadata ctx = withThis ctx$ \pctx -> do
 	pdict <- liftIO$ #{peek AVFormatContext, metadata} pctx
 	unsafeDictCopyFromPtr pdict []
 	
+-- | Get and reset the event_flags field in an AVStream
+getStreamEventFlags :: MonadIO m => AVStream -> m AVStreamEventFlag
+getStreamEventFlags s = withThis s$ \ps -> do
+	r <- liftIO$ #{peek AVStream, event_flags} ps
+	liftIO$ #{poke AVStream, event_flags} ps (0 :: CInt)
+	return r
+
+-- | Get the r_frame_rate field from an AVStream
+getStreamRFrameRate :: MonadIO m => AVStream -> m (Maybe AVRational)
+getStreamRFrameRate s =
+	withThis s$ \ps ->
+		liftIO.alloca$ \pr -> do
+			av_stream_get_r_frame_rate ps pr
+			peek pr
+
+-- | Set the r_frame_rate field for an AVStream
+setStreamRFrameRate :: MonadIO m => AVStream -> AVRational -> m ()
+setStreamRFrameRate s v = withThis s$ \ps ->
+	liftIO.with (Just v)$ \pv -> av_stream_set_r_frame_rate ps pv
+
+-- | Get the recommended encoder configuration string
+getStreamRecommendedEncoderConfiguration :: MonadIO m => AVStream -> m String
+getStreamRecommendedEncoderConfiguration s = liftIO.withThis s$ \ps ->
+	peekCString =<< av_stream_get_recommended_encoder_configuration ps
+
+-- | Set the recommended encoder configuration string for an AVStream
+setStreamRecommendedEncoderConfiguration :: MonadIO m => AVStream -> String -> m ()
+setStreamRecommendedEncoderConfiguration s v =
+	withThis s$ \ps ->
+	withThis v$ \pv ->
+		liftIO$ av_stream_set_recommended_encoder_configuration ps pv
+
+-- | Get the end_pts field from an AVStream
+getStreamEndPTS :: MonadIO m => AVStream -> m AVTimestamp
+getStreamEndPTS s = withThis s$ \ps -> liftIO$ AVTimestamp <$> av_stream_get_end_pts ps
+
+-- | Get the probe_score
+formatGetProbeScore :: MonadIO m => AVFormatContext -> m Int
+formatGetProbeScore ctx = liftIO$ fromIntegral <$> withThis ctx av_format_get_probe_score
+
+-- | Get the video codec
+formatGetVideoCodec :: MonadIO m => AVFormatContext -> m AVCodec
+formatGetVideoCodec ctx = liftIO$ AVCodec <$> withThis ctx av_format_get_video_codec
+
+-- | Set the video codec
+formatSetVideoCodec :: MonadIO m => AVFormatContext -> AVCodec -> m ()
+formatSetVideoCodec ctx cd =
+	withThis ctx$ \pctx ->
+	withThis cd$ \pcd -> liftIO$ av_format_set_video_codec pctx pcd
+
+-- | Get the audio codec
+formatGetAudioCodec :: MonadIO m => AVFormatContext -> m AVCodec
+formatGetAudioCodec ctx = liftIO$ AVCodec <$> withThis ctx av_format_get_audio_codec
+
+-- | Set the audio codec
+formatSetAudioCodec :: MonadIO m => AVFormatContext -> AVCodec -> m ()
+formatSetAudioCodec ctx cd =
+	withThis ctx$ \pctx ->
+	withThis cd$ \pcd -> liftIO$ av_format_set_audio_codec pctx pcd
+
+-- | Get the subtitle codec
+formatGetSubtitleCodec :: MonadIO m => AVFormatContext -> m AVCodec
+formatGetSubtitleCodec ctx = liftIO$ AVCodec <$> withThis ctx av_format_get_subtitle_codec
+
+-- | Set the subtitle codec
+formatSetSubtitleCodec :: MonadIO m => AVFormatContext -> AVCodec -> m ()
+formatSetSubtitleCodec ctx cd =
+	withThis ctx$ \pctx ->
+	withThis cd$ \pcd -> liftIO$ av_format_set_subtitle_codec pctx pcd
+
+-- | Get the data codec
+formatGetDataCodec :: MonadIO m => AVFormatContext -> m AVCodec
+formatGetDataCodec ctx = liftIO$ AVCodec <$> withThis ctx av_format_get_data_codec
+
+-- | Set the data codec
+formatSetDataCodec :: MonadIO m => AVFormatContext -> AVCodec -> m ()
+formatSetDataCodec ctx cd =
+	withThis ctx$ \pctx ->
+	withThis cd$ \pcd -> liftIO$ av_format_set_data_codec pctx pcd
+
+-- | Get the metadata_header_padding field
+formatGetMetadataHeaderPadding :: MonadIO m => AVFormatContext -> m Int
+formatGetMetadataHeaderPadding ctx = liftIO$ fromIntegral <$>
+	withThis ctx av_format_get_metadata_header_padding
+
+-- | Set the metadata_header_padding field
+formatSetMetadataHeaderPadding :: MonadIO m => AVFormatContext -> Int -> m ()
+formatSetMetadataHeaderPadding ctx i = liftIO.withThis ctx$ \pctx ->
+	av_format_set_metadata_header_padding pctx (fromIntegral i)
+
+-- | Inject global side data into all subsequent packets
+formatInjectGlobalSideData :: MonadIO m => AVFormatContext -> m ()
+formatInjectGlobalSideData ctx = liftIO$ withThis ctx av_format_inject_global_side_data
+
+-- | Get the AVDurationEstimationMethod
+formatGetDurationEstimationMethod :: MonadIO m => AVFormatContext -> m AVDurationEstimationMethod
+formatGetDurationEstimationMethod ctx = liftIO$ toCEnum <$>
+	withThis ctx av_fmt_ctx_get_duration_estimation_method
+
