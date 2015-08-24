@@ -20,7 +20,8 @@ module Media.FFMpeg (
 
 import Media.FFMpeg.Codec
 import Media.FFMpeg.Format
-import Media.FFMpeg.Internal.Common
+import Media.FFMpeg.Internal.Common hiding (Field(..))
+import Media.FFMpeg.Internal.Common (Field)
 import Media.FFMpeg.SWScale
 import Media.FFMpeg.Util
 

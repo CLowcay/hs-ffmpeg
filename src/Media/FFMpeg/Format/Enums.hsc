@@ -87,7 +87,23 @@ module Media.FFMpeg.Format.Enums (
 	pattern AVIOFlagDirect,
 
 	FFFDebug,
-	pattern FFFDebugTs
+	pattern FFFDebugTs,
+
+	AVStreamEventFlag,
+	pattern AVStreamEventFlagMetadataUpdated,
+
+	AVStreamParseType,
+	pattern AVStreamParseNone,
+	pattern AVStreamParseFull,
+	pattern AVStreamParseHeaders,
+	pattern AVStreamParseTimestamps,
+	pattern AVStreamParseFullOnce,
+	pattern AVStreamParseFullRaw,
+
+	AVDurationEstimationMethod,
+	pattern AVFmtDurationFromPts,
+	pattern AVFmtDurationFromStream,
+	pattern AVFmtDurationFromBitrate
 ) where
 
 #include "ffmpeg.h"
@@ -181,4 +197,23 @@ pattern AVIOFlagDirect = AVIOFlag (#{const AVIO_FLAG_DIRECT})
 -- | FF_FDEBUG_ flags
 newtype FFFDebug = FFFDebug CInt deriving (Eq, Show, CEnum, CFlags, Storable)
 pattern FFFDebugTs = FFFDebug (#{const FF_FDEBUG_TS}) 
+
+-- | AVSTREAM_EVENT_FLAG_ flags
+newtype AVStreamEventFlag = AVStreamEventFlag CInt deriving (Eq, Show, CEnum, CFlags, Storable)
+pattern AVStreamEventFlagMetadataUpdated = AVStreamEventFlag (#{const AVSTREAM_EVENT_FLAG_METADATA_UPDATED})
+
+-- | AVStreamParseType enum
+newtype AVStreamParseType = AVStreamParseType CInt deriving (Eq, Show, CEnum, Storable)
+pattern AVStreamParseNone = AVStreamParseType (#{const AVSTREAM_PARSE_NONE})
+pattern AVStreamParseFull = AVStreamParseType (#{const AVSTREAM_PARSE_FULL})
+pattern AVStreamParseHeaders = AVStreamParseType (#{const AVSTREAM_PARSE_HEADERS})
+pattern AVStreamParseTimestamps = AVStreamParseType (#{const AVSTREAM_PARSE_TIMESTAMPS})
+pattern AVStreamParseFullOnce = AVStreamParseType (#{const AVSTREAM_PARSE_FULL_ONCE})
+pattern AVStreamParseFullRaw = AVStreamParseType (#{const AVSTREAM_PARSE_FULL_RAW})
+
+-- | AVDurationEstimationMethod enum
+newtype AVDurationEstimationMethod = AVDurationEstimationMethod CInt deriving (Eq, Show, CEnum, Storable)
+pattern AVFmtDurationFromPts = AVDurationEstimationMethod (#{const AVFMT_DURATION_FROM_PTS})
+pattern AVFmtDurationFromStream = AVDurationEstimationMethod (#{const AVFMT_DURATION_FROM_STREAM})
+pattern AVFmtDurationFromBitrate = AVDurationEstimationMethod (#{const AVFMT_DURATION_FROM_BITRATE})
 

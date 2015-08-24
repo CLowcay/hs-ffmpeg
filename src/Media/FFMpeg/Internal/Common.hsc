@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -19,6 +20,12 @@ Internal utility module for the ffmpeg bindings
 module Media.FFMpeg.Internal.Common (
 	AVRational(..),
 	ExternalPointer (..),
+
+	FieldAccessType(..),
+	Field(..),
+	getField,
+	setField,
+
 	CEnum (..),
 	CFlags (..),
 	fromVersionNum,
@@ -83,6 +90,18 @@ instance ExternalPointer [Char] where
 		r <- action s
 		liftIO$ free s
 		return r
+
+data FieldAccessType = ReadOnly | ReadWrite
+
+data Field a t (ro :: FieldAccessType) = Field Int
+
+-- | Read a named field
+getField :: (MonadIO m, ExternalPointer a, Storable t) => a -> Field a t ro -> m t
+getField x (Field offset) = withThis x$ \px -> liftIO.peek$ px `plusPtr` offset
+
+-- | Write to a named field
+setField :: (MonadIO m, ExternalPointer a, Storable t) => a -> Field a t ReadWrite -> t -> m ()
+setField x (Field offset) v = withThis x$ \px -> liftIO$ poke (px `plusPtr` offset) v
 
 -- | Used for marshalling enumerations and flags
 class CEnum a where

@@ -38,6 +38,7 @@ library
                          Media.FFMpeg.Format.Core
                          Media.FFMpeg.Format.Demuxing
                          Media.FFMpeg.Format.Enums
+                         Media.FFMpeg.Format.Fields
                          Media.FFMpeg.Format.Muxing
                          Media.FFMpeg.Format.Names
                          Media.FFMpeg.Internal.Common
