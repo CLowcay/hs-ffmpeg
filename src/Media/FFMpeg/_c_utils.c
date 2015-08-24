@@ -99,3 +99,11 @@ void b_av_stream_set_r_frame_rate (AVStream *s, AVRational *r) {
 	av_stream_set_r_frame_rate(s, *r);
 }
 
+char *b_av_ts_make_string(char *buf, int64_t ts) {
+	return av_ts_make_string(buf, ts);
+}
+
+char *b_av_ts_make_time_string(char *buf, int64_t ts, AVRational *tb) {
+	return av_ts_make_time_string(buf, ts, tb);
+}
+

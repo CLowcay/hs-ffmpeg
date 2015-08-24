@@ -96,12 +96,12 @@ data FieldAccessType = ReadOnly | ReadWrite
 data Field a t (ro :: FieldAccessType) = Field Int
 
 -- | Read a named field
-getField :: (MonadIO m, ExternalPointer a, Storable t) => a -> Field a t ro -> m t
-getField x (Field offset) = withThis x$ \px -> liftIO.peek$ px `plusPtr` offset
+getField :: (MonadIO m, ExternalPointer a, Storable t) => Field a t ro -> a -> m t
+getField (Field offset) x = withThis x$ \px -> liftIO.peek$ px `plusPtr` offset
 
 -- | Write to a named field
-setField :: (MonadIO m, ExternalPointer a, Storable t) => a -> Field a t ReadWrite -> t -> m ()
-setField x (Field offset) v = withThis x$ \px -> liftIO$ poke (px `plusPtr` offset) v
+setField :: (MonadIO m, ExternalPointer a, Storable t) => Field a t ReadWrite -> a -> t -> m ()
+setField (Field offset) x v = withThis x$ \px -> liftIO$ poke (px `plusPtr` offset) v
 
 -- | Used for marshalling enumerations and flags
 class CEnum a where

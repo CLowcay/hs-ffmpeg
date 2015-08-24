@@ -38,7 +38,9 @@ module Media.FFMpeg.Util (
 
 	-- * Haskell interface to libavutil
 	avMalloc,
-	avMallocz
+	avMallocz,
+	ts2str,
+	ts2timestr
 ) where
 
 import Control.Applicative
@@ -46,12 +48,15 @@ import Control.Monad.Except
 import Data.Int
 import Data.Ratio
 import Data.Word
+import Foreign.C.String
 import Foreign.C.Types
 import Foreign.ForeignPtr
 import Foreign.ForeignPtr.Unsafe
-import Foreign.Marshal.Error
+import Foreign.Marshal.Alloc
+import Foreign.Marshal.Array
 import Foreign.Ptr
 import Foreign.Storable
+import System.IO.Unsafe
 import Text.Printf
 
 import Media.FFMpeg.Internal.Common
@@ -96,4 +101,26 @@ avMallocz size = do
 	if (ptr == nullPtr)
 		then throwError "avMallocz: allocated a null pointer"
 		else liftIO$ newForeignPtr pav_free (castPtr ptr)
+
+foreign import ccall "memset" memset :: Ptr a -> CInt -> CSize -> IO (Ptr a)
+foreign import ccall "b_av_ts_make_string" b_av_ts_make_string :: CString -> Int64 -> IO CString
+foreign import ccall "b_av_ts_make_time_string" b_av_ts_make_time_string :: CString -> Int64 -> Ptr (Maybe AVRational) -> IO CString
+
+-- | Convert a timestamp to a string
+ts2str :: AVTimestamp -> String
+ts2str (AVTimestamp ts) = unsafePerformIO$
+	allocaArray #{const AV_TS_MAX_STRING_SIZE}$ \ps -> do
+		memset ps 0 #{const AV_TS_MAX_STRING_SIZE}
+		b_av_ts_make_string ps ts
+		peekCString ps
+
+-- | Convert a timestamp to a string with a specified time_base
+ts2timestr :: AVTimestamp -> AVRational -> String
+ts2timestr (AVTimestamp ts) tb = unsafePerformIO$
+	allocaArray #{const AV_TS_MAX_STRING_SIZE}$ \ps -> do
+	alloca$ \pr -> do
+		poke pr (Just tb)
+		memset ps 0 #{const AV_TS_MAX_STRING_SIZE}
+		b_av_ts_make_time_string ps ts pr
+		peekCString ps
 

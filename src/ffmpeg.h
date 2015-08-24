@@ -33,6 +33,7 @@
 #include "ffmpeg/motion_vector.h"
 #include "ffmpeg/opt.h"
 #include "ffmpeg/imgutils.h"
+#include "ffmpeg/timestamp.h"
 #elif (HAVE_LIBAVUTIL_AVUTIL_H == 1)
 #include "libavutil/avutil.h"
 #include "libavutil/stereo3d.h"
@@ -41,6 +42,7 @@
 #include "libavutil/motion_vector.h"
 #include "libavutil/opt.h"
 #include "libavutil/imgutils.h"
+#include "libavutil/timestamp.h"
 #else
 #error "Can't find avutil.h file"
 #endif
