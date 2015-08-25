@@ -68,7 +68,8 @@ import Media.FFMpeg.Util.Dict
 import Media.FFMpeg.Util.Enums
 import Media.FFMpeg.Util.Error
 import Media.FFMpeg.Util.Maths
-import Media.FFMpeg.Util.Options
+import Media.FFMpeg.Util.Options hiding (AVClass(..))
+import Media.FFMpeg.Util.Options (AVClass)
 
 #include "ffmpeg.h"
 

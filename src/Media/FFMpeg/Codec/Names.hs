@@ -50,18 +50,12 @@ module Media.FFMpeg.Codec.Names (
 	codec_has_b_frames,
 	codec_block_align,
 	codec_mpeg_quant,
-	codec_qsquish,
-	codec_rc_qmod_amp,
-	codec_rc_qmod_freq,
 	codec_rc_override_count,
-	codec_rc_eq,
 	codec_maxrate,
 	codec_minrate,
 	codec_bufsize,
-	codec_rc_buf_aggressivity,
 	codec_i_qfactor,
 	codec_i_qoffset,
-	codec_rc_init_cplx,
 	codec_dct,
 	codec_lumi_mask,
 	codec_tcplx_mask,
@@ -75,7 +69,6 @@ module Media.FFMpeg.Codec.Names (
 	codec_pred,
 	codec_aspect,
 	codec_debug,
-	codec_vismv,
 	codec_cmp,
 	codec_subcmp,
 	codec_mbcmp,
@@ -98,8 +91,6 @@ module Media.FFMpeg.Codec.Names (
 	codec_mbd,
 	codec_stream_codec_tag,
 	codec_sc_threshold,
-	codec_lmin,
-	codec_lmax,
 	codec_nr,
 	codec_rc_init_occupancy,
 	codec_flags2,
@@ -118,7 +109,6 @@ module Media.FFMpeg.Codec.Names (
 	codec_skip_factor,
 	codec_skip_exp,
 	codec_skipcmp,
-	codec_border_mask,
 	codec_mblmin,
 	codec_mblmax,
 	codec_mepc,
@@ -420,33 +410,10 @@ codec_block_align = OptionName "block_align"
 codec_mpeg_quant :: OptionName AVCodecContext CInt
 codec_mpeg_quant = OptionName "mpeg_quant"
 
--- | Option "qsquish" for AVCodecContext of type AVOptTypeFloat.
--- deprecated, use encoder private options instead
--- default value is AVOptionFloat 0.0.
-codec_qsquish :: OptionName AVCodecContext Float
-codec_qsquish = OptionName "qsquish"
-
--- | Option "rc_qmod_amp" for AVCodecContext of type AVOptTypeFloat.
--- deprecated, use encoder private options instead
--- default value is AVOptionFloat 0.0.
-codec_rc_qmod_amp :: OptionName AVCodecContext Float
-codec_rc_qmod_amp = OptionName "rc_qmod_amp"
-
--- | Option "rc_qmod_freq" for AVCodecContext of type AVOptTypeInt.
--- deprecated, use encoder private options instead
--- default value is AVOptionInt 0.
-codec_rc_qmod_freq :: OptionName AVCodecContext CInt
-codec_rc_qmod_freq = OptionName "rc_qmod_freq"
-
 -- | Option "rc_override_count" for AVCodecContext of type AVOptTypeInt.
 -- default value is AVOptionInt 0.
 codec_rc_override_count :: OptionName AVCodecContext CInt
 codec_rc_override_count = OptionName "rc_override_count"
-
--- | Option "rc_eq" for AVCodecContext of type AVOptTypeString.
--- deprecated, use encoder private options instead
-codec_rc_eq :: OptionName AVCodecContext String
-codec_rc_eq = OptionName "rc_eq"
 
 -- | Option "maxrate" for AVCodecContext of type AVOptTypeInt.
 -- maximum bitrate (in bits/s). Used for VBV together with bufsize.
@@ -467,12 +434,6 @@ codec_minrate = OptionName "minrate"
 codec_bufsize :: OptionName AVCodecContext CInt
 codec_bufsize = OptionName "bufsize"
 
--- | Option "rc_buf_aggressivity" for AVCodecContext of type AVOptTypeFloat.
--- deprecated, use encoder private options instead
--- default value is AVOptionFloat 0.0.
-codec_rc_buf_aggressivity :: OptionName AVCodecContext Float
-codec_rc_buf_aggressivity = OptionName "rc_buf_aggressivity"
-
 -- | Option "i_qfactor" for AVCodecContext of type AVOptTypeFloat.
 -- QP factor between P- and I-frames
 -- default value is AVOptionFloat (-1.5881868e-23).
@@ -484,12 +445,6 @@ codec_i_qfactor = OptionName "i_qfactor"
 -- default value is AVOptionFloat 0.0.
 codec_i_qoffset :: OptionName AVCodecContext Float
 codec_i_qoffset = OptionName "i_qoffset"
-
--- | Option "rc_init_cplx" for AVCodecContext of type AVOptTypeFloat.
--- deprecated, use encoder private options instead
--- default value is AVOptionFloat 0.0.
-codec_rc_init_cplx :: OptionName AVCodecContext Float
-codec_rc_init_cplx = OptionName "rc_init_cplx"
 
 -- | Option "dct" for AVCodecContext of type AVOptTypeInt-dct.
 -- DCT algorithm
@@ -566,34 +521,28 @@ codec_aspect = OptionName "aspect"
 codec_debug :: OptionName AVCodecContext FFDebug
 codec_debug = OptionName "debug"
 
--- | Option "vismv" for AVCodecContext of type AVOptTypeFlags-debug_mv.
--- visualize motion vectors (MVs) (deprecated)
--- default value is AVOptionFlags 0.
-codec_vismv :: OptionName AVCodecContext CInt
-codec_vismv = OptionName "vismv"
-
 -- | Option "cmp" for AVCodecContext of type AVOptTypeInt-cmp_func.
 -- full-pel ME compare function
 -- default value is AVOptionInt 0.
-codec_cmp :: OptionName AVCodecContext CInt
+codec_cmp :: OptionName AVCodecContext FFCmp
 codec_cmp = OptionName "cmp"
 
 -- | Option "subcmp" for AVCodecContext of type AVOptTypeInt-cmp_func.
 -- sub-pel ME compare function
 -- default value is AVOptionInt 0.
-codec_subcmp :: OptionName AVCodecContext CInt
+codec_subcmp :: OptionName AVCodecContext FFCmp
 codec_subcmp = OptionName "subcmp"
 
 -- | Option "mbcmp" for AVCodecContext of type AVOptTypeInt-cmp_func.
 -- macroblock compare function
 -- default value is AVOptionInt 0.
-codec_mbcmp :: OptionName AVCodecContext CInt
+codec_mbcmp :: OptionName AVCodecContext FFCmp
 codec_mbcmp = OptionName "mbcmp"
 
 -- | Option "ildctcmp" for AVCodecContext of type AVOptTypeInt-cmp_func.
 -- interlaced DCT compare function
 -- default value is AVOptionInt 8.
-codec_ildctcmp :: OptionName AVCodecContext CInt
+codec_ildctcmp :: OptionName AVCodecContext FFCmp
 codec_ildctcmp = OptionName "ildctcmp"
 
 -- | Option "dia_size" for AVCodecContext of type AVOptTypeInt.
@@ -617,7 +566,7 @@ codec_preme = OptionName "preme"
 -- | Option "precmp" for AVCodecContext of type AVOptTypeInt-cmp_func.
 -- pre motion estimation compare function
 -- default value is AVOptionInt 0.
-codec_precmp :: OptionName AVCodecContext CInt
+codec_precmp :: OptionName AVCodecContext FFCmp
 codec_precmp = OptionName "precmp"
 
 -- | Option "pre_dia_size" for AVCodecContext of type AVOptTypeInt.
@@ -673,7 +622,7 @@ codec_context = OptionName "context"
 
 -- | Option "slice_flags" for AVCodecContext of type AVOptTypeInt.
 -- default value is AVOptionInt 0.
-codec_slice_flags :: OptionName AVCodecContext CInt
+codec_slice_flags :: OptionName AVCodecContext SliceFlags
 codec_slice_flags = OptionName "slice_flags"
 
 -- | Option "xvmc_acceleration" for AVCodecContext of type AVOptTypeInt.
@@ -697,18 +646,6 @@ codec_stream_codec_tag = OptionName "stream_codec_tag"
 -- default value is AVOptionInt 0.
 codec_sc_threshold :: OptionName AVCodecContext CInt
 codec_sc_threshold = OptionName "sc_threshold"
-
--- | Option "lmin" for AVCodecContext of type AVOptTypeInt.
--- deprecated, use encoder private options instead
--- default value is AVOptionInt 0.
-codec_lmin :: OptionName AVCodecContext CInt
-codec_lmin = OptionName "lmin"
-
--- | Option "lmax" for AVCodecContext of type AVOptTypeInt.
--- deprecated, use encoder private options instead
--- default value is AVOptionInt 0.
-codec_lmax :: OptionName AVCodecContext CInt
-codec_lmax = OptionName "lmax"
 
 -- | Option "nr" for AVCodecContext of type AVOptTypeInt.
 -- noise reduction
@@ -814,12 +751,6 @@ codec_skip_exp = OptionName "skip_exp"
 codec_skipcmp :: OptionName AVCodecContext CInt
 codec_skipcmp = OptionName "skipcmp"
 
--- | Option "border_mask" for AVCodecContext of type AVOptTypeFloat.
--- deprecated, use encoder private options instead
--- default value is AVOptionFloat 0.0.
-codec_border_mask :: OptionName AVCodecContext Float
-codec_border_mask = OptionName "border_mask"
-
 -- | Option "mblmin" for AVCodecContext of type AVOptTypeInt.
 -- minimum macroblock Lagrange factor (VBR)
 -- default value is AVOptionInt 236.
@@ -841,19 +772,19 @@ codec_mepc = OptionName "mepc"
 -- | Option "skip_loop_filter" for AVCodecContext of type AVOptTypeInt-avdiscard.
 -- skip loop filtering process for the selected frames
 -- default value is AVOptionInt 0.
-codec_skip_loop_filter :: OptionName AVCodecContext CInt
+codec_skip_loop_filter :: OptionName AVCodecContext AVDiscard
 codec_skip_loop_filter = OptionName "skip_loop_filter"
 
 -- | Option "skip_idct" for AVCodecContext of type AVOptTypeInt-avdiscard.
 -- skip IDCT/dequantization for the selected frames
 -- default value is AVOptionInt 0.
-codec_skip_idct :: OptionName AVCodecContext CInt
+codec_skip_idct :: OptionName AVCodecContext AVDiscard
 codec_skip_idct = OptionName "skip_idct"
 
 -- | Option "skip_frame" for AVCodecContext of type AVOptTypeInt-avdiscard.
 -- skip decoding for the selected frames
 -- default value is AVOptionInt 0.
-codec_skip_frame :: OptionName AVCodecContext CInt
+codec_skip_frame :: OptionName AVCodecContext AVDiscard
 codec_skip_frame = OptionName "skip_frame"
 
 -- | Option "bidir_refine" for AVCodecContext of type AVOptTypeInt.
@@ -943,12 +874,12 @@ codec_bits_per_raw_sample = OptionName "bits_per_raw_sample"
 
 -- | Option "channel_layout" for AVCodecContext of type AVOptTypeInt64-channel_layout.
 -- default value is AVOptionInt64 0.
-codec_channel_layout :: OptionName AVCodecContext Int64
+codec_channel_layout :: OptionName AVCodecContext AVChannelLayout
 codec_channel_layout = OptionName "channel_layout"
 
 -- | Option "request_channel_layout" for AVCodecContext of type AVOptTypeInt64-request_channel_layout.
 -- default value is AVOptionInt64 0.
-codec_request_channel_layout :: OptionName AVCodecContext Int64
+codec_request_channel_layout :: OptionName AVCodecContext AVChannelLayout
 codec_request_channel_layout = OptionName "request_channel_layout"
 
 -- | Option "rc_max_vbv_use" for AVCodecContext of type AVOptTypeFloat.
@@ -969,31 +900,31 @@ codec_ticks_per_frame = OptionName "ticks_per_frame"
 -- | Option "color_primaries" for AVCodecContext of type AVOptTypeInt-color_primaries_type.
 -- color primaries
 -- default value is AVOptionInt 2.
-codec_color_primaries :: OptionName AVCodecContext CInt
+codec_color_primaries :: OptionName AVCodecContext AVColorPrimaries
 codec_color_primaries = OptionName "color_primaries"
 
 -- | Option "color_trc" for AVCodecContext of type AVOptTypeInt-color_trc_type.
 -- color transfer characteristics
 -- default value is AVOptionInt 2.
-codec_color_trc :: OptionName AVCodecContext CInt
+codec_color_trc :: OptionName AVCodecContext AVColorTransferCharacteristic
 codec_color_trc = OptionName "color_trc"
 
 -- | Option "colorspace" for AVCodecContext of type AVOptTypeInt-colorspace_type.
 -- color space
 -- default value is AVOptionInt 2.
-codec_colorspace :: OptionName AVCodecContext CInt
+codec_colorspace :: OptionName AVCodecContext AVColorSpace
 codec_colorspace = OptionName "colorspace"
 
 -- | Option "color_range" for AVCodecContext of type AVOptTypeInt-color_range_type.
 -- color range
 -- default value is AVOptionInt 0.
-codec_color_range :: OptionName AVCodecContext CInt
+codec_color_range :: OptionName AVCodecContext AVColorRange
 codec_color_range = OptionName "color_range"
 
 -- | Option "chroma_sample_location" for AVCodecContext of type AVOptTypeInt-chroma_sample_location_type.
 -- chroma sample location
 -- default value is AVOptionInt 0.
-codec_chroma_sample_location :: OptionName AVCodecContext CInt
+codec_chroma_sample_location :: OptionName AVCodecContext AVChromaLocation
 codec_chroma_sample_location = OptionName "chroma_sample_location"
 
 -- | Option "log_level_offset" for AVCodecContext of type AVOptTypeInt.
@@ -1076,7 +1007,7 @@ codec_codec_whitelist = OptionName "codec_whitelist"
 -- | Option "pixel_format" for AVCodecContext of type AVOptTypePixelFmt.
 -- set pixel format
 -- default value is AVOptionPixelFormat (PixelFormat (-1)).
-codec_pixel_format :: OptionName AVCodecContext PixelFormat
+codec_pixel_format :: OptionName AVCodecContext AVPixelFormat
 codec_pixel_format = OptionName "pixel_format"
 
 -- | Option "video_size" for AVCodecContext of type AVOptTypeImageSize.

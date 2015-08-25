@@ -1,6 +1,7 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
 
 {- |
@@ -17,7 +18,7 @@ Bindings to libavcodec.
 module Media.FFMpeg.Codec.Core (
 	avsubtitle_free,
 
-	AVCodecContext,
+	AVCodecContext(..),
 	AVCodec(..),
 	AVCodecDescriptor(..),
 
@@ -40,6 +41,7 @@ module Media.FFMpeg.Codec.Core (
 	avcodecRegister,
 	avcodecRegisterAll,
 
+	copyCodecContext,
 	getCodecContext,
 
 	libAVCodecVersion,
@@ -149,7 +151,7 @@ instance HasClass AVCodecContext where
 	getClass = avClassFromPtr avcodec_get_class
 
 -- | AVCodec struct
-newtype AVCodec = AVCodec (Ptr AVCodec)   -- Ptr is OK because codecs are never freed
+newtype AVCodec = AVCodec (Ptr AVCodec) deriving (Storable) -- Ptr is OK because codecs are never freed
 instance ExternalPointer AVCodec where
 	type UnderlyingType AVCodec = AVCodec
 	withThis (AVCodec p) = withThis p
@@ -410,6 +412,17 @@ avcodecRegister cd = liftIO.withThis cd$ \ptr -> avcodec_register ptr
 avcodecRegisterAll :: MonadIO m => m ()
 avcodecRegisterAll = liftIO avcodec_register_all
 
+-- | Copy all the data from one codec context to another
+copyCodecContext :: (MonadIO m, MonadError String m) =>
+	AVCodecContext     -- ^ Destination context
+	-> AVCodecContext  -- ^ Source context
+	-> m ()
+copyCodecContext dst src =
+	withThis dst$ \pdst ->
+	withThis src$ \psrc -> do
+		r <- liftIO$ avcodec_copy_context pdst psrc
+		when (r /= 0)$ throwError$ "copyCodecContext: failed with error code " ++ (show r)
+
 -- | Allocate a new codec context
 getCodecContext :: (MonadIO m, MonadError String m) => AVCodec -> AVDictionary -> m AVCodecContext
 getCodecContext cd dict = do
@@ -462,6 +475,7 @@ getProfileName cd profile = liftIO.withThis cd$ \pcd ->
 flushBuffers :: MonadIO m => AVCodecContext -> m ()
 flushBuffers ctx = withThis ctx$ \pctx -> liftIO$ avcodec_flush_buffers pctx
 
+-- | See libav docs
 getBitsPerSample :: AVCodecID -> Int
 getBitsPerSample = fromIntegral.av_get_bits_per_sample.fromCEnum
 

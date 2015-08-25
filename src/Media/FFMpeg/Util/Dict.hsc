@@ -223,16 +223,18 @@ unsafeDictCopyFromPtr src flags = do
 
 -- | Get the metadata field from an AVStream
 getDictField :: (MonadIO m, ExternalPointer a) => a -> Field a AVDictionary ro -> m AVDictionary
-getDictField x (Field offset) = do
-	pd <- liftIO$ withThis x$ \px -> peekByteOff px offset
+getDictField x (Field offset offsets) = do
+	pd <- liftIO$ withThis x$ \px ->
+		peek =<< (castPtr <$> chasePointers px offset offsets)
 	unsafeDictCopyFromPtr pd []
 
 -- | Set the metadata field of an AVStream
 setDictField :: (MonadIO m, ExternalPointer a) => a -> Field a AVDictionary ReadWrite -> AVDictionary -> m ()
-setDictField x (Field offset) dict =
+setDictField x (Field offset offsets) dict =
 	withThis x$ \px ->
-	withThis dict$ \ppdict -> do
-		liftIO.av_dict_free$ px `plusPtr` offset
-		pdict <- liftIO$ peek ppdict
-		liftIO$ av_dict_copy (px `plusPtr` offset) pdict 0
+	withThis dict$ \ppsrc -> liftIO$ do
+		pd <- peek =<< (castPtr <$> chasePointers px offset offsets)
+		av_dict_free$ pd
+		psrc <- liftIO$ peek ppsrc
+		av_dict_copy pd psrc 0
 

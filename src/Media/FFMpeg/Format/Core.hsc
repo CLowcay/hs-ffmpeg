@@ -23,6 +23,7 @@ module Media.FFMpeg.Format.Core (
 
 	getStreams,
 	withStream,
+	withStreamCodecContext,
 	getPrograms,
 
 	avformatConfiguration,
@@ -212,6 +213,11 @@ withStream ctx (StreamIndex idx) action = withThis ctx$ \pctx -> do
 		"withStream: stream index out of range " ++ (show idx)
 	pstreams <- liftIO$ #{peek AVFormatContext, streams} pctx
 	action =<< (liftIO$ AVStream <$> peekElemOff pstreams (fromIntegral idx))
+
+-- | Perform an action using the AVCodecContext associated with an AVStream
+withStreamCodecContext :: MonadIO m => AVStream -> (AVCodecContext -> m b) -> m b
+withStreamCodecContext s action = withThis s$ \ps ->
+	action =<< (liftIO$ AVCodecContext <$> (newForeignPtr_ =<< (#{peek AVStream, codec} ps)))
 
 -- | Get all the programs from a format context
 getPrograms :: MonadIO m => AVFormatContext -> m [ProgramID]

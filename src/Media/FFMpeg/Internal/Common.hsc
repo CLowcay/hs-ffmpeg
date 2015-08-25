@@ -23,8 +23,10 @@ module Media.FFMpeg.Internal.Common (
 
 	FieldAccessType(..),
 	Field(..),
+	chasePointers,
 	getField,
 	setField,
+	getFieldString,
 
 	CEnum (..),
 	CFlags (..),
@@ -32,6 +34,7 @@ module Media.FFMpeg.Internal.Common (
 	justPtr
 ) where
 
+import Control.Applicative
 import Control.Monad.IO.Class
 import Data.Bits
 import Data.Monoid
@@ -61,7 +64,9 @@ instance Storable (Maybe AVRational) where
 	poke ptr (Just (AVRational v)) = do
 		poke (castPtr ptr) (fromIntegral$ numerator v :: CInt)
 		poke (ptr `plusPtr` #{size int}) (fromIntegral$ denominator v :: CInt)
-	poke ptr Nothing = return ()
+	poke ptr Nothing = do
+		poke (castPtr ptr) (0 :: CInt)
+		poke (ptr `plusPtr` #{size int}) (0 :: CInt)
 
 -- | Similar to 'Foreign.Marshal.Utils.with' but without needing the Storable
 -- constraint (and also more generic)
@@ -91,17 +96,39 @@ instance ExternalPointer [Char] where
 		liftIO$ free s
 		return r
 
+-- | How a Field may be accessed
 data FieldAccessType = ReadOnly | ReadWrite
 
-data Field a t (ro :: FieldAccessType) = Field Int
+-- | Represents a field in a struct
+data Field a t (ro :: FieldAccessType) = Field Int [Int]
+
+-- | Compose Fields
+fthen :: Field a b rol -> Field b t ror -> Field a t ror
+fthen (Field offset offsets) (Field offsetr offsetsr) = Field offset (offsets ++ [offsetr] ++ offsetsr)
 
 -- | Read a named field
 getField :: (MonadIO m, ExternalPointer a, Storable t) => Field a t ro -> a -> m t
-getField (Field offset) x = withThis x$ \px -> liftIO.peek$ px `plusPtr` offset
+getField (Field offset offsets) x =
+	withThis x$ \px -> liftIO$ peek =<< (castPtr <$> chasePointers px offset offsets)
+
+chasePointers :: Ptr a -> Int -> [Int] -> IO (Ptr ())
+chasePointers p offset [] = return$ p `plusPtr` offset
+chasePointers p offset (o:os) = do
+	p' <- peek$ p `plusPtr` offset
+	chasePointers p' o os
 
 -- | Write to a named field
 setField :: (MonadIO m, ExternalPointer a, Storable t) => Field a t ReadWrite -> a -> t -> m ()
-setField (Field offset) x v = withThis x$ \px -> liftIO$ poke (px `plusPtr` offset) v
+setField (Field offset offsets) x v = withThis x$ \px -> liftIO$ do
+	ptr <- castPtr <$> chasePointers px offset offsets
+	poke ptr v
+
+-- | Get a String valued field
+getFieldString :: (MonadIO m, ExternalPointer a) => Field a String ro -> a -> m String
+getFieldString (Field offset offsets) x =
+	liftIO.withThis x$ \px -> do
+		p <- castPtr <$> chasePointers px offset offsets
+		if p == nullPtr then return "" else peekCString p
 
 -- | Used for marshalling enumerations and flags
 class CEnum a where

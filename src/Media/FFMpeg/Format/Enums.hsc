@@ -15,6 +15,7 @@ Bindings to libavformat.
 
 module Media.FFMpeg.Format.Enums (
 	AVFmt,
+	pattern AVFmtNoFile,
 	pattern AVFmtNeednumber,
 	pattern AVFmtShowIds,
 	pattern AVFmtRawpicture,
@@ -121,6 +122,7 @@ import Media.FFMpeg.Internal.Common
 
 -- | AVFMT_ flags
 newtype AVFmt = AVFmt CInt deriving (Eq, Show, CEnum, CFlags)
+pattern AVFmtNoFile = AVFmt (#{const AVFMT_NOFILE})
 pattern AVFmtNeednumber = AVFmt (#{const AVFMT_NEEDNUMBER})
 pattern AVFmtShowIds = AVFmt (#{const AVFMT_SHOW_IDS})
 pattern AVFmtRawpicture = AVFmt (#{const AVFMT_RAWPICTURE})

@@ -74,6 +74,7 @@ module Media.FFMpeg.Codec.Enums (
 	pattern AVCodecPropTextSub,
 
 	pattern FFMaxBFrames,
+	pattern FFCompressionDefault,
 
 	AVCodecFlag,
 	pattern CodecFlagUnaligned,
@@ -399,6 +400,29 @@ module Media.FFMpeg.Codec.Enums (
 	FFThread,
 	pattern FFThreadFrame,
 	pattern FFThreadSlice,
+
+	FFCmp,
+	pattern FFCmpSad,
+	pattern FFCmpSse,
+	pattern FFCmpSatd,
+	pattern FFCmpDct,
+	pattern FFCmpPsnr,
+	pattern FFCmpBit,
+	pattern FFCmpRd,
+	pattern FFCmpZero,
+	pattern FFCmpVsad,
+	pattern FFCmpVsse,
+	pattern FFCmpNsse,
+	pattern FFCmpW53,
+	pattern FFCmpW97,
+	pattern FFCmpDctmax,
+	pattern FFCmpDct264,
+	pattern FFCmpChroma,
+
+	SliceFlags,
+	pattern SliceFlagCodedOrder,
+	pattern SliceFlagAllowField,
+	pattern SliceFlagAllowPlane,
 
 	AVCodecID,
 	pattern AVCodecIdNone,
@@ -884,10 +908,13 @@ pattern AVCodecPropReorder = AVCodecProp #{const AV_CODEC_PROP_REORDER}
 pattern AVCodecPropBitmapSub = AVCodecProp #{const AV_CODEC_PROP_BITMAP_SUB}
 pattern AVCodecPropTextSub = AVCodecProp #{const AV_CODEC_PROP_TEXT_SUB}
 
--- FF_MAX_B_FRAMES
+-- | FF_MAX_B_FRAMES
 pattern FFMaxBFrames = #{const FF_MAX_B_FRAMES}
 
--- CODEC_FLAG_ flags
+-- | FF_COMPRESSION_DEFAULT
+pattern FFCompressionDefault = (#{const FF_COMPRESSION_DEFAULT})
+
+-- | CODEC_FLAG_ flags
 newtype AVCodecFlag = AVCodecFlag CInt deriving (Eq, Show, CFlags)
 pattern CodecFlagUnaligned = AVCodecFlag #{const CODEC_FLAG_UNALIGNED}
 pattern CodecFlagQscale = AVCodecFlag #{const CODEC_FLAG_QSCALE}
@@ -1056,7 +1083,7 @@ pattern MEIter = Motion_Est_ID #{const ME_ITER}
 pattern FFMinBufferSize = #{const FF_MIN_BUFFER_SIZE}
 
 -- | FF_PROFILE_ constants
-newtype FFProfile = FFProfile CInt deriving (Eq, Show, CEnum)
+newtype FFProfile = FFProfile CInt deriving (Eq, Show, CEnum, Storable)
 pattern FFProfileUnknown = FFProfile (#{const FF_PROFILE_UNKNOWN})
 pattern FFProfileReserved = FFProfile (#{const FF_PROFILE_RESERVED})
 pattern FFProfileAacMain = FFProfile #{const FF_PROFILE_AAC_MAIN}
@@ -1245,6 +1272,31 @@ pattern FFSubCharencModePreDecoder = FFSubCharencMode (#{const FF_SUB_CHARENC_MO
 newtype FFThread = FFThread CInt deriving (Eq, Show, CEnum, Storable)
 pattern FFThreadFrame = FFThread (#{const FF_THREAD_FRAME})
 pattern FFThreadSlice = FFThread (#{const FF_THREAD_SLICE})
+
+-- | FF_CMP_ constants
+newtype FFCmp = FFCmp CInt deriving (Eq, Show, CEnum, Storable)
+pattern FFCmpSad = FFCmp (#{const FF_CMP_SAD})
+pattern FFCmpSse = FFCmp (#{const FF_CMP_SSE})
+pattern FFCmpSatd = FFCmp (#{const FF_CMP_SATD})
+pattern FFCmpDct = FFCmp (#{const FF_CMP_DCT})
+pattern FFCmpPsnr = FFCmp (#{const FF_CMP_PSNR})
+pattern FFCmpBit = FFCmp (#{const FF_CMP_BIT})
+pattern FFCmpRd = FFCmp (#{const FF_CMP_RD})
+pattern FFCmpZero = FFCmp (#{const FF_CMP_ZERO})
+pattern FFCmpVsad = FFCmp (#{const FF_CMP_VSAD})
+pattern FFCmpVsse = FFCmp (#{const FF_CMP_VSSE})
+pattern FFCmpNsse = FFCmp (#{const FF_CMP_NSSE})
+pattern FFCmpW53 = FFCmp (#{const FF_CMP_W53})
+pattern FFCmpW97 = FFCmp (#{const FF_CMP_W97})
+pattern FFCmpDctmax = FFCmp (#{const FF_CMP_DCTMAX})
+pattern FFCmpDct264 = FFCmp (#{const FF_CMP_DCT264})
+pattern FFCmpChroma = FFCmp (#{const FF_CMP_CHROMA})
+
+-- | SLICE_FLAG_ flags
+newtype SliceFlags = SliceFlags CInt deriving (Eq, Show, CEnum, CFlags, Storable)
+pattern SliceFlagCodedOrder = SliceFlags (#{const SLICE_FLAG_CODED_ORDER})
+pattern SliceFlagAllowField = SliceFlags (#{const SLICE_FLAG_ALLOW_FIELD})
+pattern SliceFlagAllowPlane = SliceFlags (#{const SLICE_FLAG_ALLOW_PLANE})
 
 -- | AVCodecId
 newtype AVCodecID = AVCodecID CInt deriving (Eq, Show, CEnum, Storable)

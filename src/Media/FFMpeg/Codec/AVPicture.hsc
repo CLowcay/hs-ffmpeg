@@ -61,7 +61,7 @@ makePlanarColor cs = do
 	return.PlanarColor$ fp
 
 -- | Get the size of the buffer required to back an AVPicture
-pictureGetSize :: MonadError String m => PixelFormat -> Int -> Int -> m Int
+pictureGetSize :: MonadError String m => AVPixelFormat -> Int -> Int -> m Int
 pictureGetSize pf width height = do
 	let r = avpicture_get_size (fromCEnum pf) (fromIntegral width) (fromIntegral height)
 	if r < 0 then
@@ -87,7 +87,7 @@ class ExternalPointer p => HasAVPicture p where
 	-- not return any references that depend on the buffer.
 	pictureAlloc :: (MonadIO m, MonadError String m) =>
 		p                -- ^ The picture to allocate the buffer for
-		-> PixelFormat   -- ^ The pixel format for the buffer
+		-> AVPixelFormat -- ^ The pixel format for the buffer
 		-> Int           -- ^ width
 		-> Int           -- ^ height
 		-> (p -> m b)    -- ^ the monadic action to execute
@@ -107,7 +107,7 @@ class ExternalPointer p => HasAVPicture p where
 	pictureFill :: (MonadIO m, MonadError String m) =>
 		p                -- ^ The AVPicture
 		-> Ptr b         -- ^ Pointer to a buffer
-		-> PixelFormat   -- ^ The pixel format of the buffer
+		-> AVPixelFormat -- ^ The pixel format of the buffer
 		-> Int           -- ^ width in pixels
 		-> Int           -- ^ height in pixels
 		-> m ()
@@ -122,7 +122,7 @@ class ExternalPointer p => HasAVPicture p where
 	-- libav or hs-ffmpeg.
 	pictureLayout :: (MonadIO m, MonadError String m) =>
 		p                -- ^ The AVPicture
-		-> PixelFormat   -- ^ The pixel format of the buffer
+		-> AVPixelFormat -- ^ The pixel format of the buffer
 		-> Int           -- ^ width in pixels
 		-> Int           -- ^ height in pixels
 		-> Ptr b         -- ^ Pointer to the buffer
@@ -142,7 +142,7 @@ class ExternalPointer p => HasAVPicture p where
 	pictureCopy :: (MonadIO m, HasAVPicture src) =>
 		p                -- ^ destination
 		-> src           -- ^ source
-		-> PixelFormat   -- ^ The pixel format of the source and destination AVPictures
+		-> AVPixelFormat -- ^ The pixel format of the source and destination AVPictures
 		-> Int           -- ^ width in pixels
 		-> Int           -- ^ height in pixels
 		-> m ()
@@ -157,7 +157,7 @@ class ExternalPointer p => HasAVPicture p where
 	pictureCrop :: (MonadIO m, HasAVPicture src) =>
 		p                -- ^ destination
 		-> src           -- ^ source
-		-> PixelFormat   -- ^ The pixel format of the source and destination AVPictures
+		-> AVPixelFormat -- ^ The pixel format of the source and destination AVPictures
 		-> Int           -- ^ top_band
 		-> Int           -- ^ left_band
 		-> m ()
@@ -175,7 +175,7 @@ class ExternalPointer p => HasAVPicture p where
 		-> src           -- ^ source
 		-> Int           -- ^ source height
 		-> Int           -- ^ source width
-		-> PixelFormat   -- ^ The pixel format of the source and destination AVPictures
+		-> AVPixelFormat -- ^ The pixel format of the source and destination AVPictures
 		-> Int           -- ^ top padding
 		-> Int           -- ^ bottom padding
 		-> Int           -- ^ left padding

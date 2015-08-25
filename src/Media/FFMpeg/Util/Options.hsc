@@ -17,7 +17,7 @@ Bindings to libavutil.
 -}
 
 module Media.FFMpeg.Util.Options (
-	AVClass,
+	AVClass(..),
 	ReflectClass(..),
 	HasClass(..),
 	avClassFromPtr,
@@ -42,7 +42,9 @@ module Media.FFMpeg.Util.Options (
 	getOption,
 	getOptionString,
 	setOption,
-	setOptionString
+	setOptionString,
+	setNamedOption,
+	getNamedOption
 ) where
 
 #include "ffmpeg.h"
@@ -157,7 +159,7 @@ data AVOptionValue =
 	AVOptionBinary B.ByteString |
 	AVOptionDict AVDictionary |
 	AVOptionImageSize ImageSize |
-	AVOptionPixelFormat PixelFormat |
+	AVOptionPixelFormat AVPixelFormat |
 	AVOptionSampleFormat AVSampleFormat |
 	AVOptionVideoRate Rational |
 	AVOptionDuration Int64 |       -- what is the proper type for this option?
@@ -541,7 +543,7 @@ instance AVOptionType ImageSize where
 		liftIO$ av_opt_set_image_size (castPtr pobj) pname
 			(fromIntegral w) (fromIntegral h) (fromCEnum flags)
 
-instance AVOptionType PixelFormat where
+instance AVOptionType AVPixelFormat where
 	getOption0 obj pname flags =
 		withThis obj$ \pobj ->
 		liftIO.alloca$ \pout -> do
@@ -621,4 +623,18 @@ setOptionString opt obj v =
 
 		when (r /= 0)$ throwError$
 			"setOptionString: av_opt_set failed with error code " ++ (show r)
+
+-- | Set a named option
+setNamedOption :: (MonadIO m, MonadError String m, ExternalPointer a, HasClass a, Storable t) =>
+	OptionName a t -> a -> t -> m ()
+setNamedOption name x v = withOptionPtr name x$ \mp -> case mp of
+	Nothing -> throwError$ "Option not supported: " ++ (show name)
+	Just p -> liftIO$ poke p v
+
+-- | Get a named option
+getNamedOption :: (MonadIO m, MonadError String m, ExternalPointer a, HasClass a, Storable t) =>
+	OptionName a t -> a -> m t
+getNamedOption name x = withOptionPtr name x$ \mp -> case mp of
+	Nothing -> throwError$ "Option not supported: " ++ (show name)
+	Just p -> liftIO$ peek p
 

@@ -217,15 +217,15 @@ swscaleLicense =
 	unsafePerformIO$ peekCString =<< swscale_license
 
 -- | Determine if a pixel format is supported for input
-isSupportedInput :: PixelFormat -> Bool
+isSupportedInput :: AVPixelFormat -> Bool
 isSupportedInput pf = sws_isSupportedInput (fromCEnum pf) /= 0
 
 -- | Determine if a pixel format is supported for output
-isSupportedOutput :: PixelFormat -> Bool
+isSupportedOutput :: AVPixelFormat -> Bool
 isSupportedOutput pf = sws_isSupportedOutput (fromCEnum pf) /= 0
 
 -- | Determine if a pixel format is supported for endianness conversion
-isSupportedEndiannessConversion :: PixelFormat -> Bool
+isSupportedEndiannessConversion :: AVPixelFormat -> Bool
 isSupportedEndiannessConversion pf =
 	sws_isSupportedEndiannessConversion (fromCEnum pf) /= 0
 
@@ -255,8 +255,8 @@ newSwsContext srcFilter dstFilter = do
 
 -- | Initialise a new SwsContext with the given options
 getSwsContext :: (MonadIO m, MonadError String m) =>
-	(Int, Int, PixelFormat)          -- ^ Source (width, height, format)
-	-> (Int, Int, PixelFormat)       -- ^ Destination (width, height, format)
+	(Int, Int, AVPixelFormat)          -- ^ Source (width, height, format)
+	-> (Int, Int, AVPixelFormat)       -- ^ Destination (width, height, format)
 	-> SwsFlags                      -- ^ Use encodeSwsFlags to produce this value
 	-> SwsFilter                     -- ^ Source filter
 	-> SwsFilter                     -- ^ Destination filter

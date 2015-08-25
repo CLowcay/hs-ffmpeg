@@ -18,6 +18,8 @@ module Media.FFMpeg.Codec (
 	module Media.FFMpeg.Codec.Decoding,
 	module Media.FFMpeg.Codec.Encoding,
 	module Media.FFMpeg.Codec.Enums,
+	module Media.FFMpeg.Codec.Fields,
+	module Media.FFMpeg.Codec.Names
 ) where
 
 #include "ffmpeg.h"
@@ -39,11 +41,12 @@ import Media.FFMpeg.Codec.AVPacket
 import Media.FFMpeg.Codec.AVPacketSideData
 import Media.FFMpeg.Codec.AVPicture hiding (AVPicture(..), AVSubtitlePicture)
 import Media.FFMpeg.Codec.AVPicture (AVPicture)
-import Media.FFMpeg.Codec.Core hiding (AVCodec(..))
-import Media.FFMpeg.Codec.Core (AVCodec)
+import Media.FFMpeg.Codec.Core hiding (AVCodec(..), AVCodecContext(..))
+import Media.FFMpeg.Codec.Core (AVCodec, AVCodecContext)
 import Media.FFMpeg.Codec.Decoding
 import Media.FFMpeg.Codec.Encoding
 import Media.FFMpeg.Codec.Enums
+import Media.FFMpeg.Codec.Fields
 import Media.FFMpeg.Codec.Names
 import Media.FFMpeg.Internal.Common
 
