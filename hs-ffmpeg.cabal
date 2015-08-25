@@ -36,6 +36,7 @@ library
                          Media.FFMpeg.Codec.Fields
                          Media.FFMpeg.Codec.Names
                          Media.FFMpeg.Format
+                         Media.FFMpeg.Format.AVIO
                          Media.FFMpeg.Format.Core
                          Media.FFMpeg.Format.Demuxing
                          Media.FFMpeg.Format.Enums

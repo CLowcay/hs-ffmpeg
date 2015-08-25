@@ -10,6 +10,7 @@ Bindings to libavformat.
 -}
 
 module Media.FFMpeg.Format (
+	module Media.FFMpeg.Format.AVIO,
 	module Media.FFMpeg.Format.Core,
 	module Media.FFMpeg.Format.Demuxing,
 	module Media.FFMpeg.Format.Enums,
@@ -25,8 +26,9 @@ module Media.FFMpeg.Format (
 import Data.Version
 
 import Media.FFMpeg.Codec
-import Media.FFMpeg.Format.Core (AVInputFormat, AVOutputFormat)
+import Media.FFMpeg.Format.AVIO
 import Media.FFMpeg.Format.Core hiding (AVInputFormat(..), AVOutputFormat(..))
+import Media.FFMpeg.Format.Core (AVInputFormat, AVOutputFormat)
 import Media.FFMpeg.Format.Demuxing
 import Media.FFMpeg.Format.Enums
 import Media.FFMpeg.Format.Fields

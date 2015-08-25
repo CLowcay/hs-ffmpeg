@@ -19,8 +19,10 @@
 
 #if (HAVE_FFMPEG_AVFORMAT_H == 1)
 #include "ffmpeg/avformat.h"
+#include "ffmpeg/avio.h"
 #elif (HAVE_LIBAVFORMAT_AVFORMAT_H == 1)
 #include "libavformat/avformat.h"
+#include "libavformat/avio.h"
 #else
 #error "Can't find avformat.h file"
 #endif

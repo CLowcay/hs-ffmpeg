@@ -110,7 +110,18 @@ module Media.FFMpeg.Format.Enums (
 	pattern AVFmtDurationFromBitrate,
 
 	AVFmtCtx,
-	pattern AVFmtCtxNoheader
+	pattern AVFmtCtxNoheader,
+
+	pattern AVIOSeekableNormal,
+
+	AVIOSeek,
+	pattern AVSeekSize,
+	pattern AVSeekForce,
+
+	AVIOOpenFlag,
+	pattern AVIOFlagRead,
+	pattern AVIOFlagWrite,
+	pattern AVIOFlagReadWrite
 ) where
 
 #include "ffmpeg.h"
@@ -232,4 +243,32 @@ pattern AVFmtDurationFromBitrate = AVDurationEstimationMethod (#{const AVFMT_DUR
 -- | AVFMTCTX_ flags
 newtype AVFmtCtx = AVFmtCtx CInt deriving (Eq, Show, CEnum, CFlags, Storable)
 pattern AVFmtCtxNoheader = AVFmtCtx (#{const AVFMTCTX_NOHEADER})
+
+-- | AVIO_SEEKABLE_NORMAL constant
+pattern AVIOSeekableNormal = #{const AVIO_SEEKABLE_NORMAL}
+
+-- | AVSEEK_ constants
+newtype AVIOSeek = AVIOSeek CInt deriving (Eq, Show, CEnum, Storable)
+pattern AVSeekSize = AVIOSeek (#{const AVSEEK_SIZE})
+pattern AVSeekForce = AVIOSeek (#{const AVSEEK_FORCE})
+
+-- | AVIO_FLAG_ flags for avio_open
+newtype AVIOOpenFlag = AVIOOpenFlag CInt deriving (Eq, Show, CEnum, CFlags, Storable)
+pattern AVIOFlagRead = AVIOOpenFlag (#{const AVIO_FLAG_READ})
+pattern AVIOFlagWrite = AVIOOpenFlag (#{const AVIO_FLAG_WRITE})
+pattern AVIOFlagReadWrite = AVIOOpenFlag (#{const AVIO_FLAG_READ_WRITE})
+
+-- | AVIODirEntryType enum
+-- newtype AVIODirEntryType = AVIODirEntryType CInt deriving (Eq, Show, CEnum, Storable)
+-- pattern AVIOEntryUnknown = AVIODirEntryType (#{const AVIO_ENTRY_UNKNOWN})
+-- pattern AVIOEntryBlockDevice = AVIODirEntryType (#{const AVIO_ENTRY_BLOCK_DEVICE})
+-- pattern AVIOEntryCharacterDevice = AVIODirEntryType (#{const AVIO_ENTRY_CHARACTER_DEVICE})
+-- pattern AVIOEntryDirectory = AVIODirEntryType (#{const AVIO_ENTRY_DIRECTORY})
+-- pattern AVIOEntryNamedPipe = AVIODirEntryType (#{const AVIO_ENTRY_NAMED_PIPE})
+-- pattern AVIOEntrySymbolicLink = AVIODirEntryType (#{const AVIO_ENTRY_SYMBOLIC_LINK})
+-- pattern AVIOEntrySocket = AVIODirEntryType (#{const AVIO_ENTRY_SOCKET})
+-- pattern AVIOEntryFile = AVIODirEntryType (#{const AVIO_ENTRY_FILE})
+-- pattern AVIOEntryServer = AVIODirEntryType (#{const AVIO_ENTRY_SERVER})
+-- pattern AVIOEntryShare = AVIODirEntryType (#{const AVIO_ENTRY_SHARE})
+-- pattern AVIOEntryWorkgroup = AVIODirEntryType (#{const AVIO_ENTRY_WORKGROUP})
 
