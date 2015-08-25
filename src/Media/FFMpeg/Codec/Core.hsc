@@ -298,8 +298,8 @@ data AVCodecDescriptor = AVCodecDescriptor {
 	avCodecDescriptor_id :: AVCodecID,
 	avCodecDescriptor_type :: AVMediaType,
 	avCodecDescriptor_name :: String,
-	avCodecDescriptor_long_name :: String,
-	avCodecDescriptor_props :: Int,
+	avCodecDescriptor_long_name :: Maybe String,
+	avCodecDescriptor_props :: AVCodecProp,
 	avCodecDescriptor_mime_types :: [String]
 }
 
@@ -315,20 +315,24 @@ instance Storable AVCodecDescriptor where
 		_mime_types <- #{peek AVCodecDescriptor, mime_types} ptr :: IO (Ptr CString)
 	
 		name <- peekCString _name
-		long_name <- peekCString _long_name
-		mime_types <- mapM peekCString =<< peekArray0 nullPtr _mime_types
+		long_name <- if _long_name == nullPtr then return Nothing
+			else Just <$> peekCString _long_name
+		mime_types <- if _mime_types == nullPtr then return []
+			else mapM peekCString =<< peekArray0 nullPtr _mime_types
 
 		return$ AVCodecDescriptor
-			_id _type name long_name (fromIntegral _props) mime_types
+			_id _type name long_name (toCEnum _props) mime_types
 	poke ptr avcd = do
 		name <- newCString (avCodecDescriptor_name avcd)
-		long_name <- newCString (avCodecDescriptor_long_name avcd)
+		long_name <- case avCodecDescriptor_long_name avcd of
+			Nothing -> return nullPtr
+			Just s -> newCString s
 		mime_types <- newArray0 nullPtr =<< (mapM newCString$ avCodecDescriptor_mime_types avcd)
 		#{poke AVCodecDescriptor, id} ptr (avCodecDescriptor_id avcd)
 		#{poke AVCodecDescriptor, type} ptr (avCodecDescriptor_type avcd)
 		#{poke AVCodecDescriptor, name} ptr name
 		#{poke AVCodecDescriptor, long_name} ptr long_name
-		#{poke AVCodecDescriptor, props} ptr (fromIntegral$ avCodecDescriptor_props avcd :: CInt)
+		#{poke AVCodecDescriptor, props} ptr (fromCEnum$ avCodecDescriptor_props avcd)
 		#{poke AVCodecDescriptor, mime_types} ptr mime_types
 
 -- | Get information about a codec
@@ -428,10 +432,6 @@ getCodecContext cd dict = do
 		addForeignPtrFinalizer pavcodec_free_context fpctx
 		return$ AVCodecContext fpctx
 	
---foreign import ccall "avcodec_get_class" avcodec_get_class :: Ptr AVClass
---foreign import ccall "avcodec_get_frame_class" avcodec_get_frame_class :: Ptr AVClass
---foreign import ccall "avcodec_get_subtitle_rect_class" avcodec_get_subtitle_rect_class :: Ptr AVClass
-
 -- | Which version of libavcodec are we using?
 libAVCodecVersion :: Version
 libAVCodecVersion = fromVersionNum #{const LIBAVCODEC_VERSION_INT}

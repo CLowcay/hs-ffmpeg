@@ -289,15 +289,16 @@ mkAVFormatContextFromPtr ptr mf = liftIO$ do
 	return$ AVFormatContext fp
 
 -- | Create a new stream and add it to a format context
-newStream :: (MonadIO m, MonadError String m) => AVFormatContext -> Maybe AVCodec -> m ()
+newStream :: (MonadIO m, MonadError String m) => AVFormatContext -> Maybe AVCodec -> m StreamIndex
 newStream ctx mcd = do
 	r <- liftIO.withThis ctx$ \pctx ->
 		case mcd of
 			Just cd -> withThis cd (avformat_new_stream pctx)
 			Nothing -> avformat_new_stream pctx nullPtr
-
-	when (r == nullPtr)$
+	
+	if r == nullPtr then
 		throwError "newStream: avformat_new_stream returned a null pointer"
+	else liftIO$ StreamIndex <$> #{peek AVStream, index} r
 
 peekAVStreamSideDataPtrType :: AVPacketSideDataType -> Ptr AVStream -> IO (Ptr Word8, Int)
 peekAVStreamSideDataPtrType sdType ptr =
