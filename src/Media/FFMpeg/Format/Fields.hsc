@@ -29,6 +29,7 @@ module Media.FFMpeg.Format.Fields (
 	avstream_event_flags,
 
 	formatGetInputFormat,
+	formatGetOutputFormat,
 	formatSetOutputFormat,
 	format_ctx_flags,
 	formatGetFilename,
@@ -136,6 +137,11 @@ avstream_event_flags = Field #{offset AVStream, event_flags} []
 formatGetInputFormat :: MonadIO m => AVFormatContext -> m AVInputFormat
 formatGetInputFormat ctx = liftIO.withThis ctx$ \pctx ->
 	AVInputFormat <$> #{peek AVFormatContext, iformat} pctx
+
+-- | Get the AVOutputFormat
+formatGetOutputFormat :: MonadIO m => AVFormatContext -> m AVOutputFormat
+formatGetOutputFormat ctx = liftIO.withThis ctx$ \pctx ->
+	AVOutputFormat <$> #{peek AVFormatContext, oformat} pctx
 
 -- | Set the AVOutputFormat (must do this before calling writeHeader)
 formatSetOutputFormat :: MonadIO m => AVFormatContext -> AVOutputFormat -> m ()
