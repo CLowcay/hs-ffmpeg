@@ -35,6 +35,7 @@ module Media.FFMpeg.Format.AVIO (
 	ioFlush,
 	ioRead,
 	ioWithURL,
+	formatIOOpen,
 	withppCtx,
 	ioWithDynamicBuffer,
 	ioEnumInputProtocols,

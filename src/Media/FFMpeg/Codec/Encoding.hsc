@@ -167,7 +167,7 @@ encodeSubtitle ctx pkt1 pkt2 subtitle = do
 	-- preadjust the timing
 	let newPts = (avSubtitle_pts subtitle) + (rescaleTSQ
 		(fromIntegral$ avSubtitle_start_display_time subtitle)
-		(1 % 1000) avTimeBaseQ)
+		(AVRational$ 1 % 1000) avTimeBaseQ)
 	let newEndDisplayTime =
 		(avSubtitle_end_display_time subtitle) - (avSubtitle_start_display_time subtitle)
 	
@@ -189,7 +189,7 @@ encodeSubtitle ctx pkt1 pkt2 subtitle = do
 		setField packet_pts pkt1$ rescaleTSQ newPts avTimeBaseQ pktTimebase
 		setField packet_dts pkt1$ rescaleTSQ newPts avTimeBaseQ pktTimebase
 		setField packet_duration pkt1.fromIntegral$
-			rescaleQ (fromIntegral newEndDisplayTime) (1 % 1000) pktTimebase
+			rescaleQ (fromIntegral newEndDisplayTime) (AVRational$ 1 % 1000) pktTimebase
 	
 	-- write the extra packet for DVB subtitles
 	when (codecID == AVCodecIdDvbSubtitle)$ do
@@ -212,7 +212,7 @@ encodeSubtitle ctx pkt1 pkt2 subtitle = do
 				(AVTimestamp$ fromIntegral (90 * newEndDisplayTime))
 			setField packet_dts pkt2$ rescaleTSQ newPts avTimeBaseQ pktTimebase
 			setField packet_duration pkt2$ fromIntegral$
-				rescaleQ (fromIntegral newEndDisplayTime) (1 % 1000) pktTimebase
+				rescaleQ (fromIntegral newEndDisplayTime) (AVRational$ 1 % 1000) pktTimebase
 
 	if (codecID == AVCodecIdDvbSubtitle) then return 2 else return 1
 

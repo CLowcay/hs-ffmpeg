@@ -277,7 +277,7 @@ instance Storable AVSubtitle where
 		#{poke AVSubtitle, pts} ptr (avSubtitle_pts avs)
 
 -- | Get the timebase of a packet
-codecGetPktTimebase :: MonadIO m => AVCodecContext -> m Rational
+codecGetPktTimebase :: MonadIO m => AVCodecContext -> m AVRational
 codecGetPktTimebase ctx =
 	withThis ctx$ \pctx ->
 	liftIO$
@@ -286,11 +286,11 @@ codecGetPktTimebase ctx =
 			av_codec_get_pkt_timebase pctx pnum pden
 			n <- fromIntegral<$> peek pnum
 			d <- fromIntegral<$> peek pden
-			return$ n % d
+			return.AVRational$ n % d
 
 -- | Set the timebase of a packet
-codecSetPktTimebase :: MonadIO m => AVCodecContext -> Rational -> m ()
-codecSetPktTimebase ctx r = withThis ctx$ \pctx ->
+codecSetPktTimebase :: MonadIO m => AVCodecContext -> AVRational -> m ()
+codecSetPktTimebase ctx (AVRational r) = withThis ctx$ \pctx ->
 	liftIO$ av_codec_set_pkt_timebase pctx
 		(fromIntegral$ numerator r) (fromIntegral$ denominator r)
 

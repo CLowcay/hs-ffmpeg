@@ -132,7 +132,7 @@ import Foreign.Storable
 import Media.FFMpeg.Internal.Common
 
 -- | AVFMT_ flags
-newtype AVFmt = AVFmt CInt deriving (Eq, Show, CEnum, CFlags)
+newtype AVFmt = AVFmt CInt deriving (Eq, Show, CEnum, CFlags, Storable)
 pattern AVFmtNoFile = AVFmt (#{const AVFMT_NOFILE})
 pattern AVFmtNeednumber = AVFmt (#{const AVFMT_NEEDNUMBER})
 pattern AVFmtShowIds = AVFmt (#{const AVFMT_SHOW_IDS})

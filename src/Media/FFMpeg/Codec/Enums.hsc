@@ -915,7 +915,7 @@ pattern FFMaxBFrames = #{const FF_MAX_B_FRAMES}
 pattern FFCompressionDefault = (#{const FF_COMPRESSION_DEFAULT})
 
 -- | CODEC_FLAG_ flags
-newtype AVCodecFlag = AVCodecFlag CInt deriving (Eq, Show, CFlags)
+newtype AVCodecFlag = AVCodecFlag CInt deriving (Eq, Show, CFlags, Storable)
 pattern CodecFlagUnaligned = AVCodecFlag #{const CODEC_FLAG_UNALIGNED}
 pattern CodecFlagQscale = AVCodecFlag #{const CODEC_FLAG_QSCALE}
 pattern CodecFlag4mv = AVCodecFlag #{const CODEC_FLAG_4MV}

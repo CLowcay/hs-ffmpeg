@@ -32,7 +32,8 @@ module Media.FFMpeg.Util.Maths (
 	rescale,
 	rescaleQRnd,
 	rescaleQ,
-	rescaleTSQ
+	rescaleTSQ,
+	rescaleTSQRnd
 ) where
 
 #include "ffmpeg.h"
@@ -50,9 +51,9 @@ newtype AVTimestamp = AVTimestamp Int64 deriving (Eq, Ord, Num, Show, Storable)
 
 pattern AVNoptsValue = AVTimestamp (#{const AV_NOPTS_VALUE})
 pattern AVTimeBase = (#{const AV_TIME_BASE})
-avTimeBaseQ = 1 % (fromIntegral AVTimeBase)
+avTimeBaseQ = AVRational$ 1 % (fromIntegral AVTimeBase)
 
-newtype AVRound = AVRound CInt deriving (Show, Eq, CEnum)
+newtype AVRound = AVRound CInt deriving (Show, Eq, CEnum, CFlags)
 pattern AVRoundZero = AVRound (#{const AV_ROUND_ZERO})
 pattern AVRoundInf = AVRound (#{const AV_ROUND_INF})
 pattern AVRoundDown = AVRound (#{const AV_ROUND_DOWN})
@@ -66,21 +67,21 @@ rescaleRnd a b c rnd = av_rescale_rnd a b c (fromCEnum rnd)
 rescale :: Int64 -> Int64 -> Int64 -> Int64
 rescale a b c = rescaleRnd a b c$ AVRoundNearInf
 
-rescaleQRnd :: Int64 -> Rational -> Rational -> AVRound -> Int64
-rescaleQRnd a bq cq rnd = let
+rescaleQRnd :: Int64 -> AVRational -> AVRational -> AVRound -> Int64
+rescaleQRnd a (AVRational bq) (AVRational cq) rnd = let
 	b = numerator bq * denominator cq
 	c = numerator cq * denominator bq
 	in rescaleRnd a (fromIntegral b) (fromIntegral c) rnd
 
 -- | "rescale" an int by two rational numbers
-rescaleQ :: Int64 -> Rational -> Rational -> Int64
+rescaleQ :: Int64 -> AVRational -> AVRational -> Int64
 rescaleQ a bq cq = rescaleQRnd a bq cq AVRoundNearInf
 
 -- | "rescale" a timestamp by two rational numbers
-rescaleTSQ :: AVTimestamp -> Rational -> Rational -> AVTimestamp
+rescaleTSQ :: AVTimestamp -> AVRational -> AVRational -> AVTimestamp
 rescaleTSQ (AVTimestamp a) bq cq = AVTimestamp$ rescaleQ a bq cq
 
 -- | "rescale" a timestamp with the given rounding move
-rescaleTSQRnd :: AVTimestamp -> Rational -> Rational -> AVRound -> AVTimestamp
+rescaleTSQRnd :: AVTimestamp -> AVRational -> AVRational -> AVRound -> AVTimestamp
 rescaleTSQRnd (AVTimestamp a) bq cq rnd = AVTimestamp$ rescaleQRnd a bq cq rnd
 
