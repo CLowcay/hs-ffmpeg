@@ -107,3 +107,7 @@ char *b_av_ts_make_time_string(char *buf, int64_t ts, AVRational *tb) {
 	return av_ts_make_time_string(buf, ts, tb);
 }
 
+void close_format_context(AVFormatContext *ctx) {
+	avio_closep(&ctx->pb);
+}
+

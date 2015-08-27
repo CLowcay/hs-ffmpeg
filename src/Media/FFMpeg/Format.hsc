@@ -27,7 +27,7 @@ import Data.Version
 
 import Media.FFMpeg.Codec
 import Media.FFMpeg.Format.AVIO
-import Media.FFMpeg.Format.Core hiding (AVInputFormat(..), AVOutputFormat(..))
+import Media.FFMpeg.Format.Core hiding (AVInputFormat(..), AVOutputFormat(..), addAVFormatContextFinalizer)
 import Media.FFMpeg.Format.Core (AVInputFormat, AVOutputFormat)
 import Media.FFMpeg.Format.Demuxing
 import Media.FFMpeg.Format.Enums

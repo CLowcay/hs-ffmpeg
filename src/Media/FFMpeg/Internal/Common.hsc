@@ -26,6 +26,7 @@ module Media.FFMpeg.Internal.Common (
 	chasePointers,
 	getField,
 	setField,
+	modField,
 	getFieldString,
 
 	CEnum (..),
@@ -122,6 +123,14 @@ setField :: (MonadIO m, ExternalPointer a, Storable t) => Field a t ReadWrite ->
 setField (Field offset offsets) x v = withThis x$ \px -> liftIO$ do
 	ptr <- castPtr <$> chasePointers px offset offsets
 	poke ptr v
+
+-- | Apply a function inside a field
+modField :: (MonadIO m, ExternalPointer a, Storable t) => Field a t ReadWrite -> a -> (t -> t) -> m t
+modField (Field offset offsets) x f = withThis x$ \px -> liftIO$ do
+	ptr <- castPtr <$> chasePointers px offset offsets
+	r <- f <$> peek ptr
+	poke ptr r
+	return r
 
 -- | Get a String valued field
 getFieldString :: (MonadIO m, ExternalPointer a) => Field a String ro -> a -> m String

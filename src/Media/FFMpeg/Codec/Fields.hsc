@@ -43,7 +43,16 @@ module Media.FFMpeg.Codec.Fields (
 	getSupportedSampleFormats,
 	getSupportedChannelLayouts,
 	getSupportedProfiles,
-	getCodecClass
+	getCodecClass,
+
+	packet_pts,
+	packet_dts,
+	packet_size,
+	packet_stream_index,
+	packet_flags,
+	packet_duration,
+	packet_pos,
+	packet_convergence_duration
 ) where
 
 #include "ffmpeg.h"
@@ -59,6 +68,7 @@ import Foreign.Ptr
 import Foreign.Storable
 import qualified Data.ByteString as B
 
+import Media.FFMpeg.Codec.AVPacket
 import Media.FFMpeg.Codec.Core
 import Media.FFMpeg.Codec.Enums
 import Media.FFMpeg.Internal.Common
@@ -172,4 +182,28 @@ getSupportedProfiles c = liftIO.withThis c$ \pc -> do
 getCodecClass :: MonadIO m => AVCodec -> m (AVClass AVCodec)
 getCodecClass c = liftIO.withThis c$ \pc -> do
 	AVClass <$> #{peek AVCodec, priv_class} pc
+
+packet_pts :: Field AVPacket AVTimestamp ReadWrite
+packet_pts = Field #{offset AVPacket, pts} []
+
+packet_dts :: Field AVPacket AVTimestamp ReadWrite
+packet_dts = Field #{offset AVPacket, dts} []
+
+packet_size :: Field AVPacket CInt ReadWrite
+packet_size = Field #{offset AVPacket, size} []
+
+packet_stream_index :: Field AVPacket StreamIndex ReadWrite
+packet_stream_index = Field #{offset AVPacket, stream_index} []
+
+packet_flags :: Field AVPacket AVPacketFlag ReadWrite
+packet_flags = Field #{offset AVPacket, flags} []
+
+packet_duration :: Field AVPacket Int ReadWrite
+packet_duration = Field #{offset AVPacket, duration} []
+
+packet_pos :: Field AVPacket Int64 ReadWrite
+packet_pos = Field #{offset AVPacket, pos} []
+
+packet_convergence_duration :: Field AVPacket Int64 ReadWrite
+packet_convergence_duration = Field #{offset AVPacket, convergence_duration} []
 

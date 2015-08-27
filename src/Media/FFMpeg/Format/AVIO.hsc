@@ -135,6 +135,8 @@ foreign import ccall "avio_rb24" avio_rb24 :: Ptr AVIOContext -> IO CUInt
 foreign import ccall "avio_rb32" avio_rb32 :: Ptr AVIOContext -> IO CUInt
 foreign import ccall "avio_rb64" avio_rb64 :: Ptr AVIOContext -> IO Word64
 
+foreign import ccall "&close_format_context" close_format_context :: FunPtr (Ptr AVFormatContext -> IO ())
+
 type URL = String
 
 -- | Get the protocol name from a URL
@@ -286,10 +288,22 @@ ioWithURL mf url flags action =
 	withThis url$ \purl -> do
 		r1 <- liftIO$ avio_open ppctx purl (fromCEnum flags)
 		when (r1 < 0)$ throwError$ "ioWithURL: avio_open failed with error code " ++ (show r1)
-		ret <- action =<< (liftIO$ AVIOContext <$> peek ppctx)
-		r2 <- liftIO$ avio_closep ppctx
+		pctx <- liftIO$ peek ppctx
+		ret <- action$ AVIOContext pctx
+		r2 <- liftIO$ avio_close pctx
 		when (r2 < 0)$ throwError$ "ioWithURL: avio_closep failed with error code " ++ (show r2)
 		return ret
+
+-- | Open the AVIOContext in an AVFormatContext.  It will be closed when the
+-- format context is finalized.
+formatIOOpen :: (MonadIO m, MonadError String m) =>
+	AVFormatContext -> URL -> AVIOOpenFlag -> m ()
+formatIOOpen ctx url flags =
+	withppCtx (Just ctx)$ \ppctx ->
+	withThis url$ \purl -> do
+		r1 <- liftIO$ avio_open ppctx purl (fromCEnum flags)
+		when (r1 < 0)$ throwError$ "formatIOOpen: avio_open failed with error code " ++ (show r1)
+		addAVFormatContextFinalizer ctx close_format_context
 
 -- | Perform an action with a pointer to a pointer to an AVIOContext
 withppCtx :: (MonadIO m, MonadError String m) => Maybe AVFormatContext -> (Ptr (Ptr AVIOContext) -> m b) -> m b

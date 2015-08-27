@@ -39,6 +39,7 @@ import Foreign.Storable
 import Media.FFMpeg.Codec.AVPacket
 import Media.FFMpeg.Codec.Core
 import Media.FFMpeg.Codec.Enums
+import Media.FFMpeg.Codec.Fields
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util
 
@@ -166,7 +167,7 @@ encodeSubtitle ctx pkt1 pkt2 subtitle = do
 	-- preadjust the timing
 	let newPts = (avSubtitle_pts subtitle) + (rescaleTSQ
 		(fromIntegral$ avSubtitle_start_display_time subtitle)
-		(1 % 1000) av_time_base_q)
+		(1 % 1000) avTimeBaseQ)
 	let newEndDisplayTime =
 		(avSubtitle_end_display_time subtitle) - (avSubtitle_start_display_time subtitle)
 	
@@ -185,9 +186,9 @@ encodeSubtitle ctx pkt1 pkt2 subtitle = do
 			throwError$ "encodeSubtitle: 1st avcodec_encode_subtitle failed with error code " ++ (show r)
 
 		newPacketFromBuffer pkt1 pavbuff
-		packetSetPTS pkt1$ rescaleTSQ newPts av_time_base_q pktTimebase
-		packetSetDTS pkt1$ rescaleTSQ newPts av_time_base_q pktTimebase
-		packetSetDuration pkt1$ fromIntegral$
+		setField packet_pts pkt1$ rescaleTSQ newPts avTimeBaseQ pktTimebase
+		setField packet_dts pkt1$ rescaleTSQ newPts avTimeBaseQ pktTimebase
+		setField packet_duration pkt1.fromIntegral$
 			rescaleQ (fromIntegral newEndDisplayTime) (1 % 1000) pktTimebase
 	
 	-- write the extra packet for DVB subtitles
@@ -206,11 +207,11 @@ encodeSubtitle ctx pkt1 pkt2 subtitle = do
 				throwError$ "encodeSubtitle: 2nd avcodec_encode_subtitle failed with error code " ++ (show r)
 
 			newPacketFromBuffer pkt2 pavbuff
-			packetSetPTS pkt2$
-				(rescaleTSQ newPts av_time_base_q pktTimebase) +
+			setField packet_pts pkt2$
+				(rescaleTSQ newPts avTimeBaseQ pktTimebase) +
 				(AVTimestamp$ fromIntegral (90 * newEndDisplayTime))
-			packetSetDTS pkt2$ rescaleTSQ newPts av_time_base_q pktTimebase
-			packetSetDuration pkt2$ fromIntegral$
+			setField packet_dts pkt2$ rescaleTSQ newPts avTimeBaseQ pktTimebase
+			setField packet_duration pkt2$ fromIntegral$
 				rescaleQ (fromIntegral newEndDisplayTime) (1 % 1000) pktTimebase
 
 	if (codecID == AVCodecIdDvbSubtitle) then return 2 else return 1

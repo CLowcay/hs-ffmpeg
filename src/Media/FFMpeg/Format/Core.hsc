@@ -16,6 +16,7 @@ Bindings to libavformat.
 
 module Media.FFMpeg.Format.Core (
 	AVFormatContext,
+	addAVFormatContextFinalizer,
 	AVInputFormat(..),
 	AVOutputFormat(..),
 	AVStream,
@@ -108,6 +109,8 @@ instance ReflectClass AVFormatContext where
 		action =<< (liftIO$ avClassFromPtr <$> #{peek AVFormatContext, av_class} pctx)
 instance HasClass AVFormatContext where
 	getClass = avClassFromPtr avformat_get_class
+
+addAVFormatContextFinalizer (AVFormatContext fp) f = liftIO$ addForeignPtrFinalizer f fp
 
 -- | AVInputFormat struct
 newtype AVInputFormat = AVInputFormat (Ptr AVInputFormat) -- Ptr is OK because these are never freed
