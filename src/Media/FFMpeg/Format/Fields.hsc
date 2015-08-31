@@ -134,14 +134,14 @@ avstream_event_flags :: Field AVStream AVStreamEventFlag ReadWrite
 avstream_event_flags = Field #{offset AVStream, event_flags} []
 
 -- | Get the AVInputFormat (which was set by openInput)
-formatGetInputFormat :: MonadIO m => AVFormatContext -> m AVInputFormat
+formatGetInputFormat :: MonadIO m => AVFormatContext -> m (Maybe AVInputFormat)
 formatGetInputFormat ctx = liftIO.withThis ctx$ \pctx ->
-	AVInputFormat <$> #{peek AVFormatContext, iformat} pctx
+	(fmap AVInputFormat).justPtr <$> #{peek AVFormatContext, iformat} pctx
 
 -- | Get the AVOutputFormat
-formatGetOutputFormat :: MonadIO m => AVFormatContext -> m AVOutputFormat
+formatGetOutputFormat :: MonadIO m => AVFormatContext -> m (Maybe AVOutputFormat)
 formatGetOutputFormat ctx = liftIO.withThis ctx$ \pctx ->
-	AVOutputFormat <$> #{peek AVFormatContext, oformat} pctx
+	(fmap AVOutputFormat).justPtr <$> #{peek AVFormatContext, oformat} pctx
 
 -- | Set the AVOutputFormat (must do this before calling writeHeader)
 formatSetOutputFormat :: MonadIO m => AVFormatContext -> AVOutputFormat -> m ()

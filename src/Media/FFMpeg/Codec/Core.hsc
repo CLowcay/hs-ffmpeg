@@ -1,5 +1,6 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -151,10 +152,19 @@ instance HasClass AVCodecContext where
 	getClass = avClassFromPtr avcodec_get_class
 
 -- | AVCodec struct
-newtype AVCodec = AVCodec (Ptr AVCodec) deriving (Storable) -- Ptr is OK because codecs are never freed
+newtype AVCodec = AVCodec (Ptr AVCodec) -- Ptr is OK because codecs are never freed
 instance ExternalPointer AVCodec where
 	type UnderlyingType AVCodec = AVCodec
 	withThis (AVCodec p) = withThis p
+instance Storable (Maybe AVCodec) where
+	sizeOf _ = #{size AVCodec*}
+	alignment _ = 8
+	peek ptr = do
+		r <- peek (castPtr ptr)
+		if r == nullPtr then return Nothing else return . Just . AVCodec$ r
+	poke ptr mv = case mv of
+		Nothing -> return ()
+		Just (AVCodec v) -> poke (castPtr ptr) v
 
 -- | AVSubtitle struct
 data AVSubtitle = AVSubtitle {

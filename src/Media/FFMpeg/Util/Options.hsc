@@ -44,7 +44,8 @@ module Media.FFMpeg.Util.Options (
 	setOption,
 	setOptionString,
 	setNamedOption,
-	getNamedOption
+	getNamedOption,
+	modNamedOption
 ) where
 
 #include "ffmpeg.h"
@@ -79,7 +80,7 @@ foreign import ccall "av_opt_find" av_opt_find :: Ptr () -> CString -> CString -
 foreign import ccall "av_opt_next" av_opt_next :: Ptr (Ptr (AVClass a)) -> Ptr (AVOption a t) -> IO (Ptr (AVOption a t))
 foreign import ccall "av_opt_set" av_opt_set :: Ptr () -> CString -> CString -> CInt -> IO CInt
 foreign import ccall "av_opt_get" av_opt_get :: Ptr () -> CString -> CInt -> Ptr CString -> IO CInt
-foreign import ccall "av_opt_ptr" av_opt_ptr :: Ptr (Ptr (AVClass a)) -> Ptr (UnderlyingType a) -> CString -> IO (Ptr t)
+foreign import ccall "av_opt_ptr" av_opt_ptr :: Ptr (AVClass a) -> Ptr (UnderlyingType a) -> CString -> IO (Ptr t)
 
 foreign import ccall "av_opt_set_int" av_opt_set_int :: Ptr () -> CString -> Int64 -> CInt -> IO CInt
 foreign import ccall "av_opt_set_double" av_opt_set_double :: Ptr () -> CString -> Double -> CInt -> IO CInt
@@ -327,9 +328,7 @@ withOptionPtr (OptionName name) obj action =
 	withThis obj$ \pobj ->
 	withThis name$ \pname -> do
 		let (AVClass pclass) = (getClass :: AVClass a)
-		pfield <- liftIO.with pclass$ \ppclass ->
-			av_opt_ptr ppclass pobj pname
-
+		pfield <- liftIO$ av_opt_ptr pclass pobj pname
 		if pfield == nullPtr then action Nothing else action$ Just pfield
 
 class AVOptionType t where
@@ -637,4 +636,14 @@ getNamedOption :: (MonadIO m, MonadError String m, ExternalPointer a, HasClass a
 getNamedOption name x = withOptionPtr name x$ \mp -> case mp of
 	Nothing -> throwError$ "Option not supported: " ++ (show name)
 	Just p -> liftIO$ peek p
+
+-- | Apply a function to a named option
+modNamedOption :: (MonadIO m, MonadError String m, ExternalPointer a, HasClass a, Storable t) =>
+	OptionName a t -> a -> (t -> t) -> m t
+modNamedOption name x f = withOptionPtr name x$ \mp -> case mp of
+	Nothing -> throwError$ "Option not supported: " ++ (show name)
+	Just p -> liftIO$ do
+		r <- f <$> peek p
+		poke p r
+		return r
 

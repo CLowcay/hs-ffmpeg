@@ -78,7 +78,7 @@ import Media.FFMpeg.Util.Options
 codecctx_codec_type :: Field AVCodecContext AVMediaType ReadWrite
 codecctx_codec_type = Field #{offset AVCodecContext, codec_type} []
 
-codecctx_codec :: Field AVCodecContext AVCodec ReadWrite
+codecctx_codec :: Field AVCodecContext (Maybe AVCodec) ReadWrite
 codecctx_codec = Field #{offset AVCodecContext, codec} []
 
 codecctx_codec_id :: Field AVCodecContext AVCodecID ReadWrite

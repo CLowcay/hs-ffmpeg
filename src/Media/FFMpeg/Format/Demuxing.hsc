@@ -103,12 +103,12 @@ findStreamInfo :: (MonadIO m, MonadError String m) =>
 	AVFormatContext -> (M.Map StreamIndex AVDictionary) -> m [AVDictionary]
 findStreamInfo ctx dicts = do
 	defDict <- newAVDictionary
-	streams <- getStreams ctx
+	let streams = if M.null dicts then [] else [StreamIndex 0 .. last$ M.keys dicts]
 
 	-- marshal in the dictionaries
 	pa <- liftIO$
 		nest (withThis <$> mkList dicts defDict streams)$ \pdicts -> do
-			pa <- mallocArray$ length streams
+			pa <- if null pdicts then return nullPtr else mallocArray$ length streams
 			forM (pdicts `zip` [0..])$ \(ppdict, i) -> do
 				pdict <- peek ppdict
 				av_dict_copy (pa `advancePtr` i) pdict 0

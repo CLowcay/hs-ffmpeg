@@ -83,7 +83,7 @@ foreign import ccall "av_mallocz" av_mallocz :: CUInt -> IO (Ptr ())
 foreign import ccall "av_realloc" av_realloc :: Ptr () -> CSize -> IO (Ptr ())
 
 -- | Type for stream indexes
-newtype StreamIndex = StreamIndex CInt deriving (Eq, Ord, Show, Storable)
+newtype StreamIndex = StreamIndex CInt deriving (Eq, Ord, Show, Enum, Storable)
 
 -- | Type for program ids
 newtype ProgramID = ProgramID CInt deriving (Eq, Ord, Show)
