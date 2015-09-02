@@ -59,7 +59,8 @@ foreign import ccall "av_get_output_timestamp" av_get_output_timestamp :: Ptr AV
 -- | Write the header to the output file.  The AVDictionary contains options
 -- for the muxer.  On return it will contain only the options that were not
 -- found.
-writeHeader :: (MonadIO m, MonadError String m) => AVFormatContext -> Maybe AVDictionary -> m ()
+writeHeader :: (MonadIO m, MonadError String m) =>
+	AVFormatContext -> Maybe AVDictionary -> m ()
 writeHeader ctx dict =
 	withThis ctx$ \pctx ->
 	withOrNull dict$ \ppdict -> do
@@ -68,7 +69,8 @@ writeHeader ctx dict =
 			"writeHeader: avformat_write_header failed with error code " ++ (show r)
 
 -- | Write a packet to the output file.
-writeFrame :: (MonadIO m, MonadError String m) => AVFormatContext -> AVPacket -> m ()
+writeFrame :: (MonadIO m, MonadError String m) =>
+	AVFormatContext -> AVPacket -> m ()
 writeFrame ctx pkt = do
 	r <- liftIO$
 		withThis ctx$ \pctx ->
@@ -126,7 +128,8 @@ flushFrames ctx = do
 
 -- | Flush all buffered frames for interleaving.  Returns True if all the data
 -- has been flushed
-interleavedFlushFrames :: (MonadIO m, MonadError String m) => AVFormatContext -> m Bool
+interleavedFlushFrames :: (MonadIO m, MonadError String m) =>
+	AVFormatContext -> m Bool
 interleavedFlushFrames ctx = do
 	r <- liftIO.withThis ctx$ \pctx -> av_interleaved_write_frame pctx nullPtr
 	if r == 0 then return False

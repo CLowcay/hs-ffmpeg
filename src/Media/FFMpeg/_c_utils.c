@@ -15,31 +15,20 @@ void b_free_dictionary(AVDictionary **d) {
 	}
 }
 
-void b_av_packet_rescale_ts(AVPacket *pkt, int tb_src_num, int tb_src_den, int tb_dst_num, int tb_dst_den) {
-	AVRational src;
-	AVRational dst;
-	src.num = tb_src_num;
-	src.den = tb_src_den;
-	dst.num = tb_dst_num;
-	dst.den = tb_dst_den;
-	av_packet_rescale_ts(pkt, src, dst);
+void b_av_packet_rescale_ts(AVPacket *pkt, AVRational *tb_src, AVRational *tb_dst) {
+	av_packet_rescale_ts(pkt, *tb_src, *tb_dst);
 }
 
 AVPacketSideData *b_av_packet_get_side_data_i(AVPacketSideData *p, int i) {
 	return &(p[i]);
 }
 
-void b_av_codec_get_pkt_timebase(AVCodecContext *p, int *num, int *den) {
-	AVRational r = av_codec_get_pkt_timebase(p);
-	*num = r.num;
-	*den = r.den;
+void b_av_codec_get_pkt_timebase(AVCodecContext *p, AVRational *r) {
+	*r = av_codec_get_pkt_timebase(p);
 }
 
-void b_av_codec_set_pkt_timebase(AVCodecContext *p, int num, int den) {
-	AVRational v;
-	v.num = num;
-	v.den = den;
-	av_codec_set_pkt_timebase(p, v);
+void b_av_codec_set_pkt_timebase(AVCodecContext *p, AVRational *v) {
+	av_codec_set_pkt_timebase(p, *v);
 }
 
 void b_av_guess_sample_aspect_ratio(AVFormatContext *format, AVStream *stream, AVFrame *frame, int *num, int *den) {
@@ -62,11 +51,8 @@ void b_avformat_close_input(AVFormatContext *ctx) {
 	avformat_close_input(s);
 }
 
-int b_av_opt_set_q(void *obj, const char *name, int num, int den, int search_flags) {
-	AVRational r;
-	r.num = num;
-	r.den = den;
-	return av_opt_set_q(obj, name, r, search_flags);
+int b_av_opt_set_q(void *obj, const char *name, AVRational *v, int search_flags) {
+	return av_opt_set_q(obj, name, *v, search_flags);
 }
 
 int b_av_opt_set_video_rate(void *obj, const char *name, int num, int den, int search_flags) {
@@ -84,11 +70,8 @@ int b_av_opt_get_video_rate(void *obj, const char *name, int search_flags, int *
 	return ret;
 }
 
-int b_image_check_sar(unsigned int w, unsigned int h, int num, int den) {
-	AVRational sar;
-	sar.num = num;
-	sar.den = den;
-	return av_image_check_sar(w, h, sar);
+int b_image_check_sar(unsigned int w, unsigned int h, AVRational *sar) {
+	return av_image_check_sar(w, h, *sar);
 }
 
 void b_av_stream_get_r_frame_rate (const AVStream *s, AVRational *r) {

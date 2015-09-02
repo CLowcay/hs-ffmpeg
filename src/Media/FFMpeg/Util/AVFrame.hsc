@@ -64,6 +64,7 @@ import Control.Applicative
 import Control.Monad
 import Control.Monad.Except
 import Data.Int
+import Data.Monoid
 import Data.Word
 import Foreign.C.String
 import Foreign.C.Types
@@ -191,7 +192,7 @@ frameGetMetadata :: MonadIO m => AVFrame -> m AVDictionary
 frameGetMetadata frame = do
 	withThis frame$ \ptr -> do
 		rptr <- liftIO$ av_frame_get_metadata ptr
-		unsafeDictCopyFromPtr (castPtr rptr) []
+		unsafeDictCopyFromPtr (castPtr rptr) mempty
 
 frameSetMetadata :: MonadIO m => AVFrame -> AVDictionary -> m ()
 frameSetMetadata frame dict =
@@ -451,7 +452,7 @@ frameGetSideData frame = liftIO.withThis frame$ \ptr -> do
 		dsize <- #{peek AVFrameSideData, size} psd :: IO CInt
 		metadata <- #{peek AVFrameSideData, metadata} psd :: IO (Ptr AVDictionary)
 		if (pdata == nullPtr) then return Nothing else do
-			m <- unsafeDictCopyFromPtr metadata []
+			m <- unsafeDictCopyFromPtr metadata mempty
 			p <- peekPayload pdata (fromIntegral dsize)
 			return.Just$ AVFrameSideData m p
 

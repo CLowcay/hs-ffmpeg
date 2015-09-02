@@ -1,5 +1,6 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 {- |
 
@@ -15,35 +16,34 @@ ffmpeg error codes
 
 module Media.FFMpeg.Util.Error (
 	AVERROR,
-	averror_bsf_not_found,
-	averror_bug,
-	averror_buffer_too_small,
-	averror_decoder_not_found,
-	averror_demuxer_not_found,
-	averror_encoder_not_found,
-	averror_eof,
-	averror_exit,
-	averror_external,
-	averror_filter_not_found,
-	averror_invaliddata,
-	averror_muxer_not_found,
-	averror_option_not_found,
-	averror_patchwelcome,
-	averror_protocol_not_found,
-	averror_stream_not_found,
-	averror_bug2,
-	averror_unknown,
-	averror_experimental,
-	averror_input_changed,
-	averror_output_changed,
-	averror_http_bad_request,
-	averror_http_unauthorized,
-	averror_http_forbidden,
-	averror_http_not_found,
-	averror_http_other_4xx,
-	averror_http_server_error,
+	pattern AVERRORBsfNotFound,
+	pattern AVERRORBug,
+	pattern AVERRORBufferTooSmall,
+	pattern AVERRORDecoderNotFound,
+	pattern AVERRORDemuxerNotFound,
+	pattern AVERROREncoderNotFound,
+	pattern AVERROREof,
+	pattern AVERRORExit,
+	pattern AVERRORExternal,
+	pattern AVERRORFilterNot_found,
+	pattern AVERRORInvaliddata,
+	pattern AVERRORMuxerNotFound,
+	pattern AVERROROptionNotFound,
+	pattern AVERRORPatchwelcome,
+	pattern AVERRORProtocolNotFound,
+	pattern AVERRORStreamNotFound,
+	pattern AVERRORBug2,
+	pattern AVERRORUnknown,
+	pattern AVERRORExperimental,
+	pattern AVERRORInputChanged,
+	pattern AVERROROutputChanged,
+	pattern AVERRORHttpBadRequest,
+	pattern AVERRORHttpUnauthorized,
+	pattern AVERRORHttpForbidden,
+	pattern AVERRORHttpNotFound,
+	pattern AVERRORHttpOther4xx,
+	pattern AVERRORHttpServerError,
 
-	av_error_max_string_size,
 	errorToString
 ) where
 
@@ -59,37 +59,33 @@ import Media.FFMpeg.Internal.Common
 foreign import ccall "av_strerror" av_strerror :: CInt -> CString -> CSize -> IO CInt
 
 newtype AVERROR = AVERROR CInt deriving (Eq, CEnum)
-#{enum AVERROR, AVERROR,
-	averror_bsf_not_found = AVERROR_BSF_NOT_FOUND,
-	averror_bug = AVERROR_BUG,
-	averror_buffer_too_small = AVERROR_BUFFER_TOO_SMALL,
-	averror_decoder_not_found = AVERROR_DECODER_NOT_FOUND,
-	averror_demuxer_not_found = AVERROR_DEMUXER_NOT_FOUND,
-	averror_encoder_not_found = AVERROR_ENCODER_NOT_FOUND,
-	averror_eof = AVERROR_EOF,
-	averror_exit = AVERROR_EXIT,
-	averror_external = AVERROR_EXTERNAL,
-	averror_filter_not_found = AVERROR_FILTER_NOT_FOUND,
-	averror_invaliddata = AVERROR_INVALIDDATA,
-	averror_muxer_not_found = AVERROR_MUXER_NOT_FOUND,
-	averror_option_not_found = AVERROR_OPTION_NOT_FOUND,
-	averror_patchwelcome = AVERROR_PATCHWELCOME,
-	averror_protocol_not_found = AVERROR_PROTOCOL_NOT_FOUND,
-	averror_stream_not_found = AVERROR_STREAM_NOT_FOUND,
-	averror_bug2 = AVERROR_BUG2,
-	averror_unknown = AVERROR_UNKNOWN,
-	averror_experimental = AVERROR_EXPERIMENTAL,
-	averror_input_changed = AVERROR_INPUT_CHANGED,
-	averror_output_changed = AVERROR_OUTPUT_CHANGED,
-	averror_http_bad_request = AVERROR_HTTP_BAD_REQUEST,
-	averror_http_unauthorized = AVERROR_HTTP_UNAUTHORIZED,
-	averror_http_forbidden = AVERROR_HTTP_FORBIDDEN,
-	averror_http_not_found = AVERROR_HTTP_NOT_FOUND,
-	averror_http_other_4xx = AVERROR_HTTP_OTHER_4XX,
-	averror_http_server_error = AVERROR_HTTP_SERVER_ERROR
-}
-
-av_error_max_string_size = #{const AV_ERROR_MAX_STRING_SIZE}
+pattern AVERRORBsfNotFound = AVERROR (#{const AVERROR_BSF_NOT_FOUND})
+pattern AVERRORBug = AVERROR (#{const AVERROR_BUG})
+pattern AVERRORBufferTooSmall = AVERROR (#{const AVERROR_BUFFER_TOO_SMALL})
+pattern AVERRORDecoderNotFound = AVERROR (#{const AVERROR_DECODER_NOT_FOUND})
+pattern AVERRORDemuxerNotFound = AVERROR (#{const AVERROR_DEMUXER_NOT_FOUND})
+pattern AVERROREncoderNotFound = AVERROR (#{const AVERROR_ENCODER_NOT_FOUND})
+pattern AVERROREof = AVERROR (#{const AVERROR_EOF})
+pattern AVERRORExit = AVERROR (#{const AVERROR_EXIT})
+pattern AVERRORExternal = AVERROR (#{const AVERROR_EXTERNAL})
+pattern AVERRORFilterNot_found = AVERROR (#{const AVERROR_FILTER_NOT_FOUND})
+pattern AVERRORInvaliddata = AVERROR (#{const AVERROR_INVALIDDATA})
+pattern AVERRORMuxerNotFound = AVERROR (#{const AVERROR_MUXER_NOT_FOUND})
+pattern AVERROROptionNotFound = AVERROR (#{const AVERROR_OPTION_NOT_FOUND})
+pattern AVERRORPatchwelcome = AVERROR (#{const AVERROR_PATCHWELCOME})
+pattern AVERRORProtocolNotFound = AVERROR (#{const AVERROR_PROTOCOL_NOT_FOUND})
+pattern AVERRORStreamNotFound = AVERROR (#{const AVERROR_STREAM_NOT_FOUND})
+pattern AVERRORBug2 = AVERROR (#{const AVERROR_BUG2})
+pattern AVERRORUnknown = AVERROR (#{const AVERROR_UNKNOWN})
+pattern AVERRORExperimental = AVERROR (#{const AVERROR_EXPERIMENTAL})
+pattern AVERRORInputChanged = AVERROR (#{const AVERROR_INPUT_CHANGED})
+pattern AVERROROutputChanged = AVERROR (#{const AVERROR_OUTPUT_CHANGED})
+pattern AVERRORHttpBadRequest = AVERROR (#{const AVERROR_HTTP_BAD_REQUEST})
+pattern AVERRORHttpUnauthorized = AVERROR (#{const AVERROR_HTTP_UNAUTHORIZED})
+pattern AVERRORHttpForbidden = AVERROR (#{const AVERROR_HTTP_FORBIDDEN})
+pattern AVERRORHttpNotFound = AVERROR (#{const AVERROR_HTTP_NOT_FOUND})
+pattern AVERRORHttpOther4xx = AVERROR (#{const AVERROR_HTTP_OTHER_4XX})
+pattern AVERRORHttpServerError = AVERROR (#{const AVERROR_HTTP_SERVER_ERROR})
 
 -- | Convert an error code to a string
 errorToString :: AVERROR -> String
@@ -97,4 +93,5 @@ errorToString e = unsafePerformIO$
 	allocaBytes (fromIntegral av_error_max_string_size)$ \pbuff -> do
 		av_strerror (fromCEnum e) pbuff av_error_max_string_size
 		peekCString pbuff
+	where av_error_max_string_size = #{const AV_ERROR_MAX_STRING_SIZE}
 

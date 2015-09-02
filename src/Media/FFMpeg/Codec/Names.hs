@@ -217,7 +217,7 @@ codec_me_method :: OptionName AVCodecContext Motion_Est_ID
 codec_me_method = OptionName "me_method"
 
 -- | Option "time_base" for AVCodecContext of type AVOptTypeRational.
-codec_time_base :: OptionName AVCodecContext AVRational
+codec_time_base :: OptionName AVCodecContext (Maybe AVRational)
 codec_time_base = OptionName "time_base"
 
 -- | Option "g" for AVCodecContext of type AVOptTypeInt.
@@ -512,7 +512,7 @@ codec_pred = OptionName "pred"
 
 -- | Option "aspect" for AVCodecContext of type AVOptTypeRational.
 -- sample aspect ratio
-codec_aspect :: OptionName AVCodecContext AVRational
+codec_aspect :: OptionName AVCodecContext (Maybe AVRational)
 codec_aspect = OptionName "aspect"
 
 -- | Option "debug" for AVCodecContext of type AVOptTypeFlags-debug.
@@ -958,7 +958,7 @@ codec_request_sample_fmt :: OptionName AVCodecContext AVSampleFormat
 codec_request_sample_fmt = OptionName "request_sample_fmt"
 
 -- | Option "pkt_timebase" for AVCodecContext of type AVOptTypeRational.
-codec_pkt_timebase :: OptionName AVCodecContext AVRational
+codec_pkt_timebase :: OptionName AVCodecContext (Maybe AVRational)
 codec_pkt_timebase = OptionName "pkt_timebase"
 
 -- | Option "sub_charenc" for AVCodecContext of type AVOptTypeString.
@@ -1038,7 +1038,7 @@ frame_pkt_size = OptionName "pkt_size"
 
 -- | Option "sample_aspect_ratio" for AVFrame of type AVOptTypeRational.
 -- 
-frame_sample_aspect_ratio :: OptionName AVFrame AVRational
+frame_sample_aspect_ratio :: OptionName AVFrame (Maybe AVRational)
 frame_sample_aspect_ratio = OptionName "sample_aspect_ratio"
 
 -- | Option "width" for AVFrame of type AVOptTypeInt.

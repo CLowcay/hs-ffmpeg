@@ -60,15 +60,13 @@ foreign import ccall "avcodec_decode_subtitle2" avcodec_decode_subtitle2 :: Ptr 
 
 -- Find a decoder for a given AVCodecID
 findDecoder :: MonadIO m => AVCodecID -> m (Maybe AVCodec)
-findDecoder cid = liftIO$ do
-	r <- avcodec_find_decoder (fromCEnum cid)
-	if r == nullPtr then return Nothing else return.Just$ (AVCodec r)
+findDecoder cid = liftIO$
+	(fmap AVCodec).justPtr <$> avcodec_find_decoder (fromCEnum cid)
 
 -- Find the decoder with the given name
 findDecoderByName :: MonadIO m => String -> m (Maybe AVCodec)
-findDecoderByName s = liftIO.withCString s$ \ps -> do
-	r <- avcodec_find_decoder_by_name ps
-	if r == nullPtr then return Nothing else return.Just$ (AVCodec r)
+findDecoderByName s = liftIO.withCString s$ \ps ->
+	(fmap AVCodec).justPtr <$> avcodec_find_decoder_by_name ps
 
 -- | Adjust dimensions (width, height) to something suitable for the decoder
 alignDimensions :: MonadIO m => AVCodecContext -> (Int, Int) -> m (Int, Int)

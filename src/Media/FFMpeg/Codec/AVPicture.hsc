@@ -32,7 +32,9 @@ import Data.Word
 import Foreign.C.Types
 import Foreign.ForeignPtr
 import Foreign.Marshal.Array
+import Foreign.Marshal.Utils
 import Foreign.Ptr
+import System.IO.Unsafe
 
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util
@@ -47,7 +49,7 @@ foreign import ccall "av_picture_crop" av_picture_crop :: Ptr () -> Ptr () -> CI
 foreign import ccall "av_picture_pad" av_picture_pad :: Ptr () -> Ptr () -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> CInt -> Ptr CInt -> IO CInt
 
 foreign import ccall "av_image_check_size" av_image_check_size :: CUInt -> CUInt -> CInt -> Ptr () -> IO CInt
-foreign import ccall "b_av_image_check_sar" av_image_check_sar :: CUInt -> CUInt -> CInt -> CInt -> CInt
+foreign import ccall "b_av_image_check_sar" av_image_check_sar :: CUInt -> CUInt -> Ptr (Maybe AVRational) -> CInt
 
 -- | A C array of color components.  The number of components, and their
 -- meanings, depends on the pixel format being used.
@@ -217,8 +219,7 @@ instance HasAVPicture AVSubtitlePicture where
 
 -- | Determine if the image sample aspect ration is valid
 imageCheckSAR :: Word -> Word -> AVRational -> Bool
-imageCheckSAR w h (AVRational r) =
-	(av_image_check_sar (fromIntegral w) (fromIntegral h)
-		(fromIntegral$ numerator r)
-		(fromIntegral$ denominator r)) == 0
+imageCheckSAR w h sar =
+	unsafePerformIO.with (Just sar)$ \psar ->
+		return$ (av_image_check_sar (fromIntegral w) (fromIntegral h) psar) == 0
 

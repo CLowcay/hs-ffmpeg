@@ -101,16 +101,16 @@ newAVDictionary = liftIO$ do
 
 -- | Get all the dictionary entries associated with a particular key
 dictGet :: MonadIO m =>
-	AVDictionary             -- ^the dictionary
-	-> String                -- ^the key
-	-> [DictFlag]            -- ^flags
-	-> m [(String, String)]  -- ^a list of all the entries matching the key
+	AVDictionary             -- ^ the dictionary
+	-> String                -- ^ the key
+	-> DictFlag              -- ^ flags
+	-> m [(String, String)]  -- ^ a list of all the entries matching the key
 dictGet dict key flags = liftIO$
 	withThis dict$ \ppd ->
 		withCString key$ \ckey -> do
 			pd <- peek ppd
 			let results = \prev -> do
-				next <- av_dict_get pd ckey prev cflags
+				next <- av_dict_get pd ckey prev (fromCEnum flags)
 				if next == nullPtr then return [] else fmap (next :) (results next)
 
 			rs <- results nullPtr
@@ -119,11 +119,9 @@ dictGet dict key flags = liftIO$
 				v <- peekCString =<< (#{peek AVDictionaryEntry, value} p :: IO CString)
 				return (k, v)
 
-	where cflags = fromCEnum$ mconcat flags
-
 -- | Get all entries in a dictionary
 dictGetAll :: MonadIO m => AVDictionary -> m [(String, String)]
-dictGetAll dict = dictGet dict "" [AVDictIgnoreSuffix]
+dictGetAll dict = dictGet dict "" AVDictIgnoreSuffix
 
 -- | Count the number of entries in a dictionary
 dictCount :: MonadIO m => AVDictionary -> m Int
@@ -134,50 +132,46 @@ dictCount dict = liftIO$ do
 
 -- | Set a dictionary entry
 dictSet :: (MonadIO m, MonadError String m) =>
-	AVDictionary           -- ^the dictionary to set
-	-> (String, String)    -- ^the (key, value) pair to set
-	-> [DictFlag]          -- ^flags
+	AVDictionary           -- ^ the dictionary to set
+	-> (String, String)    -- ^ the (key, value) pair to set
+	-> DictFlag            -- ^ flags
 	-> m ()
 dictSet dict (key, value) flags = do
 	r <- liftIO$
 		withThis dict$ \ppd ->
 		withCString key$ \ckey ->  -- av_dict_set duplicates the keys, so this is safe
-		withCString value$ \cvalue -> av_dict_set ppd ckey cvalue cflags
+		withCString value$ \cvalue ->
+			av_dict_set ppd ckey cvalue (fromCEnum flags)
 
 	when (r < 0)$ throwError$ "dictSet: failed with error code " ++ (show r)
 
-	where cflags = fromCEnum$ mconcat flags
-
 -- | Set a dictionary entry to a number, converting it to a string
 dictSetInt :: (MonadIO m, MonadError String m) =>
-	AVDictionary           -- ^the dictionary to set
-	-> (String, Int64)     -- ^the (key, value) pair.  The value is converted to a decimal string
-	-> [DictFlag]          -- ^flags
+	AVDictionary           -- ^ the dictionary to set
+	-> (String, Int64)     -- ^ the (key, value) pair.  The value is converted to a decimal string
+	-> DictFlag            -- ^ flags
 	-> m ()
 dictSetInt dict (key, value) flags = do
 	r <- liftIO$
 		withThis dict$ \ppd ->
 		withCString key$ \ckey ->  -- av_dict_set duplicates the keys, so this is safe
-			av_dict_set_int ppd ckey value cflags
+			av_dict_set_int ppd ckey value (fromCEnum flags)
 
 	when (r < 0)$ throwError$ "dictSetInt: failed with error code " ++ (show r)
 
-	where cflags = fromCEnum$ mconcat flags
-
 -- | Generate a copy of a dictionary
 dictCopy :: MonadIO m =>
-	AVDictionary             -- ^the dictionary to set
-	-> [DictFlag]            -- ^flags
-	-> m AVDictionary        -- ^a new dictionary that is a copy of the original
+	AVDictionary             -- ^ the dictionary to set
+	-> DictFlag              -- ^ flags
+	-> m AVDictionary        -- ^ a new dictionary that is a copy of the original
 dictCopy src flags = do
 	dst <- newAVDictionary
 	liftIO$
 		withThis dst$ \ppd ->
 		withThis src$ \pps -> do
 			ps <- peek pps
-			av_dict_copy ppd ps cflags
+			av_dict_copy ppd ps (fromCEnum flags)
 	return dst
-	where cflags = fromCEnum$ mconcat flags
 
 -- | Get a string representation of a dictionary
 dictGetString :: (MonadIO m, MonadError String m) =>
@@ -211,25 +205,26 @@ dictGetString dict keyValSep pairsSep = do
 -- | Copy a dictionary from an arbitrary pointer
 unsafeDictCopyFromPtr :: MonadIO m =>
 	Ptr AVDictionary
-	-> [DictFlag]
+	-> DictFlag
 	-> m AVDictionary
 unsafeDictCopyFromPtr src flags = do
 	dst <- newAVDictionary
 	liftIO$
 		withThis dst$ \ppd ->
-			av_dict_copy ppd src cflags
+			av_dict_copy ppd src (fromCEnum flags)
 	return dst
-	where cflags = fromCEnum$ mconcat flags
 
 -- | Get the metadata field from an AVStream
-getDictField :: (MonadIO m, ExternalPointer a) => a -> Field a AVDictionary ro -> m AVDictionary
+getDictField :: (MonadIO m, ExternalPointer a) =>
+	a -> Field a AVDictionary ro -> m AVDictionary
 getDictField x (Field offset offsets) = do
 	pd <- liftIO$ withThis x$ \px ->
 		peek =<< (castPtr <$> chasePointers px offset offsets)
-	unsafeDictCopyFromPtr pd []
+	unsafeDictCopyFromPtr pd mempty 
 
 -- | Set the metadata field of an AVStream
-setDictField :: (MonadIO m, ExternalPointer a) => a -> Field a AVDictionary ReadWrite -> AVDictionary -> m ()
+setDictField :: (MonadIO m, ExternalPointer a) =>
+	a -> Field a AVDictionary ReadWrite -> AVDictionary -> m ()
 setDictField x (Field offset offsets) dict =
 	withThis x$ \px ->
 	withThis dict$ \ppsrc -> liftIO$ do

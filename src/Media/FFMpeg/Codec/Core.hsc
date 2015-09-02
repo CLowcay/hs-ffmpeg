@@ -88,8 +88,8 @@ import Media.FFMpeg.Codec.Enums
 import Media.FFMpeg.Internal.Common
 import Media.FFMpeg.Util
 
-foreign import ccall "b_av_codec_get_pkt_timebase" av_codec_get_pkt_timebase :: Ptr AVCodecContext -> Ptr CInt -> Ptr CInt -> IO ()
-foreign import ccall "b_av_codec_set_pkt_timebase" av_codec_set_pkt_timebase :: Ptr AVCodecContext -> CInt -> CInt -> IO ()
+foreign import ccall "b_av_codec_get_pkt_timebase" av_codec_get_pkt_timebase :: Ptr AVCodecContext -> Ptr (Maybe AVRational) -> IO ()
+foreign import ccall "b_av_codec_set_pkt_timebase" av_codec_set_pkt_timebase :: Ptr AVCodecContext -> Ptr (Maybe AVRational) -> IO ()
 foreign import ccall "av_codec_get_codec_descriptor" av_codec_get_codec_descriptor :: Ptr AVCodecContext -> IO (Ptr AVCodecDescriptor)
 foreign import ccall "av_codec_set_codec_descriptor" av_codec_set_codec_descriptor :: Ptr AVCodecContext -> Ptr AVCodecDescriptor -> IO ()
 --foreign import ccall "av_codec_get_codec_properties" av_codec_get_codec_properties :: Ptr AVCodecContext -> IO CUInt
@@ -287,22 +287,17 @@ instance Storable AVSubtitle where
 		#{poke AVSubtitle, pts} ptr (avSubtitle_pts avs)
 
 -- | Get the timebase of a packet
-codecGetPktTimebase :: MonadIO m => AVCodecContext -> m AVRational
+codecGetPktTimebase :: MonadIO m => AVCodecContext -> m (Maybe AVRational)
 codecGetPktTimebase ctx =
 	withThis ctx$ \pctx ->
-	liftIO$
-		alloca$ \pnum ->
-		alloca$ \pden -> do
-			av_codec_get_pkt_timebase pctx pnum pden
-			n <- fromIntegral<$> peek pnum
-			d <- fromIntegral<$> peek pden
-			return.AVRational$ n % d
+	liftIO.alloca$ \prat -> do
+			av_codec_get_pkt_timebase pctx prat
+			peek prat
 
 -- | Set the timebase of a packet
 codecSetPktTimebase :: MonadIO m => AVCodecContext -> AVRational -> m ()
-codecSetPktTimebase ctx (AVRational r) = withThis ctx$ \pctx ->
-	liftIO$ av_codec_set_pkt_timebase pctx
-		(fromIntegral$ numerator r) (fromIntegral$ denominator r)
+codecSetPktTimebase ctx v = withThis ctx$ \pctx ->
+	liftIO.with (Just v)$ \pv -> av_codec_set_pkt_timebase pctx pv
 
 -- | AVCodecDescriptor struct
 -- __WARNING__: The storable instance leaks memory when poking, so use sparingly
@@ -434,7 +429,8 @@ copyCodecContext dst src =
 		when (r /= 0)$ throwError$ "copyCodecContext: failed with error code " ++ (show r)
 
 -- | Allocate a new codec context
-getCodecContext :: (MonadIO m, MonadError String m) => AVCodec -> AVDictionary -> m AVCodecContext
+getCodecContext :: (MonadIO m, MonadError String m) =>
+	AVCodec -> AVDictionary -> m AVCodecContext
 getCodecContext cd dict = do
 	pctx <- liftIO$ withThis cd avcodec_alloc_context3
 
@@ -461,7 +457,7 @@ libAVCodecVersion = fromVersionNum #{const LIBAVCODEC_VERSION_INT}
 
 -- | Convert a codec tag to a string
 getCodecTagString :: Word -> String
-getCodecTagString tag = unsafePerformIO$ do  -- safe because there are no observable side effects
+getCodecTagString tag = unsafePerformIO$ do  -- no observable side effects
 	sz <- av_get_codec_tag_string nullPtr 0 (fromIntegral tag)
 	allocaBytes (fromIntegral sz)$ \pb -> do
 		av_get_codec_tag_string pb (fromIntegral sz) (fromIntegral tag)

@@ -142,11 +142,13 @@ type URL = String
 
 -- | Get the protocol name from a URL
 ioFindProtocolName :: URL -> String
-ioFindProtocolName url = unsafePerformIO.withCString url$ peekCString.avio_find_protocol_name
+ioFindProtocolName url = unsafePerformIO.withCString url$
+	peekCString.avio_find_protocol_name
 
 -- | Check that the specified access is possible
 ioCheck :: MonadIO m => URL -> AVIOOpenFlag -> m AVIOOpenFlag
-ioCheck url mask = liftIO.withCString url$ \purl -> toCEnum <$> avio_check purl (fromCEnum mask)
+ioCheck url mask = liftIO.withCString url$ \purl ->
+	toCEnum <$> avio_check purl (fromCEnum mask)
 
 -- | 24 bit word type
 newtype Word24 = Word24 Word deriving (Eq, Ord, Read, Show, Num, Integral, Real, Ix, Bits)
@@ -154,10 +156,13 @@ instance Bounded Word24 where
 	minBound = 0
 	maxBound = (2^24) - 1
 instance Enum Word24 where
-	succ w@(Word24 x) = if w == maxBound then error "No successor" else Word24 (x + 1)
-	pred w@(Word24 x) = if w == minBound then error "No predecessor" else Word24 (x - 1)
+	succ w@(Word24 x) =
+		if w == maxBound then error "No successor" else Word24 (x + 1)
+	pred w@(Word24 x) =
+		if w == minBound then error "No predecessor" else Word24 (x - 1)
 	enumFrom (Word24 x) = toEnum.fromIntegral <$> [x..((2^24)-1)]
-	enumFromThen (Word24 a) (Word24 b) = toEnum.fromIntegral <$> [a,b..((2^24)-1)]
+	enumFromThen (Word24 a) (Word24 b) =
+		toEnum.fromIntegral <$> [a,b..((2^24)-1)]
 	toEnum = Word24 . fromIntegral
 	fromEnum (Word24 x) = fromIntegral x
 instance Storable Word24 where
@@ -177,7 +182,8 @@ class AVIOWritable t where
 	avio_store_l :: Ptr AVIOContext -> t -> IO ()
 
 instance AVIOWritable B.ByteString where
-	avio_store_b ctx v = B.useAsCStringLen v$ \(pv, len) -> avio_write ctx pv (fromIntegral len)
+	avio_store_b ctx v = B.useAsCStringLen v$ \(pv, len) ->
+		avio_write ctx pv (fromIntegral len)
 	avio_store_l = avio_store_b
 
 instance AVIOWritable Word64 where
@@ -209,24 +215,28 @@ ioWriteL :: (MonadIO m, AVIOWritable t) => AVIOContext -> t -> m ()
 ioWriteL ctx v = withThis ctx$ \pctx -> liftIO$ avio_store_l pctx v
 
 -- | Seek an AVIO stream
-ioSeek :: (MonadIO m, MonadError String m) => AVIOContext -> Int64 -> AVIOSeek -> m Int64
+ioSeek :: (MonadIO m, MonadError String m) =>
+	AVIOContext -> Int64 -> AVIOSeek -> m Int64
 ioSeek ctx i whence = withThis ctx$ \pctx -> do
 	r <- liftIO$ avio_seek pctx i (fromCEnum whence)
-	when (r < 0)$ throwError$ "ioSeek: avio_seek failed with error code " ++ (show r)
+	when (r < 0)$ throwError$
+		"ioSeek: avio_seek failed with error code " ++ (show r)
 	return r
 
 -- | Skip bytes in an AVIO stream
 ioSkip :: (MonadIO m, MonadError String m) => AVIOContext -> Int64 -> m Int64
 ioSkip ctx i = withThis ctx$ \pctx -> do
 	r <- liftIO$ avio_skip pctx i
-	when (r < 0)$ throwError$ "ioSkip: avio_skip failed with error code " ++ (show r)
+	when (r < 0)$ throwError$
+		"ioSkip: avio_skip failed with error code " ++ (show r)
 	return r
 
 -- | Get the filesize of an AVIO stream
 ioSize :: (MonadIO m, MonadError String m) => AVIOContext -> m Int64
 ioSize ctx = withThis ctx$ \pctx -> do
 	r <- liftIO$ avio_size pctx
-	when (r < 0)$ throwError$ "ioSize: avio_size failed with error code " ++ (show r)
+	when (r < 0)$ throwError$
+		"ioSize: avio_size failed with error code " ++ (show r)
 	return r
 
 -- | Determine if we are at the end of the file
@@ -238,7 +248,8 @@ ioFlush :: MonadIO m => AVIOContext -> m ()
 ioFlush ctx = liftIO.withThis ctx$ \pctx -> avio_flush pctx
 
 -- | Read from an AVIO stream
-ioRead :: (MonadIO m, MonadError String m) => AVIOContext -> Int -> m B.ByteString
+ioRead :: (MonadIO m, MonadError String m) =>
+	AVIOContext -> Int -> m B.ByteString
 ioRead ctx len = withThis ctx$ \pctx -> do
 	(r, s) <- liftIO.allocaBytes len$ \pbuffer -> do
 		r <- avio_read pctx pbuffer (fromIntegral len)
@@ -288,11 +299,13 @@ ioWithURL mf url flags action =
 	withppCtx mf$ \ppctx ->
 	withThis url$ \purl -> do
 		r1 <- liftIO$ avio_open ppctx purl (fromCEnum flags)
-		when (r1 < 0)$ throwError$ "ioWithURL: avio_open failed with error code " ++ (show r1)
+		when (r1 < 0)$ throwError$
+			"ioWithURL: avio_open failed with error code " ++ (show r1)
 		pctx <- liftIO$ peek ppctx
 		ret <- action$ AVIOContext pctx
 		r2 <- liftIO$ avio_close pctx
-		when (r2 < 0)$ throwError$ "ioWithURL: avio_closep failed with error code " ++ (show r2)
+		when (r2 < 0)$ throwError$
+			"ioWithURL: avio_closep failed with error code " ++ (show r2)
 		return ret
 
 -- | Open the AVIOContext in an AVFormatContext.  It will be closed when the
@@ -303,11 +316,13 @@ formatIOOpen ctx url flags =
 	withppCtx (Just ctx)$ \ppctx ->
 	withThis url$ \purl -> do
 		r1 <- liftIO$ avio_open ppctx purl (fromCEnum flags)
-		when (r1 < 0)$ throwError$ "formatIOOpen: avio_open failed with error code " ++ (show r1)
+		when (r1 < 0)$ throwError$
+			"formatIOOpen: avio_open failed with error code " ++ (show r1)
 		addAVFormatContextFinalizer ctx close_format_context
 
 -- | Perform an action with a pointer to a pointer to an AVIOContext
-withppCtx :: (MonadIO m, MonadError String m) => Maybe AVFormatContext -> (Ptr (Ptr AVIOContext) -> m b) -> m b
+withppCtx :: (MonadIO m, MonadError String m) =>
+	Maybe AVFormatContext -> (Ptr (Ptr AVIOContext) -> m b) -> m b
 withppCtx mf = case mf of
 	Nothing -> \action -> do
 		p <- liftIO$ malloc
@@ -316,7 +331,8 @@ withppCtx mf = case mf of
 			throwError e)
 		liftIO$ free p
 		return r
-	Just ctx -> \action -> withThis ctx (action.(`plusPtr` #{offset AVFormatContext, pb}))
+	Just ctx -> \action ->
+		withThis ctx (action.(`plusPtr` #{offset AVFormatContext, pb}))
 
 -- | Execute an action with an in memory AVIOContext
 ioWithDynamicBuffer :: (MonadIO m, MonadError String m) =>
@@ -328,6 +344,9 @@ ioWithDynamicBuffer mf action =
 			"ioWithDynamicBuffer: avio_open_dyn_buf failed with error code " ++ (show r)
 
 		pctx <- liftIO$ peek ppctx
+		when (pctx == nullPtr)$ throwError$
+			"ioWithDynamicBuffer: avio_open_dyn_buf returned a null pointer"
+
 		ret <- action$ AVIOContext pctx
 
 		d <- liftIO.alloca$ \ppbuff -> do
@@ -376,7 +395,8 @@ ioSeekTime :: (MonadIO m, MonadError String m) =>
 ioSeekTime ctx msi (AVTimestamp ts) flags =
 	withThis ctx$ \pctx -> do
 		r <- liftIO$ avio_seek_time pctx si ts (fromCEnum flags)
-		when (r < 0)$ throwError$ "ioSeekTime: avio_seek_time failed with error code " ++ (show r)
+		when (r < 0)$ throwError$
+			"ioSeekTime: avio_seek_time failed with error code " ++ (show r)
 
 	where si = case msi of
 		Nothing -> -1

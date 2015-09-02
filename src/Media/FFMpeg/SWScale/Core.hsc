@@ -313,13 +313,15 @@ scale ctx src y height dst =
 			(fromIntegral y) (fromIntegral height) dstSlice dstStride
 
 -- | Convert an 8 bit palettized to a 32 bit pixel format
-convertPalette8ToPacked32 :: MonadIO m => Ptr Word8 -> Ptr Word8 -> Int -> B.ByteString -> m ()
+convertPalette8ToPacked32 :: MonadIO m =>
+	Ptr Word8 -> Ptr Word8 -> Int -> B.ByteString -> m ()
 convertPalette8ToPacked32 src dst num_pixels palette =
 	liftIO.unsafeUseAsCString palette$ \ppal ->
 		sws_convertPalette8ToPacked32 src dst (fromIntegral num_pixels) (castPtr ppal)
 
 -- | Convert an 8 bit palettized to a 24 bit pixel format
-convertPalette8ToPacked24 :: MonadIO m => Ptr Word8 -> Ptr Word8 -> Int -> B.ByteString -> m ()
+convertPalette8ToPacked24 :: MonadIO m =>
+	Ptr Word8 -> Ptr Word8 -> Int -> B.ByteString -> m ()
 convertPalette8ToPacked24 src dst num_pixels palette =
 	liftIO.unsafeUseAsCString palette$ \ppal ->
 		sws_convertPalette8ToPacked24 src dst (fromIntegral num_pixels) (castPtr ppal)
@@ -344,7 +346,8 @@ tableToList :: (CInt, CInt, CInt, CInt) -> [CInt]
 tableToList (a, b, c, d) = [a, b, c, d]
 
 -- | Set SwsContext fields relating to the colorspace
-setColorSpaceDetails :: (MonadIO m, MonadError String m) => SwsContext -> ColorSpaceDetails -> m ()
+setColorSpaceDetails :: (MonadIO m, MonadError String m) =>
+	SwsContext -> ColorSpaceDetails -> m ()
 setColorSpaceDetails ctx csd =
 	withThis ctx$ \pctx -> do
 		r <- liftIO$
@@ -353,10 +356,12 @@ setColorSpaceDetails ctx csd =
 				sws_setColorspaceDetails pctx
 					pinv (csd_srcRange csd) ptab (csd_dstRange csd)
 					(csd_brightness csd) (csd_contrast csd) (csd_saturation csd)
-		when (r == -1)$ throwError "setColorSpaceDetails: sws_setColorspaceDetails failed with error code -1"
+		when (r == -1)$ throwError$
+			"setColorSpaceDetails: sws_setColorspaceDetails failed with error code -1"
 
 -- | Get SwsContext fields relating to the color space
-getColorSpaceDetails :: (MonadIO m, MonadError String m) => SwsContext -> m ColorSpaceDetails
+getColorSpaceDetails :: (MonadIO m, MonadError String m) =>
+	SwsContext -> m ColorSpaceDetails
 getColorSpaceDetails ctx = do
 	x <- withThis ctx$ \pctx -> liftIO$
 		alloca$ \pinv_table ->
@@ -440,7 +445,8 @@ subVector vd vs =
 
 -- | Shift a vector
 shiftVector :: MonadIO m => SwsVector -> Int -> m ()
-shiftVector v shift = withThis v$ \pv -> liftIO$ sws_shiftVec pv (fromIntegral shift)
+shiftVector v shift = withThis v$ \pv -> liftIO$
+	sws_shiftVec pv (fromIntegral shift)
 
 -- | Copy a vector
 cloneVector :: MonadIO m => SwsVector -> m SwsVector
@@ -460,7 +466,8 @@ getDefaultFilter lumaGBlur chromaGBlur lumaSharpen chromaSharpen chromaHShift ch
 		lumaGBlur chromaGBlur lumaSharpen
 		chromaSharpen chromaHShift chromaVShift 0
 	
-	if pf == nullPtr then throwError$ "getDefaultFilter: sws_getDefaultFilter returned a null pointer"
+	if pf == nullPtr then throwError$
+		"getDefaultFilter: sws_getDefaultFilter returned a null pointer"
 	else do
 		lumH <- swsVectorFromPtr =<< (liftIO$ #{peek SwsFilter, lumH} pf)
 		lumV <- swsVectorFromPtr =<< (liftIO$ #{peek SwsFilter, lumV} pf)

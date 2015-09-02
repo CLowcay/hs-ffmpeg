@@ -72,7 +72,10 @@ findInputFormat name = do
 -- | Open an input stream.  Returns the AVFormatContext and a dictionary as
 -- described in the ffmpeg docs
 openInput :: (MonadIO m, MonadError String m) =>
-	FilePath -> Maybe AVInputFormat -> Maybe AVDictionary -> m (AVFormatContext, AVDictionary)
+	FilePath
+	-> Maybe AVInputFormat
+	-> Maybe AVDictionary
+	-> m (AVFormatContext, AVDictionary)
 openInput path mif mdict = do
 	(r, ctx, dict) <- 
 		withOrNull mif$ \pif ->
@@ -90,7 +93,7 @@ openInput path mif mdict = do
 	when (r /= 0)$ throwError$
 		"openInput: avformat_open_input failed with error code " ++ (show r)
 
-	rdict <- unsafeDictCopyFromPtr dict []
+	rdict <- unsafeDictCopyFromPtr dict mempty 
 	liftIO$ with dict av_dict_free
 	rctx <- mkAVFormatContextFromPtr ctx (Just pavformat_close_input)
 	return (rctx, rdict)
@@ -103,7 +106,8 @@ findStreamInfo :: (MonadIO m, MonadError String m) =>
 	AVFormatContext -> (M.Map StreamIndex AVDictionary) -> m [AVDictionary]
 findStreamInfo ctx dicts = do
 	defDict <- newAVDictionary
-	let streams = if M.null dicts then [] else [StreamIndex 0 .. last$ M.keys dicts]
+	let streams = if M.null dicts then []
+		else [StreamIndex 0 .. last$ M.keys dicts]
 
 	-- marshal in the dictionaries
 	pa <- liftIO$
@@ -119,7 +123,7 @@ findStreamInfo ctx dicts = do
 		"findStreamInfo: avformat_find_stream_info failed with error code " ++ (show r)
 	
 	-- marshal out the dictionaries
-	mapM (\pdict -> unsafeDictCopyFromPtr pdict [])
+	mapM (\pdict -> unsafeDictCopyFromPtr pdict mempty)
 		=<< (liftIO$ peekArray (length streams) pa)
 	where
 		mkList :: Ord a => M.Map a b -> b -> [a] -> [b]
@@ -161,28 +165,27 @@ readFrame ctx pkt = do
 		withThis pkt$ \ppkt -> av_read_frame pctx ppkt
 
 	if r == 0 then return False
-	else if toCEnum r == averror_eof then return True
+	else if toCEnum r == AVERROREof then return True
 	else throwError$ "readFrame: av_read_frame filed with error code " ++ (show r)
 
 -- | Seek to a keyframe.  Returns True on success, otherwise False.
 seekKeyframe :: MonadIO m =>
-	AVFormatContext -> StreamIndex -> AVTimestamp -> [AVSeekFlag] -> m Bool
+	AVFormatContext -> StreamIndex -> AVTimestamp -> AVSeekFlag -> m Bool
 seekKeyframe ctx (StreamIndex idx) (AVTimestamp ts) flags = do
-	r <- liftIO.withThis ctx$ \pctx -> av_seek_frame pctx idx ts cflags
+	r <- liftIO.withThis ctx$ \pctx -> av_seek_frame pctx idx ts (fromCEnum flags)
 	return$ r >= 0
-	where cflags = fromCEnum$ mconcat flags
 
 -- | Seek within a file.
 seekFile :: MonadIO m =>
 	AVFormatContext                              -- ^ Format context
 	-> StreamIndex                               -- ^ Stream to seek
 	-> (AVTimestamp, AVTimestamp, AVTimestamp)   -- ^ (min_ts, ts, max_ts)
-	-> [AVSeekFlag]                              -- ^ flags
+	-> AVSeekFlag                                -- ^ flags
 	-> m Bool                                    -- ^ True on success, otherwise False
 seekFile ctx (StreamIndex idx) (AVTimestamp min_ts, AVTimestamp ts, AVTimestamp max_ts) flags = do
-	r <- liftIO.withThis ctx$ \pctx -> avformat_seek_file pctx idx min_ts ts max_ts cflags
+	r <- liftIO.withThis ctx$ \pctx ->
+		avformat_seek_file pctx idx min_ts ts max_ts (fromCEnum flags)
 	return$ r >= 0
-	where cflags = fromCEnum$ mconcat flags
 
 -- | Discard all internally buffered data
 -- formatFlush :: (MonadIO m, MonadError String m) => AVFormatContext -> m ()

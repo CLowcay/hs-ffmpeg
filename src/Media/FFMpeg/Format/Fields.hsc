@@ -158,13 +158,15 @@ formatGetFilename ctx = withThis ctx$ \pctx ->
 	liftIO.peekCString$ pctx `plusPtr` #{offset AVFormatContext, filename}
 
 -- | Set the filename to use for this AVFormatContext (call before writeHeader)
-formatSetFilename :: (MonadIO m, MonadError String m) => AVFormatContext -> String -> m ()
+formatSetFilename :: (MonadIO m, MonadError String m) =>
+	AVFormatContext -> String -> m ()
 formatSetFilename ctx s =
 	withThis ctx$ \pctx -> do
 	len <- liftIO.withCStringLen s$ \(ps, len) -> do
 		when (len < 1024)$ do
-			moveBytes (pctx `plusPtr` #{offset AVFormatContext, filename}) ps len
-			poke (pctx `plusPtr` (#{offset AVFormatContext, filename} + len)) (castCharToCChar '\0')
+			let pf = pctx `plusPtr` #{offset AVFormatContext, filename}
+			moveBytes pf ps len
+			poke (pf `plusPtr` len) (castCharToCChar '\0')
 		return len
 
 	when (len >= 1024)$ throwError$

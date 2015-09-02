@@ -161,7 +161,11 @@ encodeSubtitle ctx pkt1 pkt2 subtitle = do
 	psub <- liftIO.(fmap castPtr).av_malloc.fromIntegral$ sizeOf (undefined :: AVSubtitle)
 	liftIO$ poke psub subtitle
 
-	pktTimebase <- codecGetPktTimebase ctx
+	mpktTimebase <- codecGetPktTimebase ctx
+	pktTimebase <- case mpktTimebase of
+		Just x -> return x
+		Nothing -> throwError$ "encodeSubtitle: packet time base invalid"
+
 	codecID <- (return.avCodecDescriptor_id) =<< codecGetCodecDescriptor ctx
 
 	-- preadjust the timing

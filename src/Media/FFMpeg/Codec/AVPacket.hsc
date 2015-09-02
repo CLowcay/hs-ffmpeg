@@ -111,7 +111,7 @@ foreign import ccall "av_packet_unref" av_packet_unref :: Ptr AVPacket -> IO ()
 foreign import ccall "av_packet_move_ref" av_packet_move_ref :: Ptr AVPacket -> Ptr AVPacket -> IO ()
 foreign import ccall "av_packet_copy_props" av_packet_copy_props :: Ptr AVPacket -> Ptr AVPacket -> IO CInt
 
-foreign import ccall "b_av_packet_rescale_ts" av_packet_rescale_ts :: Ptr AVPacket -> CInt -> CInt -> CInt -> CInt -> IO ()
+foreign import ccall "b_av_packet_rescale_ts" av_packet_rescale_ts :: Ptr AVPacket -> Ptr (Maybe AVRational) -> Ptr (Maybe AVRational) -> IO ()
 foreign import ccall "&b_free_packet" pav_free_packet :: FunPtr (Ptr () -> IO ())
 
 -- | AVPacket struct
@@ -182,7 +182,8 @@ class AVPacketSideDataPayload a where
 	peekPayload :: Ptr a -> Int -> IO a
 	pokePayload :: Ptr a -> a -> IO ()
 
-peekAVPacketSideDataPtrType :: AVPacketSideDataType -> Ptr AVPacket -> IO (Ptr Word8, Int)
+peekAVPacketSideDataPtrType ::
+	AVPacketSideDataType -> Ptr AVPacket -> IO (Ptr Word8, Int)
 peekAVPacketSideDataPtrType sdType ptr =
 	alloca $ \psize -> do
 		pdata <- av_packet_get_side_data ptr (fromCEnum sdType) psize
@@ -325,7 +326,8 @@ instance AVPacketSideDataPayload AVPacketSideDataMetadataUpdate where
 
 -- | Add side data to a packet.  If there is already side data of the same
 -- type, then the old side data is replaced.
-packetSetSideData :: forall a m. (MonadIO m, MonadError String m, AVPacketSideDataPayload a) =>
+packetSetSideData :: forall a m.
+	(MonadIO m, MonadError String m, AVPacketSideDataPayload a) =>
 	AVPacket -> AVPacketSideData a -> m ()
 packetSetSideData pkt sd = do
 	let AVPacketSideData payload = sd
@@ -398,11 +400,11 @@ packetFreeSideData pkt = liftIO$ withThis pkt av_packet_free_side_data
 -- 	unsafePerformIO.peekCString.av_packet_side_data_name.fromCEnum
 
 -- | Change the timebase of a packet, rescaling the timestamps
-packetRescaleTS :: MonadIO m => AVPacket -> Rational -> Rational -> m ()
+packetRescaleTS :: MonadIO m => AVPacket -> AVRational -> AVRational -> m ()
 packetRescaleTS pkt src dst =
-	liftIO.withThis pkt$ \ptr -> av_packet_rescale_ts ptr
-		(fromIntegral$ numerator src) (fromIntegral$ denominator src)
-		(fromIntegral$ numerator dst) (fromIntegral$ denominator dst)
+	withThis pkt$ \ptr -> liftIO$
+		with (Just src)$ \psrc ->
+		with (Just dst)$ \pdst -> av_packet_rescale_ts ptr psrc pdst
 
 -- | Initialise a packet with the given buffer, and default values for all
 -- other fields

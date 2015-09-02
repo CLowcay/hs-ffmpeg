@@ -223,11 +223,12 @@ getDefaultChannelLayout :: Int -> AVChannelLayout
 getDefaultChannelLayout = av_get_default_channel_layout.fromIntegral
 
 -- | Get the index of a channel in a channel layout
-getChannelLayoutChannelIndex :: (MonadError String m) => AVChannelLayout -> AVChannel -> m Int
+getChannelLayoutChannelIndex :: (MonadError String m) =>
+	AVChannelLayout -> AVChannel -> m Int
 getChannelLayoutChannelIndex layout channel = do
 	let r = av_get_channel_layout_channel_index layout channel
-	if r < 0 then
-		throwError$ "getChannelLayoutChannelIndex failed with error code " ++ (show r)
+	if r < 0 then throwError$
+		"getChannelLayoutChannelIndex failed with error code " ++ (show r)
 	else return.fromIntegral$ r
 
 -- | Get the channel at a particular index from a Channel layout
@@ -252,7 +253,7 @@ getChannelDescription c = unsafePerformIO$ do
 
 -- | Get a channel layout with description from an internal table
 getStandardChannelLayout :: Word -> Maybe (AVChannelLayout, String)
-getStandardChannelLayout i = unsafePerformIO$    -- safe because there are no observable side-effects
+getStandardChannelLayout i = unsafePerformIO$    -- no observable side-effects
 	alloca $ \playout -> do
 	alloca $ \pbuff -> do
 		r <- av_get_standard_channel_layout (fromIntegral i) playout pbuff
@@ -264,5 +265,6 @@ getStandardChannelLayout i = unsafePerformIO$    -- safe because there are no ob
 
 -- | Get all the standard channel layouts
 standardChannelLayouts :: [(AVChannelLayout, String)]
-standardChannelLayouts = catMaybes.takeWhile isJust$ getStandardChannelLayout <$> [0..]
+standardChannelLayouts = catMaybes.takeWhile isJust$
+	getStandardChannelLayout <$> [0..]
 
