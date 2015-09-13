@@ -84,6 +84,15 @@ class ExternalPointer p => HasAVPicture p where
 	-- | Get a pointer to the AVPicture struct
 	withAVPicturePtr :: MonadIO m => p -> (Ptr (UnderlyingType p) -> m b) -> m b
 
+	-- | Get pointers into the buffer
+	withDataPointers :: MonadIO m => p -> ([(Ptr Word8, Int)] -> m b) -> m b
+	withDataPointers p action = withAVPicturePtr p$ \pp ->
+		action =<< (liftIO$ zip <$>
+			(peekArray #{const AV_NUM_DATA_POINTERS}$
+				pp `plusPtr` #{offset AVPicture, data}) <*>
+			(peekArray #{const AV_NUM_DATA_POINTERS}$
+				pp `plusPtr` #{offset AVPicture, linesize}))
+
 	-- | Allocate a buffer for a picture and execute a monadic action with that
 	-- buffer.  The buffer is freed when the action returns, so the action must
 	-- not return any references that depend on the buffer.
