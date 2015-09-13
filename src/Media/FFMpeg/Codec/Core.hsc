@@ -43,7 +43,8 @@ module Media.FFMpeg.Codec.Core (
 	avcodecRegisterAll,
 
 	copyCodecContext,
-	getCodecContext,
+	openCodecContext,
+	copyAndOpenCodecContext,
 
 	libAVCodecVersion,
 
@@ -426,24 +427,25 @@ copyCodecContext dst src =
 	withThis dst$ \pdst ->
 	withThis src$ \psrc -> do
 		r <- liftIO$ avcodec_copy_context pdst psrc
-		when (r /= 0)$ throwError$ "copyCodecContext: failed with error code " ++ (show r)
+		when (r /= 0)$ throwError$
+			"copyCodecContext: failed with error code " ++ (show r)
 
--- | Allocate a new codec context
-getCodecContext :: (MonadIO m, MonadError String m) =>
-	AVCodec -> AVDictionary -> m AVCodecContext
-getCodecContext cd dict = do
+-- | Allocate and open new codec context
+openCodecContext :: (MonadIO m, MonadError String m) =>
+	AVCodec -> Maybe AVDictionary -> m AVCodecContext
+openCodecContext cd mdict = do
 	pctx <- liftIO$ withThis cd avcodec_alloc_context3
 
 	when (pctx == nullPtr)$
-		throwError$ "getCodecContext: avcodec_alloc_context3 returned a null pointer"
-
+		throwError$ "openCodecContext: avcodec_alloc_context3 returned a null pointer"
+	
 	r <- liftIO$
 		withThis cd$ \pCodec ->
-		withThis dict$ \ppdict ->
+		withOrNull mdict$ \ppdict ->
 			avcodec_open2 pctx pCodec ppdict
 
 	when (r /= 0)$
-		throwError$ "getCodecContext: avcodec_open2 failed with error code " ++ (show r)
+		throwError$ "openCodecContext: avcodec_open2 failed with error code " ++ (show r)
 
 	liftIO$ do
 		fpctx <- mallocForeignPtr
@@ -451,6 +453,31 @@ getCodecContext cd dict = do
 		addForeignPtrFinalizer pavcodec_free_context fpctx
 		return$ AVCodecContext fpctx
 	
+-- | Allocate and open a copy of a codec context
+copyAndOpenCodecContext :: (MonadIO m, MonadError String m) =>
+	AVCodecContext -> Maybe AVDictionary -> m AVCodecContext
+copyAndOpenCodecContext ctx mdict = withThis ctx$ \psrc -> do
+	pCodec <- liftIO$ #{peek AVCodecContext, codec} psrc
+	pctx <- liftIO$ avcodec_alloc_context3 pCodec
+
+	when (pctx == nullPtr)$ throwError$
+		"copyAndOpenCodecContext: avcodec_alloc_context3 returned a null pointer"
+
+	r <- liftIO$ avcodec_copy_context pctx psrc
+	when (r /= 0)$ throwError$
+		"copyAndOpenCodecContext: failed with error code " ++ (show r)
+	
+	r <- liftIO.withOrNull mdict$ \ppdict -> avcodec_open2 pctx pCodec ppdict
+
+	when (r /= 0)$ throwError$
+		"copyAndOpenCodecContext: avcodec_open2 failed with error code " ++ (show r)
+
+	liftIO$ do
+		fpctx <- mallocForeignPtr
+		withForeignPtr fpctx $ \ppctx -> poke ppctx pctx
+		addForeignPtrFinalizer pavcodec_free_context fpctx
+		return$ AVCodecContext fpctx
+
 -- | Which version of libavcodec are we using?
 libAVCodecVersion :: Version
 libAVCodecVersion = fromVersionNum #{const LIBAVCODEC_VERSION_INT}
