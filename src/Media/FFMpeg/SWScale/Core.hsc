@@ -255,19 +255,19 @@ newSwsContext srcFilter dstFilter = do
 
 -- | Initialise a new SwsContext with the given options
 getSwsContext :: (MonadIO m, MonadError String m) =>
-	(Int, Int, AVPixelFormat)          -- ^ Source (width, height, format)
-	-> (Int, Int, AVPixelFormat)       -- ^ Destination (width, height, format)
+	(Int, Int, AVPixelFormat)        -- ^ Source (width, height, format)
+	-> (Int, Int, AVPixelFormat)     -- ^ Destination (width, height, format)
 	-> SwsFlags                      -- ^ Use encodeSwsFlags to produce this value
-	-> SwsFilter                     -- ^ Source filter
-	-> SwsFilter                     -- ^ Destination filter
+	-> Maybe SwsFilter               -- ^ Source filter
+	-> Maybe SwsFilter               -- ^ Destination filter
 	-> Maybe (Double, Double)        -- ^ Optional parameters for the scaling algorithm
 	-> m SwsContext
 getSwsContext
 	(srcW, srcH, srcPF) (dstW, dstH, dstPF)
-	flags srcFilter dstFilter mparams = do
+	flags msrcFilter mdstFilter mparams = do
 		p <-
-			withThis srcFilter$ \psrcFilter ->
-			withThis dstFilter$ \pdstFilter ->
+			withOrNull msrcFilter$ \psrcFilter ->
+			withOrNull mdstFilter$ \pdstFilter ->
 			liftIO.withParams$ \pparams -> sws_getContext
 				(fromIntegral srcW) (fromIntegral srcH) (fromCEnum srcPF)
 				(fromIntegral dstW) (fromIntegral dstH) (fromCEnum dstPF)
