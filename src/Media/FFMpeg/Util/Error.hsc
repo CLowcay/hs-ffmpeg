@@ -44,7 +44,19 @@ module Media.FFMpeg.Util.Error (
 	pattern AVERRORHttpOther4xx,
 	pattern AVERRORHttpServerError,
 
-	errorToString
+	pattern HSFFErrorNullPointer,
+	pattern HSFFErrorBadPacketTimebase,
+	pattern HSFFErrorInvalidStreamIndex,
+	pattern HSFFErrorOptionNotSupported,
+	pattern HSFFErrorBug,
+	pattern HSFFErrorStrTooLong,
+	pattern HSFFErrorUser,
+
+	errorToString,
+	HSFFError(..),
+	mkError,
+	mkNullPointerError,
+	formatError
 ) where
 
 #include "ffmpeg.h"
@@ -87,6 +99,27 @@ pattern AVERRORHttpNotFound = AVERROR (#{const AVERROR_HTTP_NOT_FOUND})
 pattern AVERRORHttpOther4xx = AVERROR (#{const AVERROR_HTTP_OTHER_4XX})
 pattern AVERRORHttpServerError = AVERROR (#{const AVERROR_HTTP_SERVER_ERROR})
 
+-- | ffmpeg function returned an unexpected null pointer
+pattern HSFFErrorNullPointer = AVERROR 1
+
+-- | Codec packet timebase was invalid
+pattern HSFFErrorBadPacketTimebase = AVERROR 2
+
+-- | Programmer attempted to use an invalid stream index
+pattern HSFFErrorInvalidStreamIndex  = AVERROR 3
+
+-- | Option is not supported by the linked version of ffmpeg
+pattern HSFFErrorOptionNotSupported = AVERROR 4
+
+-- | Inconsistency in ffmpeg API
+pattern HSFFErrorBug = AVERROR 5
+
+-- | String length is too long
+pattern HSFFErrorStrTooLong = AVERROR 6
+
+-- | Error thrown from user code
+pattern HSFFErrorUser = AVERROR 7
+
 -- | Convert an error code to a string
 errorToString :: AVERROR -> String
 errorToString e = unsafePerformIO$
@@ -94,4 +127,34 @@ errorToString e = unsafePerformIO$
 		av_strerror (fromCEnum e) pbuff av_error_max_string_size
 		peekCString pbuff
 	where av_error_max_string_size = #{const AV_ERROR_MAX_STRING_SIZE}
+
+-- | Rich error type for hs-ffmpeg
+data HSFFError = HSFFError AVERROR String String
+
+-- | Construct an error (for internal use only)
+mkError :: CInt -> String -> String -> HSFFError
+mkError code location cause = HSFFError (AVERROR code) location cause
+
+-- | Construct a null pointer error
+mkNullPointerError :: String -> String -> HSFFError
+mkNullPointerError location cause = HSFFError HSFFErrorNullPointer location cause
+
+-- | Format an error
+formatError :: HSFFError -> String
+formatError (HSFFError HSFFErrorNullPointer location cause) =
+	location ++ ": " ++ cause ++ " returned a null pointer"
+formatError (HSFFError HSFFErrorBadPacketTimebase location _) =
+	location ++ ": packet time base invalid"
+formatError (HSFFError HSFFErrorInvalidStreamIndex location cause) =
+	location ++ ": " ++ " Invalid stream index " ++ cause
+formatError (HSFFError HSFFErrorOptionNotSupported location cause) =
+	location ++ ": " ++ " Option not supported \"" ++ cause ++ "\""
+formatError (HSFFError HSFFErrorBug location cause) =
+	location ++ ": " ++ cause
+formatError (HSFFError HSFFErrorStrTooLong location cause) =
+	location ++ ": " ++ cause ++ "\""
+formatError (HSFFError HSFFErrorUser location cause) =
+	location ++ ": " ++ cause ++ "\""
+formatError (HSFFError code location cause) =
+	location ++ ": " ++ cause ++ " failed with error code " ++ (errorToString code)
 

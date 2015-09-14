@@ -129,19 +129,18 @@ mkAVPacket = liftIO$ do
 
 -- | Initialise a packet, allocating a new buffer.  If the packet already has a
 -- buffer, or side data, it will be freed.
-packetAlloc :: (MonadIO m, MonadError String m) => AVPacket -> Int -> m ()
+packetAlloc :: (MonadIO m, MonadError HSFFError m) => AVPacket -> Int -> m ()
 packetAlloc pkt size = do
 	packetFree pkt
 	r <- liftIO.withThis pkt$ \ptr -> av_new_packet ptr (fromIntegral size)
-	when (r /= 0)$
-		throwError$ "packetAlloc: av_new_packet failed with error code " ++ (show r)
+	when (r /= 0)$ throwError$ mkError r "packetAlloc" "av_new_packet"
 
 -- | Manually free the data associated with a packet, including side data
 packetFree :: MonadIO m => AVPacket -> m ()
 packetFree pkt = liftIO.withThis pkt$ \ptr -> av_free_packet ptr
 
 -- | Copy all the data associated with one packet to another
-copyPacket :: (MonadIO m, MonadError String m) =>
+copyPacket :: (MonadIO m, MonadError HSFFError m) =>
 	AVPacket     -- ^ Destination
 	-> AVPacket  -- ^ Source
 	-> m ()
@@ -149,10 +148,10 @@ copyPacket dst src = do
 	r <- liftIO$
 		withThis dst$ \pd ->
 		withThis src$ \ps -> av_copy_packet pd ps
-	when (r < 0)$ throwError$ "copyPacket: failed with error code " ++ (show r)
+	when (r < 0)$ throwError$ mkError r "copyPacket" "av_copy_packet"
 
 -- | Copy the side data from one packet to another
-copyPacketSideData :: (MonadIO m, MonadError String m) =>
+copyPacketSideData :: (MonadIO m, MonadError HSFFError m) =>
 	AVPacket     -- Destination
 	-> AVPacket  -- Source
 	-> m ()
@@ -160,11 +159,11 @@ copyPacketSideData dst src = do
 	r <- liftIO$
 		withThis dst$ \pd ->
 		withThis src$ \ps -> av_copy_packet_side_data pd ps
-	when (r < 0)$ throwError$ "copyPacketSideData: failed with error code " ++ (show r)
+	when (r < 0)$ throwError$ mkError r "copyPacketSideData" "av_copy_packet_side_data"
 
 -- | Copy packet properties from one packet to another.  Includes side data and
 -- metadata fields, but not the buffers
-packetCopyProps :: (MonadIO m, MonadError String m) =>
+packetCopyProps :: (MonadIO m, MonadError HSFFError m) =>
 	AVPacket     -- ^ Destination
 	-> AVPacket  -- ^ Source
 	-> m ()
@@ -172,7 +171,7 @@ packetCopyProps dst src = do
 	r <- liftIO$
 		withThis dst$ \pd ->
 		withThis src$ \ps -> av_packet_copy_props pd ps
-	when (r < 0)$ throwError$ "packetCopyProps: failed with error code " ++ (show r)
+	when (r < 0)$ throwError$ mkError r "packetCopyProps" "av_packet_copy_props"
 
 -- | Class of valid AVPacketSideData types
 class AVPacketSideDataPayload a where
@@ -327,7 +326,7 @@ instance AVPacketSideDataPayload AVPacketSideDataMetadataUpdate where
 -- | Add side data to a packet.  If there is already side data of the same
 -- type, then the old side data is replaced.
 packetSetSideData :: forall a m.
-	(MonadIO m, MonadError String m, AVPacketSideDataPayload a) =>
+	(MonadIO m, MonadError HSFFError m, AVPacketSideDataPayload a) =>
 	AVPacket -> AVPacketSideData a -> m ()
 packetSetSideData pkt sd = do
 	let AVPacketSideData payload = sd
@@ -339,8 +338,8 @@ packetSetSideData pkt sd = do
 	pdata <- liftIO.withThis pkt$ \ptr -> castPtr <$>
 		av_packet_new_side_data ptr (fromCEnum sdType) (fromIntegral sdSize)
 	
-	when (pdata == nullPtr)$
-		throwError$ "packetSetSideData: av_packet_new_side_data returned a null pointer"
+	when (pdata == nullPtr)$ throwError$
+		mkNullPointerError "packetSetSideData" "av_packet_new_side_data"
 
 	liftIO$ pokePayload pdata payload
 	
@@ -356,7 +355,7 @@ packetGetSideData pkt = liftIO.withThis pkt$ \ptr -> do
 foreign import ccall "b_av_packet_get_side_data_i" b_av_packet_get_side_data_i :: Ptr () -> CInt -> IO (Ptr ())
 
 -- | Free all the side data of a particular type
-packetFreeSideDataType :: (MonadIO m, MonadError String m) =>
+packetFreeSideDataType :: (MonadIO m, MonadError HSFFError m) =>
 	AVPacket -> AVPacketSideDataType -> m ()
 packetFreeSideDataType pkt sdType = do
 	(pdata', nFiltered) <- liftIO.withThis pkt$ \ptr -> do
@@ -374,8 +373,8 @@ packetFreeSideDataType pkt sdType = do
 		pdata' <- av_realloc pdata.fromIntegral$ #{size AVPacketSideData} * nFiltered
 		return (pdata', nFiltered)
 
-	when (pdata' == nullPtr)$
-		throwError$ "packetFreeSideDataType: av_realloc returned a null pointer"
+	when (pdata' == nullPtr)$ throwError$
+		mkNullPointerError "packetFreeSideDataType" "av_realloc"
 
 	liftIO.withThis pkt$ \ptr -> do
 		#{poke AVPacket, side_data} ptr pdata'

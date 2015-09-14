@@ -71,7 +71,7 @@ findInputFormat name = do
 
 -- | Open an input stream.  Returns the AVFormatContext and a dictionary as
 -- described in the ffmpeg docs
-openInput :: (MonadIO m, MonadError String m) =>
+openInput :: (MonadIO m, MonadError HSFFError m) =>
 	FilePath
 	-> Maybe AVInputFormat
 	-> Maybe AVDictionary
@@ -90,8 +90,7 @@ openInput path mif mdict = do
 				dict <- peek ppdict
 				return (r, ctx, dict)
 
-	when (r /= 0)$ throwError$
-		"openInput: avformat_open_input failed with error code " ++ (show r)
+	when (r /= 0)$ throwError$ mkError r "openInput" "avformat_open_input"
 
 	rdict <- unsafeDictCopyFromPtr dict mempty 
 	liftIO$ with dict av_dict_free
@@ -102,7 +101,7 @@ openInput path mif mdict = do
 -- open codecs for all the streams.  Optionally takes an AVDictionary of
 -- options for each codec, and returns AVDictionaries containing the options
 -- that were not recognised.
-findStreamInfo :: (MonadIO m, MonadError String m) =>
+findStreamInfo :: (MonadIO m, MonadError HSFFError m) =>
 	AVFormatContext -> (M.Map StreamIndex AVDictionary) -> m [AVDictionary]
 findStreamInfo ctx dicts = do
 	defDict <- newAVDictionary
@@ -119,8 +118,7 @@ findStreamInfo ctx dicts = do
 			return pa
 
 	r <- liftIO.withThis ctx$ \pctx -> avformat_find_stream_info pctx pa
-	when (r < 0)$ throwError$
-		"findStreamInfo: avformat_find_stream_info failed with error code " ++ (show r)
+	when (r < 0)$ throwError$ mkError r "findStreamInfo" "avformat_find_stream_info"
 	
 	-- marshal out the dictionaries
 	mapM (\pdict -> unsafeDictCopyFromPtr pdict mempty)
@@ -157,7 +155,7 @@ findBestStream ctx mt mwanted mrelatedTo = do
 	if r < 0 then return Nothing else return.Just$ StreamIndex r
 
 -- | Read a packet from a file.  Returns True on EOF, otherwise False.
-readFrame :: (MonadIO m, MonadError String m) =>
+readFrame :: (MonadIO m, MonadError HSFFError m) =>
 	AVFormatContext -> AVPacket -> m Bool
 readFrame ctx pkt = do
 	r <- liftIO$
@@ -166,7 +164,7 @@ readFrame ctx pkt = do
 
 	if r == 0 then return False
 	else if toCEnum r == AVERROREof then return True
-	else throwError$ "readFrame: av_read_frame filed with error code " ++ (show r)
+	else throwError$ mkError r "readFrame" "av_read_frame"
 
 -- | Seek to a keyframe.  Returns True on success, otherwise False.
 seekKeyframe :: MonadIO m =>
@@ -188,23 +186,21 @@ seekFile ctx (StreamIndex idx) (AVTimestamp min_ts, AVTimestamp ts, AVTimestamp 
 	return$ r >= 0
 
 -- | Discard all internally buffered data
--- formatFlush :: (MonadIO m, MonadError String m) => AVFormatContext -> m ()
+-- formatFlush :: (MonadIO m, MonadError HSFFError m) => AVFormatContext -> m ()
 -- formatFlush ctx = do
 -- 	r <- liftIO.withThis ctx$ avformat_flush
 -- 	when (r < 0)$ throwError$
 -- 		"formatFlush: avformat_flush failed with error code " ++ (show r)
 
 -- | Start playing a network stream
-readPlay :: (MonadIO m, MonadError String m) => AVFormatContext -> m ()
+readPlay :: (MonadIO m, MonadError HSFFError m) => AVFormatContext -> m ()
 readPlay ctx = do
 	r <- liftIO.withThis ctx$ av_read_play
-	when (r < 0)$ throwError$
-		"readPlay: av_read_play failed with error code " ++ (show r)
+	when (r < 0)$ throwError$ mkError r "readPlay" "av_read_play"
 
 -- | Pause a network stream
-readPause :: (MonadIO m, MonadError String m) => AVFormatContext -> m ()
+readPause :: (MonadIO m, MonadError HSFFError m) => AVFormatContext -> m ()
 readPause ctx = do
 	r <- liftIO.withThis ctx$ av_read_pause
-	when (r < 0)$ throwError$
-		"readPlay: av_read_pause failed with error code " ++ (show r)
+	when (r < 0)$ throwError$ mkError r "readPlay" "av_read_pause"
 

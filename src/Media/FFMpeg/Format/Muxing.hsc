@@ -59,28 +59,26 @@ foreign import ccall "av_get_output_timestamp" av_get_output_timestamp :: Ptr AV
 -- | Write the header to the output file.  The AVDictionary contains options
 -- for the muxer.  On return it will contain only the options that were not
 -- found.
-writeHeader :: (MonadIO m, MonadError String m) =>
+writeHeader :: (MonadIO m, MonadError HSFFError m) =>
 	AVFormatContext -> Maybe AVDictionary -> m ()
 writeHeader ctx dict =
 	withThis ctx$ \pctx ->
 	withOrNull dict$ \ppdict -> do
 		r <- liftIO$ avformat_write_header pctx ppdict
-		when (r /= 0)$ throwError$
-			"writeHeader: avformat_write_header failed with error code " ++ (show r)
+		when (r /= 0)$ throwError$ mkError r "writeHeader" "avformat_write_header"
 
 -- | Write a packet to the output file.
-writeFrame :: (MonadIO m, MonadError String m) =>
+writeFrame :: (MonadIO m, MonadError HSFFError m) =>
 	AVFormatContext -> AVPacket -> m ()
 writeFrame ctx pkt = do
 	r <- liftIO$
 		withThis ctx$ \pctx ->
 		withThis pkt$ \ppkt -> av_write_frame pctx ppkt
 	
-	when (r < 0)$ throwError$
-		"writeFrame: av_write_frame failed with error code " ++ (show r)
+	when (r < 0)$ throwError$ mkError r "writeFrame" "av_write_frame"
 
 -- | Write a frame using correct interleaving.
-interleavedWriteFrame :: (MonadIO m, MonadError String m) =>
+interleavedWriteFrame :: (MonadIO m, MonadError HSFFError m) =>
 	AVFormatContext -> AVPacket -> m ()
 interleavedWriteFrame ctx pkt = do
 	r <- liftIO$
@@ -93,10 +91,10 @@ interleavedWriteFrame ctx pkt = do
 			return r
 
 	when (r < 0)$ throwError$
-		"interleavedWriteFrame: av_interleaved_write_frame failed with error code " ++ (show r)
+		mkError r "interleavedWriteFrame" "av_interleaved_write_frame"
 
 -- | Write a raw frame directly to output
-writeUncodedFrame :: (MonadIO m, MonadError String m) =>
+writeUncodedFrame :: (MonadIO m, MonadError HSFFError m) =>
 	AVFormatContext -> AVFrame -> StreamIndex -> m ()
 writeUncodedFrame ctx pkt (StreamIndex idx) = do
 	r <- liftIO$
@@ -104,10 +102,10 @@ writeUncodedFrame ctx pkt (StreamIndex idx) = do
 		withThis pkt$ \ppkt -> av_write_uncoded_frame pctx idx ppkt
 	
 	when (r < 0)$ throwError$
-		"writeUncodedFrame: av_write_uncoded_frame failed with error code " ++ (show r)
+		mkError r "writeUncodedFrame" "av_write_uncoded_frame"
 
 -- | Write a raw frame directly to output with correct interleaving
---interleavedWriteUncodedFrame :: (MonadIO m, MonadError String m) =>
+--interleavedWriteUncodedFrame :: (MonadIO m, MonadError HSFFError m) =>
 --	AVFormatContext -> AVFrame -> StreamIndex -> m ()
 --interleavedWriteUncodedFrame ctx frame (StreamIndex idx) = do
 --	r <- liftIO$
@@ -118,45 +116,43 @@ writeUncodedFrame ctx pkt (StreamIndex idx) = do
 --		"interleavedWriteUncodedFrame: av_interleaved_write_uncoded_frame failed with error code " ++ (show r)
 
 -- | Flush all the frames.  Returns True if all data has been flushed.
-flushFrames :: (MonadIO m, MonadError String m) => AVFormatContext -> m Bool
+flushFrames :: (MonadIO m, MonadError HSFFError m) => AVFormatContext -> m Bool
 flushFrames ctx = do
 	r <- liftIO.withThis ctx$ \pctx -> av_write_frame pctx nullPtr
 	if r == 0 then return False
 	else if r == 1 then return True
-	else throwError$
-		"flushFrames: av_write_frame failed with error code " ++ (show r)
+	else throwError$ mkError r "flushFrames" "av_write_frame"
 
 -- | Flush all buffered frames for interleaving.  Returns True if all the data
 -- has been flushed
-interleavedFlushFrames :: (MonadIO m, MonadError String m) =>
+interleavedFlushFrames :: (MonadIO m, MonadError HSFFError m) =>
 	AVFormatContext -> m Bool
 interleavedFlushFrames ctx = do
 	r <- liftIO.withThis ctx$ \pctx -> av_interleaved_write_frame pctx nullPtr
 	if r == 0 then return False
 	else if r == 1 then return True
 	else throwError$
-		"interleavedFlushFrames: av_interleaved_write_frame failed with error code " ++ (show r)
+		mkError r "interleavedFlushFrames" "av_interleaved_write_frame"
 
 -- | Flush uncoded frames.  Returns True if all data has been flushed.
-flushUncodedFrames :: (MonadIO m, MonadError String m) =>
+flushUncodedFrames :: (MonadIO m, MonadError HSFFError m) =>
 	AVFormatContext -> StreamIndex -> m Bool
 flushUncodedFrames ctx (StreamIndex idx) = do
 	r <- liftIO.withThis ctx$ \pctx -> av_write_uncoded_frame pctx idx nullPtr
 	if r == 0 then return False
 	else if r == 1 then return True
-	else throwError$
-		"flushUncodedFrames: av_write_uncoded_frame failed with error code " ++ (show r)
+	else throwError$ mkError r "flushUncodedFrames" "av_write_uncoded_frame"
 
 -- | Flush all uncoded frames buffered for interleaving.  Returns True if all
 -- the data has been flushed.
-interleavedFlushUncodedFrames :: (MonadIO m, MonadError String m) =>
+interleavedFlushUncodedFrames :: (MonadIO m, MonadError HSFFError m) =>
 	AVFormatContext -> StreamIndex -> m Bool
 interleavedFlushUncodedFrames ctx (StreamIndex idx) = do
 	r <- liftIO.withThis ctx$ \pctx -> av_interleaved_write_uncoded_frame pctx idx nullPtr
 	if r == 0 then return False
 	else if r == 1 then return True
-	else throwError$
-		"interleavedFlushUncodedFrames: av_interleaved_write_uncoded_frame failed with error code " ++ (show r)
+	else throwError$ mkError r
+		"interleavedFlushUncodedFrames" "av_interleaved_write_uncoded_frame"
 
 -- | Determine if the output format and stream can handle uncoded frames.
 canWriteUncodedFrames :: MonadIO m => AVFormatContext -> StreamIndex -> m Bool
@@ -165,10 +161,10 @@ canWriteUncodedFrames ctx (StreamIndex idx) = do
 	return$ r >= 0
 
 -- | Write stream trailer.  Must be called after a successful writeHeader.
-writeTrailer :: (MonadIO m, MonadError String m) => AVFormatContext -> m ()
+writeTrailer :: (MonadIO m, MonadError HSFFError m) => AVFormatContext -> m ()
 writeTrailer ctx = do
 	r <- liftIO.withThis ctx$ \pctx -> av_write_trailer pctx
-	when (r /= 0)$ throwError$ "writeTrailer: av_write_trailer failed with error code " ++ (show r)
+	when (r /= 0)$ throwError$ mkError r "writeTrailer" "av_write_trailer"
 
 -- | Attempt to guess an output format.
 guessFormat :: MonadIO m =>
@@ -206,7 +202,7 @@ guessCodec (AVOutputFormat ouf) mshortName mfilename mmimeType mt = do
 
 -- | Simultaneously measure the dts and wall time of the last packet that was
 -- output.
-getOutputTimestamp :: (MonadIO m, MonadError String m) =>
+getOutputTimestamp :: (MonadIO m, MonadError HSFFError m) =>
 	AVFormatContext -> StreamIndex -> m (AVTimestamp, AVTimestamp)
 getOutputTimestamp ctx (StreamIndex idx) = do
 	(r, dts, wall) <- liftIO$
@@ -217,7 +213,7 @@ getOutputTimestamp ctx (StreamIndex idx) = do
 			dts <- peek pdts
 			wall <- peek pwall
 			return (r, dts, wall)
-	when (r /= 0)$ throwError$
-		"getOutputTimestamp: av_get_output_timestamp failed with error code " ++ (show r)
+	when (r /= 0)$ throwError$ mkError r
+		"getOutputTimestamp" "av_get_output_timestamp"
 	return (AVTimestamp dts, AVTimestamp wall)
 

@@ -158,7 +158,7 @@ formatGetFilename ctx = withThis ctx$ \pctx ->
 	liftIO.peekCString$ pctx `plusPtr` #{offset AVFormatContext, filename}
 
 -- | Set the filename to use for this AVFormatContext (call before writeHeader)
-formatSetFilename :: (MonadIO m, MonadError String m) =>
+formatSetFilename :: (MonadIO m, MonadError HSFFError m) =>
 	AVFormatContext -> String -> m ()
 formatSetFilename ctx s =
 	withThis ctx$ \pctx -> do
@@ -170,7 +170,8 @@ formatSetFilename ctx s =
 		return len
 
 	when (len >= 1024)$ throwError$
-		"formatSetFilename: String is too long, max length is 1023, actual length was " ++ (show len)
+		HSFFError HSFFErrorStrTooLong "formatSetFilename"$
+			"String is too long, max length is 1023, actual length was " ++ (show len)
 
 format_start_time :: Field AVFormatContext AVTimestamp ReadOnly
 format_start_time = Field #{offset AVFormatContext, start_time} []

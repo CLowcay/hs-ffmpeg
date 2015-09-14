@@ -419,7 +419,7 @@ avcodecRegisterAll :: MonadIO m => m ()
 avcodecRegisterAll = liftIO avcodec_register_all
 
 -- | Copy all the data from one codec context to another
-copyCodecContext :: (MonadIO m, MonadError String m) =>
+copyCodecContext :: (MonadIO m, MonadError HSFFError m) =>
 	AVCodecContext     -- ^ Destination context
 	-> AVCodecContext  -- ^ Source context
 	-> m ()
@@ -427,25 +427,23 @@ copyCodecContext dst src =
 	withThis dst$ \pdst ->
 	withThis src$ \psrc -> do
 		r <- liftIO$ avcodec_copy_context pdst psrc
-		when (r /= 0)$ throwError$
-			"copyCodecContext: failed with error code " ++ (show r)
+		when (r /= 0)$ throwError$ mkError r "copyCodecContext" "avcodec_copy_context"
 
 -- | Allocate and open new codec context
-openCodecContext :: (MonadIO m, MonadError String m) =>
+openCodecContext :: (MonadIO m, MonadError HSFFError m) =>
 	AVCodec -> Maybe AVDictionary -> m AVCodecContext
 openCodecContext cd mdict = do
 	pctx <- liftIO$ withThis cd avcodec_alloc_context3
 
-	when (pctx == nullPtr)$
-		throwError$ "openCodecContext: avcodec_alloc_context3 returned a null pointer"
+	when (pctx == nullPtr)$ throwError$
+		mkNullPointerError "openCodecContext" "avcodec_alloc_context3"
 	
 	r <- liftIO$
 		withThis cd$ \pCodec ->
 		withOrNull mdict$ \ppdict ->
 			avcodec_open2 pctx pCodec ppdict
 
-	when (r /= 0)$
-		throwError$ "openCodecContext: avcodec_open2 failed with error code " ++ (show r)
+	when (r /= 0)$ throwError$ mkError r "openCodecContext" "avcodec_open2"
 
 	liftIO$ do
 		fpctx <- mallocForeignPtr
@@ -454,23 +452,23 @@ openCodecContext cd mdict = do
 		return$ AVCodecContext fpctx
 	
 -- | Allocate and open a copy of a codec context
-copyAndOpenCodecContext :: (MonadIO m, MonadError String m) =>
+copyAndOpenCodecContext :: (MonadIO m, MonadError HSFFError m) =>
 	AVCodecContext -> Maybe AVDictionary -> m AVCodecContext
 copyAndOpenCodecContext ctx mdict = withThis ctx$ \psrc -> do
 	pCodec <- liftIO$ #{peek AVCodecContext, codec} psrc
 	pctx <- liftIO$ avcodec_alloc_context3 pCodec
 
 	when (pctx == nullPtr)$ throwError$
-		"copyAndOpenCodecContext: avcodec_alloc_context3 returned a null pointer"
+		mkNullPointerError "copyAndOpenCodecContext" "avcodec_alloc_context3"
 
 	r <- liftIO$ avcodec_copy_context pctx psrc
 	when (r /= 0)$ throwError$
-		"copyAndOpenCodecContext: failed with error code " ++ (show r)
+		mkError r "copyAndOpenCodecContext" "avcodec_copy_context"
 	
 	r <- liftIO.withOrNull mdict$ \ppdict -> avcodec_open2 pctx pCodec ppdict
 
 	when (r /= 0)$ throwError$
-		"copyAndOpenCodecContext: avcodec_open2 failed with error code " ++ (show r)
+		mkError r "copyAndOpenCodecContext" "avcodec_open2"
 
 	liftIO$ do
 		fpctx <- mallocForeignPtr

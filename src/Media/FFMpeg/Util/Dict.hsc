@@ -62,6 +62,7 @@ import Foreign.Ptr
 import Foreign.Storable
 
 import Media.FFMpeg.Internal.Common
+import Media.FFMpeg.Util.Error
 
 foreign import ccall "&b_free_dictionary" pb_free_dictionary :: FunPtr (Ptr (Ptr AVDictionary) -> IO ())
 
@@ -131,7 +132,7 @@ dictCount dict = liftIO$ do
 		fromIntegral <$> av_dict_count pd
 
 -- | Set a dictionary entry
-dictSet :: (MonadIO m, MonadError String m) =>
+dictSet :: (MonadIO m, MonadError HSFFError m) =>
 	AVDictionary           -- ^ the dictionary to set
 	-> (String, String)    -- ^ the (key, value) pair to set
 	-> DictFlag            -- ^ flags
@@ -143,10 +144,10 @@ dictSet dict (key, value) flags = do
 		withCString value$ \cvalue ->
 			av_dict_set ppd ckey cvalue (fromCEnum flags)
 
-	when (r < 0)$ throwError$ "dictSet: failed with error code " ++ (show r)
+	when (r < 0)$ throwError$ mkError r "dictSet" "av_dict_set"
 
 -- | Set a dictionary entry to a number, converting it to a string
-dictSetInt :: (MonadIO m, MonadError String m) =>
+dictSetInt :: (MonadIO m, MonadError HSFFError m) =>
 	AVDictionary           -- ^ the dictionary to set
 	-> (String, Int64)     -- ^ the (key, value) pair.  The value is converted to a decimal string
 	-> DictFlag            -- ^ flags
@@ -157,7 +158,7 @@ dictSetInt dict (key, value) flags = do
 		withCString key$ \ckey ->  -- av_dict_set duplicates the keys, so this is safe
 			av_dict_set_int ppd ckey value (fromCEnum flags)
 
-	when (r < 0)$ throwError$ "dictSetInt: failed with error code " ++ (show r)
+	when (r < 0)$ throwError$ mkError r "dictSetInt" "av_dict_set_int"
 
 -- | Generate a copy of a dictionary
 dictCopy :: MonadIO m =>
@@ -174,7 +175,7 @@ dictCopy src flags = do
 	return dst
 
 -- | Get a string representation of a dictionary
-dictGetString :: (MonadIO m, MonadError String m) =>
+dictGetString :: (MonadIO m, MonadError HSFFError m) =>
 	AVDictionary     -- ^the dictionary to convert
 	-> Char          -- ^character to separate keys and values
 	-> Char          -- ^character to separate pairs of keys and values
@@ -194,7 +195,7 @@ dictGetString dict keyValSep pairsSep = do
 		liftIO$ do
 			av_freep pbuffer
 			free pbuffer
-		throwError$ "dictGetString: failed with error code " ++ (show r)
+		throwError$ mkError r "dictGetString" "av_dict_get_string"
 	else liftIO$ do
 		s <- peekCString =<< peek pbuffer
 		liftIO$ do

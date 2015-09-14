@@ -53,6 +53,8 @@ import Foreign.Marshal.Alloc
 import Foreign.Ptr
 import Foreign.Storable
 
+import Media.FFMpeg.Util.Error
+
 -- | AVBufferRef struct
 newtype AVBufferRef = AVBufferRef (ForeignPtr (Ptr AVBufferRef))
 
@@ -90,12 +92,12 @@ foreign import ccall "av_buffer_make_writable" av_buffer_make_writable :: Ptr (P
 foreign import ccall "av_buffer_realloc" av_buffer_realloc :: Ptr (Ptr AVBufferRef) -> CInt -> IO CInt
 
 -- | Make a new reference to a buffer from a pointer
-mkBufferRef :: (MonadIO m, MonadError String m) =>
+mkBufferRef :: (MonadIO m, MonadError HSFFError m) =>
 	Ptr AVBufferRef -> m AVBufferRef
 mkBufferRef pbuff = do
 	r <- liftIO$ av_buffer_ref pbuff
 	when (r == nullPtr)$ throwError$
-		"mkBufferRef: av_buffer_ref returned a null pointer"
+		mkNullPointerError "mkBufferRef" "av_buffer_ref"
 
 	fp <- liftIO$ mallocForeignPtr
 	liftIO.withForeignPtr fp$ \ptr -> poke ptr r
@@ -104,12 +106,12 @@ mkBufferRef pbuff = do
 	return$ AVBufferRef fp
 
 -- | Make a new reference to a buffer
-refBufferRef :: (MonadIO m, MonadError String m) =>
+refBufferRef :: (MonadIO m, MonadError HSFFError m) =>
 	AVBufferRef -> m AVBufferRef
 refBufferRef (AVBufferRef fp) = do
 	r <- liftIO.withForeignPtr fp$ av_buffer_ref <=< peek
 	when (r == nullPtr)$ throwError$
-		"refBufferRef: av_buffer_ref returned a null pointer"
+		mkNullPointerError "refBufferRef" "av_buffer_ref"
 
 	fp <- liftIO$ mallocForeignPtr
 	liftIO.withForeignPtr fp$ \ptr -> poke ptr r
@@ -127,21 +129,21 @@ getBufferRef (AVBufferRef fp) action = do
 	return r
 
 -- | Allocate a new buffer
-allocBufferRef :: (MonadIO m, MonadError String m) =>
+allocBufferRef :: (MonadIO m, MonadError HSFFError m) =>
 	Int -> (Ptr AVBufferRef -> m b) -> m b
 allocBufferRef size action = do
 	pbuff <- liftIO$ av_buffer_alloc (fromIntegral size)
 	when (pbuff == nullPtr)$ throwError$
-		"allocBufferRef: av_buffer_alloc returned a null pointer"
+		mkNullPointerError "allocBufferRef" "av_buffer_alloc"
 	action pbuff
 
 -- | Allocate and zero a new buffer
-alloczBufferRef :: (MonadIO m, MonadError String m) =>
+alloczBufferRef :: (MonadIO m, MonadError HSFFError m) =>
 	Int -> (Ptr AVBufferRef -> m b) -> m b
 alloczBufferRef size action = do
 	pbuff <- liftIO$ av_buffer_allocz (fromIntegral size)
 	when (pbuff == nullPtr)$ throwError$
-		"alloczBufferRef: av_buffer_allocz returned a null pointer"
+		mkNullPointerError "alloczBufferRef" "av_buffer_allocz"
 	action pbuff
 
 -- | Determine if a buffer is writable
@@ -149,7 +151,7 @@ bufferIsWritable :: MonadIO m => Ptr AVBufferRef -> m Bool
 bufferIsWritable pbuff = liftIO$ (== 1) <$> av_buffer_is_writable pbuff
 
 -- | Make a buffer writable, copying all the data if necessary
-bufferMakeWritable :: (MonadIO m, MonadError String m) =>
+bufferMakeWritable :: (MonadIO m, MonadError HSFFError m) =>
 	Ptr AVBufferRef -> m (Ptr AVBufferRef)
 bufferMakeWritable pbuff = do
 	(pbuff', r) <- liftIO.alloca$ \ppbuff -> do
@@ -158,7 +160,7 @@ bufferMakeWritable pbuff = do
 		return (pbuff', r)
 	
 	when (r /= 0)$ throwError$
-		"bufferMakeWritable: av_buffer_make_writable failed with error code " ++ (show r)
+		mkError r "bufferMakeWritable" "av_buffer_make_writable"
 	
 	return pbuff'
 

@@ -109,6 +109,7 @@ import Foreign.Storable
 import System.IO.Unsafe
 
 import Media.FFMpeg.Internal.Common
+import Media.FFMpeg.Util.Error
 
 -- | Flags that identify which channels are active in a channel layout
 newtype AVChannel = AVChannel Word64 deriving (Eq, Show, CFlags)
@@ -223,12 +224,12 @@ getDefaultChannelLayout :: Int -> AVChannelLayout
 getDefaultChannelLayout = av_get_default_channel_layout.fromIntegral
 
 -- | Get the index of a channel in a channel layout
-getChannelLayoutChannelIndex :: (MonadError String m) =>
+getChannelLayoutChannelIndex :: (MonadError HSFFError m) =>
 	AVChannelLayout -> AVChannel -> m Int
 getChannelLayoutChannelIndex layout channel = do
 	let r = av_get_channel_layout_channel_index layout channel
-	if r < 0 then throwError$
-		"getChannelLayoutChannelIndex failed with error code " ++ (show r)
+	if r < 0 then throwError$ mkError r
+		"getChannelLayoutChannelIndex" "av_get_channel_layout_channel_index"
 	else return.fromIntegral$ r
 
 -- | Get the channel at a particular index from a Channel layout

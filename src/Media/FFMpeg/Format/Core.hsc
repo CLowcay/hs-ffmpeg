@@ -214,12 +214,12 @@ getStreams ctx = do
 		if nbStreams == 0 then [] else [0..(nbStreams - 1)]
 
 -- | Perform an action with an AVStream
-withStream :: (MonadIO m, MonadError String m) =>
+withStream :: (MonadIO m, MonadError HSFFError m) =>
 	AVFormatContext -> StreamIndex -> (AVStream -> m b) -> m b
 withStream ctx (StreamIndex idx) action = withThis ctx$ \pctx -> do
 	ns <- liftIO$ #{peek AVFormatContext, nb_streams} pctx
 	when (idx < 0 || idx >= ns)$ throwError$
-		"withStream: stream index out of range " ++ (show idx)
+		HSFFError HSFFErrorInvalidStreamIndex "withStream" (show idx)
 	pstreams <- liftIO$ #{peek AVFormatContext, streams} pctx
 	action =<< (liftIO$ AVStream <$> peekElemOff pstreams (fromIntegral idx))
 
@@ -287,16 +287,17 @@ outputFormats = liftIO$ (fmap AVOutputFormat) <$> allOutputFormats nullPtr
 			if next == nullPtr then return [] else (next :) <$> allOutputFormats next
 
 -- | Allocate a new AVFormatContext with finalization
-mkAVFormatContext :: (MonadIO m, MonadError String m) => m AVFormatContext
+mkAVFormatContext :: (MonadIO m, MonadError HSFFError m) => m AVFormatContext
 mkAVFormatContext = do
 	ptr <- liftIO$ avformat_alloc_context
 	if ptr == nullPtr
-		then throwError$ "mkAVFormatContext: avformat_alloc_context returned a null pointer"
+		then throwError$
+			mkNullPointerError "mkAVFormatContext" "avformat_alloc_context"
 		else mkAVFormatContextFromPtr ptr Nothing
 
 -- | Allocate a new AVFormatContext for output.  At least one of the three
 -- parameters must be Just.
-mkAVFormatOutputContext :: (MonadIO m, MonadError String m) =>
+mkAVFormatOutputContext :: (MonadIO m, MonadError HSFFError m) =>
 	Maybe AVOutputFormat   -- Output format to allocate the context with
 	-> Maybe String        -- Format name
 	-> Maybe String        -- File name
@@ -310,9 +311,9 @@ mkAVFormatOutputContext oformat formatName filename =
 			pctx <- peek ppctx
 			return (pctx, r)
 		when (r < 0)$ throwError$
-			"mkAVFormatOutputContext: avformat_alloc_output_context2 failed with error code " ++ (show r)
-		when (pctx == nullPtr)$ throwError$
-			"mkAVFormatOutputContext: avformat_alloc_output_context2 returned a null pointer"
+			mkError r "mkAVFormatOutputContext" "avformat_alloc_output_context2"
+		when (pctx == nullPtr)$ throwError$ mkNullPointerError
+			"mkAVFormatOutputContext" "avformat_alloc_output_context2"
 		mkAVFormatContextFromPtr pctx Nothing
 
 -- | Make an AVFormatContext given a pointer
@@ -327,7 +328,7 @@ mkAVFormatContextFromPtr ptr mf = liftIO$ do
 	return$ AVFormatContext fp
 
 -- | Create a new stream and add it to a format context
-newStream :: (MonadIO m, MonadError String m) =>
+newStream :: (MonadIO m, MonadError HSFFError m) =>
 	AVFormatContext -> Maybe AVCodec -> m StreamIndex
 newStream ctx mcd = do
 	r <- liftIO.withThis ctx$ \pctx ->
@@ -335,8 +336,8 @@ newStream ctx mcd = do
 			Just cd -> withThis cd (avformat_new_stream pctx)
 			Nothing -> avformat_new_stream pctx nullPtr
 
-	if r == nullPtr then
-		throwError "newStream: avformat_new_stream returned a null pointer"
+	if r == nullPtr then throwError$
+		mkNullPointerError "newStream" "avformat_new_stream"
 	else liftIO$ StreamIndex <$> #{peek AVStream, index} r
 
 peekAVStreamSideDataPtrType :: AVPacketSideDataType -> Ptr AVStream -> IO (Ptr Word8, Int)
@@ -390,12 +391,12 @@ streamGetSideData pkt = liftIO.withThis pkt$ \ptr -> do
 		return.Just$ AVPacketSideData v
 
 -- | Create a new program with the given id in an AVFormatContext
-newProgram :: (MonadIO m, MonadError String m) => AVFormatContext -> Int -> m ()
+newProgram :: (MonadIO m, MonadError HSFFError m) => AVFormatContext -> Int -> m ()
 newProgram ctx pid = do
 	r <- liftIO.withThis ctx$ \pctx -> av_new_program pctx (fromIntegral pid)
 
-	when (r == nullPtr)$
-		throwError "newProgram: av_new_program returned a null pointer"
+	when (r == nullPtr)$ throwError$
+		mkNullPointerError "newProgram" "av_new_program"
 
 foreign import ccall "avformat_get_riff_video_tags" avformat_get_riff_video_tags :: IO (Ptr ())
 foreign import ccall "avformat_get_riff_audio_tags" avformat_get_riff_audio_tags :: IO (Ptr ())

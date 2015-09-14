@@ -118,7 +118,7 @@ fromChromaPos (x, y) =
 -- data, then it will be replaced and the old data freed.  Note that it may be
 -- necessary to call this function multiple times to decode all the audio in a
 -- packet.
-decodeAudio :: (MonadIO m, MonadError String m) =>
+decodeAudio :: (MonadIO m, MonadError HSFFError m) =>
 	AVCodecContext   -- ^ Codec context
 	-> AVFrame       -- ^ Frame to store the decoded audio
 	-> AVPacket      -- ^ Packet containing the input buffer
@@ -134,14 +134,13 @@ decodeAudio ctx frame pkt = do
 			g <- peek pGotFrame
 			return (r, g)
 	
-	when (r < 0)$
-		throwError$ "decodeAudio: avcodec_decode_audio4 failed with error code " ++ (show r)
+	when (r < 0)$ throwError$ mkError r "decodeAudio" "avcodec_decode_audio4"
 	
 	return (g /= 0, fromIntegral r)
 
 -- | Flush a delayed audio codec.  Returns True if output was produced.  This
 -- function should be called repeatedly until it returns False.
-flushAudioDec :: (MonadIO m, MonadError String m) =>
+flushAudioDec :: (MonadIO m, MonadError HSFFError m) =>
 	AVCodecContext -> AVFrame -> m Bool
 flushAudioDec ctx frame = do
 	(r, g) <- liftIO$
@@ -152,8 +151,7 @@ flushAudioDec ctx frame = do
 			g <- peek pGotFrame
 			return (r, g)
 
-	when (r < 0)$
-		throwError$ "flushAudioDec: avcodec_decode_audio4 failed with error code " ++ (show r)
+	when (r < 0)$ throwError$ mkError r "flushAudioDec" "avcodec_decode_audio4"
 	
 	return$ g /= 0
 
@@ -162,7 +160,7 @@ flushAudioDec ctx frame = do
 -- packet will contain a single frame, but this is apparently not always the
 -- case, so it may be necessary to call this function multiple times to decode
 -- a single packet.
-decodeVideo :: (MonadIO m, MonadError String m) =>
+decodeVideo :: (MonadIO m, MonadError HSFFError m) =>
 	AVCodecContext -> AVFrame -> AVPacket -> m (Bool, Int)
 decodeVideo ctx frame pkt = do
 	frameUnref frame
@@ -175,14 +173,13 @@ decodeVideo ctx frame pkt = do
 			g <- peek pGotFrame
 			return (r, g)
 	
-	when (r < 0)$
-		throwError$ "decodeVideo: avcodec_decode_video2 failed with error code " ++ (show r)
+	when (r < 0)$ throwError$ mkError r "decodeVideo" "avcodec_decode_video2"
 	
 	return (g /= 0, fromIntegral r)
 
 -- | Flush a delayed video codec.  Returns True if output was produced.  This
 -- function should be called repeatedly until it returns False.
-flushVideoDec :: (MonadIO m, MonadError String m) =>
+flushVideoDec :: (MonadIO m, MonadError HSFFError m) =>
 	AVCodecContext -> AVFrame -> m Bool
 flushVideoDec ctx frame = do
 	(r, g) <- liftIO$
@@ -193,15 +190,14 @@ flushVideoDec ctx frame = do
 			g <- peek pGotFrame
 			return (r, g)
 
-	when (r < 0)$
-		throwError$ "flushVideoDec: avcodec_decode_video4 failed with error code " ++ (show r)
+	when (r < 0)$ throwError$ mkError r "flushVideoDec" "avcodec_decode_video4"
 	
 	return$ g /= 0
 
 -- | Decode a subtitle.  As for Video, one packet will generally contain one
 -- subtitle, but the API doesn't seem to guarantee it, so it may be necessary
 -- to call this function multiple times to decode a single packet.
-decodeSubtitle :: (MonadIO m, MonadError String m) =>
+decodeSubtitle :: (MonadIO m, MonadError HSFFError m) =>
 	AVCodecContext -> AVPacket -> m (Maybe AVSubtitle, Int)
 decodeSubtitle ctx pkt = do
 	(r, s) <- liftIO$
@@ -214,14 +210,14 @@ decodeSubtitle ctx pkt = do
 			s <- if g /= 0 then Just <$> peek psub else return Nothing
 			return (r, s)
 	
-	when (r < 0)$
-		throwError$ "decodeSubtitle: avcodec_decode_subtitle failed with error code " ++ (show r)
+	when (r < 0)$ throwError$
+		mkError r "decodeSubtitle" "avcodec_decode_subtitle"
 	
 	return (s, fromIntegral r)
 
 -- | Flush a delayed subtitle codec.  This function should be called until it
 -- returns Nothing.
-flushSubtitleDec :: (MonadIO m, MonadError String m) =>
+flushSubtitleDec :: (MonadIO m, MonadError HSFFError m) =>
 	AVCodecContext -> m (Maybe AVSubtitle)
 flushSubtitleDec ctx = do
 	(r, s) <- liftIO$
@@ -233,8 +229,8 @@ flushSubtitleDec ctx = do
 			s <- if g /= 0 then Just <$> peek psub else return Nothing
 			return (r, s)
 	
-	when (r < 0)$
-		throwError$ "flushSubtitleDec: avcodec_decode_subtitle failed with error code " ++ (show r)
+	when (r < 0)$ throwError$
+		mkError r "flushSubtitleDec" "avcodec_decode_subtitle"
 	
 	return s
 

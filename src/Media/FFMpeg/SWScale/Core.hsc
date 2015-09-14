@@ -238,14 +238,15 @@ getCoefficients cs = unsafePerformIO$ do
 	else tableFromList <$> peekArray 4 p
 
 -- | Allocate a new SwsContext with the given source and destination filters
-newSwsContext :: (MonadIO m, MonadError String m) =>
+newSwsContext :: (MonadIO m, MonadError HSFFError m) =>
 	SwsFilter        -- ^ source filter
 	-> SwsFilter     -- ^ destination filter
 	-> m SwsContext
 newSwsContext srcFilter dstFilter = do
 	pctx <- liftIO$ sws_alloc_context
 
-	when (pctx == nullPtr)$ throwError$ "newSwsContext: sws_alloc_context returned a null pointer"
+	when (pctx == nullPtr)$ throwError$
+		mkNullPointerError "newSwsContext" "sws_alloc_context"
 
 	withThis srcFilter$ \psrc ->
 		withThis dstFilter$ \pdst ->
@@ -254,7 +255,7 @@ newSwsContext srcFilter dstFilter = do
 	liftIO$ SwsContext <$> newForeignPtr psws_freeContext pctx
 
 -- | Initialise a new SwsContext with the given options
-getSwsContext :: (MonadIO m, MonadError String m) =>
+getSwsContext :: (MonadIO m, MonadError HSFFError m) =>
 	(Int, Int, AVPixelFormat)        -- ^ Source (width, height, format)
 	-> (Int, Int, AVPixelFormat)     -- ^ Destination (width, height, format)
 	-> SwsFlags                      -- ^ Use encodeSwsFlags to produce this value
@@ -273,7 +274,8 @@ getSwsContext
 				(fromIntegral dstW) (fromIntegral dstH) (fromCEnum dstPF)
 				(fromCEnum flags) psrcFilter pdstFilter pparams
 
-		if p == nullPtr then throwError "getSwsContext: sws_getContext returned a null pointer"
+		if p == nullPtr then throwError$
+			mkNullPointerError "getSwsContext" "sws_getContext"
 		else liftIO$ SwsContext <$> newForeignPtr psws_freeContext p
 
 	where
@@ -346,7 +348,7 @@ tableToList :: (CInt, CInt, CInt, CInt) -> [CInt]
 tableToList (a, b, c, d) = [a, b, c, d]
 
 -- | Set SwsContext fields relating to the colorspace
-setColorSpaceDetails :: (MonadIO m, MonadError String m) =>
+setColorSpaceDetails :: (MonadIO m, MonadError HSFFError m) =>
 	SwsContext -> ColorSpaceDetails -> m ()
 setColorSpaceDetails ctx csd =
 	withThis ctx$ \pctx -> do
@@ -357,10 +359,10 @@ setColorSpaceDetails ctx csd =
 					pinv (csd_srcRange csd) ptab (csd_dstRange csd)
 					(csd_brightness csd) (csd_contrast csd) (csd_saturation csd)
 		when (r == -1)$ throwError$
-			"setColorSpaceDetails: sws_setColorspaceDetails failed with error code -1"
+			mkError r "setColorSpaceDetails" "sws_setColorspaceDetails"
 
 -- | Get SwsContext fields relating to the color space
-getColorSpaceDetails :: (MonadIO m, MonadError String m) =>
+getColorSpaceDetails :: (MonadIO m, MonadError HSFFError m) =>
 	SwsContext -> m ColorSpaceDetails
 getColorSpaceDetails ctx = do
 	x <- withThis ctx$ \pctx -> liftIO$
@@ -391,7 +393,7 @@ getColorSpaceDetails ctx = do
 
 	case x of
 		Left e -> throwError$
-			"getColorSpaceDetails: sws_getColorspaceDetails failed with error code " ++ (show e)
+			mkError e "getColorSpaceDetails" "sws_getColorspaceDetails"
 		Right r -> return r
 
 -- | Allocate a new Guassian vector
@@ -453,7 +455,7 @@ cloneVector :: MonadIO m => SwsVector -> m SwsVector
 cloneVector v = swsVectorFromPtr =<< withThis v (liftIO.sws_cloneVec)
 
 -- | Construct a filter with the given characteristics
-getDefaultFilter :: (MonadIO m, MonadError String m) =>
+getDefaultFilter :: (MonadIO m, MonadError HSFFError m) =>
 	Float      -- ^ lumaGBlur
 	-> Float   -- ^ chromaGBlur
 	-> Float   -- ^ lumaSharpen
@@ -467,7 +469,7 @@ getDefaultFilter lumaGBlur chromaGBlur lumaSharpen chromaSharpen chromaHShift ch
 		chromaSharpen chromaHShift chromaVShift 0
 	
 	if pf == nullPtr then throwError$
-		"getDefaultFilter: sws_getDefaultFilter returned a null pointer"
+		mkNullPointerError "getDefaultFilter" "sws_getDefaultFilter"
 	else do
 		lumH <- swsVectorFromPtr =<< (liftIO$ #{peek SwsFilter, lumH} pf)
 		lumV <- swsVectorFromPtr =<< (liftIO$ #{peek SwsFilter, lumV} pf)
