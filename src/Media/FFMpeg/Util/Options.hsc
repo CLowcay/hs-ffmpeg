@@ -52,7 +52,8 @@ module Media.FFMpeg.Util.Options (
 
 import Control.Applicative
 import Control.Monad
-import Control.Monad.Except
+import Control.Monad.Catch
+import Control.Monad.IO.Class
 import Data.Int
 import Data.Maybe
 import Data.Monoid
@@ -584,18 +585,18 @@ instance AVOptionType AVChannelLayout where
 		liftIO$ av_opt_set_channel_layout (castPtr pobj) pname v (fromCEnum flags)
 
 -- | Get the value of an option
-getOption :: (MonadIO m, Applicative m, MonadError HSFFError m, ReflectClass a, AVOptionType t) =>
+getOption :: (MonadIO m, Applicative m, MonadThrow m, ReflectClass a, AVOptionType t) =>
 	AVOption a t -> a -> m t
 getOption option obj = do
 	r <- withThis (option_name option)$ \pname ->
 		getOption0 obj pname AVOptSearchChildren
 
 	case r of
-		Left err -> throwError$ mkError err "getOption" "av_opt_get_"
+		Left err -> throwM$ mkError err "getOption" "av_opt_get_"
 		Right v -> return v
 
 -- | Get the value of an option as a string
-getOptionString :: (MonadIO m, MonadError HSFFError m, ReflectClass a) =>
+getOptionString :: (MonadIO m, MonadThrow m, ReflectClass a) =>
 	AVOption a t -> a -> m String
 getOptionString opt obj =	do
 	(r, s) <-
@@ -609,20 +610,20 @@ getOptionString opt obj =	do
 				av_free pout
 				return (r, outs)
 
-	when (r /= 0)$ throwError$ mkError r "getOptionString" "av_opt_get"
+	when (r /= 0)$ throwM$ mkError r "getOptionString" "av_opt_get"
 	return s
 
 -- | Set the value of an option
-setOption :: (MonadIO m, MonadError HSFFError m, Applicative m, ReflectClass a, AVOptionType t) =>
+setOption :: (MonadIO m, MonadThrow m, Applicative m, ReflectClass a, AVOptionType t) =>
 	AVOption a t -> a -> t -> m ()
 setOption option obj val =
 	withThis (option_name option)$ \pname -> do
 		r <- setOption0 obj pname val AVOptSearchChildren
 
-		when (r /= 0)$ throwError$ mkError r "setOption" "av_opt_set_"
+		when (r /= 0)$ throwM$ mkError r "setOption" "av_opt_set_"
 
 -- | Set the value of a string
-setOptionString :: (MonadIO m, MonadError HSFFError m, ReflectClass a) =>
+setOptionString :: (MonadIO m, MonadThrow m, ReflectClass a) =>
 	AVOption a t -> a -> String -> m ()
 setOptionString opt obj v =
 	withThis (option_name opt)$ \pname ->
@@ -631,29 +632,29 @@ setOptionString opt obj v =
 		r <- liftIO$ av_opt_set (castPtr pobj) pname pval
 			(fromCEnum AVOptSearchChildren)
 
-		when (r /= 0)$ throwError$ mkError r "setOptionString" "av_opt_set"
+		when (r /= 0)$ throwM$ mkError r "setOptionString" "av_opt_set"
 
 -- | Set a named option
-setNamedOption :: (MonadIO m, MonadError HSFFError m, ExternalPointer a, HasClass a, Storable t) =>
+setNamedOption :: (MonadIO m, MonadThrow m, ExternalPointer a, HasClass a, Storable t) =>
 	OptionName a t -> a -> t -> m ()
 setNamedOption name x v = withOptionPtr name x$ \mp -> case mp of
-	Nothing -> throwError$
+	Nothing -> throwM$
 		HSFFError HSFFErrorOptionNotSupported "setNamedOption" (show name)
 	Just p -> liftIO$ poke p v
 
 -- | Get a named option
-getNamedOption :: (MonadIO m, MonadError HSFFError m, ExternalPointer a, HasClass a, Storable t) =>
+getNamedOption :: (MonadIO m, MonadThrow m, ExternalPointer a, HasClass a, Storable t) =>
 	OptionName a t -> a -> m t
 getNamedOption name x = withOptionPtr name x$ \mp -> case mp of
-	Nothing -> throwError$
+	Nothing -> throwM$
 		HSFFError HSFFErrorOptionNotSupported "setNamedOption" (show name)
 	Just p -> liftIO$ peek p
 
 -- | Apply a function to a named option
-modNamedOption :: (MonadIO m, MonadError HSFFError m, ExternalPointer a, HasClass a, Storable t) =>
+modNamedOption :: (MonadIO m, MonadThrow m, ExternalPointer a, HasClass a, Storable t) =>
 	OptionName a t -> a -> (t -> t) -> m t
 modNamedOption name x f = withOptionPtr name x$ \mp -> case mp of
-	Nothing -> throwError$
+	Nothing -> throwM$
 		HSFFError HSFFErrorOptionNotSupported "setNamedOption" (show name)
 	Just p -> liftIO$ do
 		r <- f <$> peek p

@@ -21,7 +21,7 @@ extra-source-files: src/config.h.in
                     hs-ffmpeg.buildinfo.in
 
 library
-        build-depends:   base >= 4.7 && < 4.8, bytestring, mtl >= 2.2, transformers >= 0.3, containers >= 0.5
+        build-depends:   base >= 4.7 && < 4.8, bytestring, mtl >= 2.2 && < 2.3, transformers >= 0.3 && < 0.5, containers >= 0.5 && < 0.6, exceptions >= 0.8 && < 0.9
         hs-source-dirs:  src
         include-dirs:    src
         exposed-modules: Media.FFMpeg

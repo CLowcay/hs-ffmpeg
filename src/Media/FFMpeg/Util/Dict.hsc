@@ -50,7 +50,8 @@ module Media.FFMpeg.Util.Dict (
 
 import Control.Applicative
 import Control.Monad
-import Control.Monad.Except
+import Control.Monad.Catch
+import Control.Monad.IO.Class
 import Data.Bits
 import Data.Int
 import Data.Monoid
@@ -132,7 +133,7 @@ dictCount dict = liftIO$ do
 		fromIntegral <$> av_dict_count pd
 
 -- | Set a dictionary entry
-dictSet :: (MonadIO m, MonadError HSFFError m) =>
+dictSet :: (MonadIO m, MonadThrow m) =>
 	AVDictionary           -- ^ the dictionary to set
 	-> (String, String)    -- ^ the (key, value) pair to set
 	-> DictFlag            -- ^ flags
@@ -144,10 +145,10 @@ dictSet dict (key, value) flags = do
 		withCString value$ \cvalue ->
 			av_dict_set ppd ckey cvalue (fromCEnum flags)
 
-	when (r < 0)$ throwError$ mkError r "dictSet" "av_dict_set"
+	when (r < 0)$ throwM$ mkError r "dictSet" "av_dict_set"
 
 -- | Set a dictionary entry to a number, converting it to a string
-dictSetInt :: (MonadIO m, MonadError HSFFError m) =>
+dictSetInt :: (MonadIO m, MonadThrow m) =>
 	AVDictionary           -- ^ the dictionary to set
 	-> (String, Int64)     -- ^ the (key, value) pair.  The value is converted to a decimal string
 	-> DictFlag            -- ^ flags
@@ -158,7 +159,7 @@ dictSetInt dict (key, value) flags = do
 		withCString key$ \ckey ->  -- av_dict_set duplicates the keys, so this is safe
 			av_dict_set_int ppd ckey value (fromCEnum flags)
 
-	when (r < 0)$ throwError$ mkError r "dictSetInt" "av_dict_set_int"
+	when (r < 0)$ throwM$ mkError r "dictSetInt" "av_dict_set_int"
 
 -- | Generate a copy of a dictionary
 dictCopy :: MonadIO m =>
@@ -175,7 +176,7 @@ dictCopy src flags = do
 	return dst
 
 -- | Get a string representation of a dictionary
-dictGetString :: (MonadIO m, MonadError HSFFError m) =>
+dictGetString :: (MonadIO m, MonadThrow m) =>
 	AVDictionary     -- ^the dictionary to convert
 	-> Char          -- ^character to separate keys and values
 	-> Char          -- ^character to separate pairs of keys and values
@@ -195,7 +196,7 @@ dictGetString dict keyValSep pairsSep = do
 		liftIO$ do
 			av_freep pbuffer
 			free pbuffer
-		throwError$ mkError r "dictGetString" "av_dict_get_string"
+		throwM$ mkError r "dictGetString" "av_dict_get_string"
 	else liftIO$ do
 		s <- peekCString =<< peek pbuffer
 		liftIO$ do

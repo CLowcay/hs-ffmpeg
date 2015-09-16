@@ -69,7 +69,8 @@ module Media.FFMpeg.Codec.Core (
 
 import Control.Applicative
 import Control.Monad
-import Control.Monad.Except
+import Control.Monad.Catch
+import Control.Monad.IO.Class
 import Data.Ratio
 import Data.Traversable hiding (mapM)
 import Data.Version
@@ -419,7 +420,7 @@ avcodecRegisterAll :: MonadIO m => m ()
 avcodecRegisterAll = liftIO avcodec_register_all
 
 -- | Copy all the data from one codec context to another
-copyCodecContext :: (MonadIO m, MonadError HSFFError m) =>
+copyCodecContext :: (MonadIO m, MonadThrow m) =>
 	AVCodecContext     -- ^ Destination context
 	-> AVCodecContext  -- ^ Source context
 	-> m ()
@@ -427,15 +428,15 @@ copyCodecContext dst src =
 	withThis dst$ \pdst ->
 	withThis src$ \psrc -> do
 		r <- liftIO$ avcodec_copy_context pdst psrc
-		when (r /= 0)$ throwError$ mkError r "copyCodecContext" "avcodec_copy_context"
+		when (r /= 0)$ throwM$ mkError r "copyCodecContext" "avcodec_copy_context"
 
 -- | Allocate and open new codec context
-openCodecContext :: (MonadIO m, MonadError HSFFError m) =>
+openCodecContext :: (MonadIO m, MonadThrow m) =>
 	AVCodec -> Maybe AVDictionary -> m AVCodecContext
 openCodecContext cd mdict = do
 	pctx <- liftIO$ withThis cd avcodec_alloc_context3
 
-	when (pctx == nullPtr)$ throwError$
+	when (pctx == nullPtr)$ throwM$
 		mkNullPointerError "openCodecContext" "avcodec_alloc_context3"
 	
 	r <- liftIO$
@@ -443,7 +444,7 @@ openCodecContext cd mdict = do
 		withOrNull mdict$ \ppdict ->
 			avcodec_open2 pctx pCodec ppdict
 
-	when (r /= 0)$ throwError$ mkError r "openCodecContext" "avcodec_open2"
+	when (r /= 0)$ throwM$ mkError r "openCodecContext" "avcodec_open2"
 
 	liftIO$ do
 		fpctx <- mallocForeignPtr
@@ -452,22 +453,22 @@ openCodecContext cd mdict = do
 		return$ AVCodecContext fpctx
 	
 -- | Allocate and open a copy of a codec context
-copyAndOpenCodecContext :: (MonadIO m, MonadError HSFFError m) =>
+copyAndOpenCodecContext :: (MonadIO m, MonadThrow m) =>
 	AVCodecContext -> Maybe AVDictionary -> m AVCodecContext
 copyAndOpenCodecContext ctx mdict = withThis ctx$ \psrc -> do
 	pCodec <- liftIO$ #{peek AVCodecContext, codec} psrc
 	pctx <- liftIO$ avcodec_alloc_context3 pCodec
 
-	when (pctx == nullPtr)$ throwError$
+	when (pctx == nullPtr)$ throwM$
 		mkNullPointerError "copyAndOpenCodecContext" "avcodec_alloc_context3"
 
 	r <- liftIO$ avcodec_copy_context pctx psrc
-	when (r /= 0)$ throwError$
+	when (r /= 0)$ throwM$
 		mkError r "copyAndOpenCodecContext" "avcodec_copy_context"
 	
 	r <- liftIO.withOrNull mdict$ \ppdict -> avcodec_open2 pctx pCodec ppdict
 
-	when (r /= 0)$ throwError$
+	when (r /= 0)$ throwM$
 		mkError r "copyAndOpenCodecContext" "avcodec_open2"
 
 	liftIO$ do

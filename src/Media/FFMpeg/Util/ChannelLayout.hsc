@@ -98,7 +98,8 @@ module Media.FFMpeg.Util.ChannelLayout (
 
 import Control.Applicative
 import Control.Monad
-import Control.Monad.Except
+import Control.Monad.Catch
+import Control.Monad.IO.Class
 import Data.Maybe
 import Data.Word
 import Foreign.C.String
@@ -224,11 +225,11 @@ getDefaultChannelLayout :: Int -> AVChannelLayout
 getDefaultChannelLayout = av_get_default_channel_layout.fromIntegral
 
 -- | Get the index of a channel in a channel layout
-getChannelLayoutChannelIndex :: (MonadError HSFFError m) =>
+getChannelLayoutChannelIndex :: MonadThrow m =>
 	AVChannelLayout -> AVChannel -> m Int
 getChannelLayoutChannelIndex layout channel = do
 	let r = av_get_channel_layout_channel_index layout channel
-	if r < 0 then throwError$ mkError r
+	if r < 0 then throwM$ mkError r
 		"getChannelLayoutChannelIndex" "av_get_channel_layout_channel_index"
 	else return.fromIntegral$ r
 

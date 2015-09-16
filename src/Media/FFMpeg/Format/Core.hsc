@@ -80,7 +80,8 @@ module Media.FFMpeg.Format.Core (
 import Control.Applicative
 import Control.Arrow
 import Control.Monad
-import Control.Monad.Except
+import Control.Monad.Catch
+import Control.Monad.IO.Class
 import Data.Int
 import Data.Ratio
 import Data.Traversable (traverse)
@@ -214,11 +215,11 @@ getStreams ctx = do
 		if nbStreams == 0 then [] else [0..(nbStreams - 1)]
 
 -- | Perform an action with an AVStream
-withStream :: (MonadIO m, MonadError HSFFError m) =>
+withStream :: (MonadIO m, MonadThrow m) =>
 	AVFormatContext -> StreamIndex -> (AVStream -> m b) -> m b
 withStream ctx (StreamIndex idx) action = withThis ctx$ \pctx -> do
 	ns <- liftIO$ #{peek AVFormatContext, nb_streams} pctx
-	when (idx < 0 || idx >= ns)$ throwError$
+	when (idx < 0 || idx >= ns)$ throwM$
 		HSFFError HSFFErrorInvalidStreamIndex "withStream" (show idx)
 	pstreams <- liftIO$ #{peek AVFormatContext, streams} pctx
 	action =<< (liftIO$ AVStream <$> peekElemOff pstreams (fromIntegral idx))
@@ -287,17 +288,17 @@ outputFormats = liftIO$ (fmap AVOutputFormat) <$> allOutputFormats nullPtr
 			if next == nullPtr then return [] else (next :) <$> allOutputFormats next
 
 -- | Allocate a new AVFormatContext with finalization
-mkAVFormatContext :: (MonadIO m, MonadError HSFFError m) => m AVFormatContext
+mkAVFormatContext :: (MonadIO m, MonadThrow m) => m AVFormatContext
 mkAVFormatContext = do
 	ptr <- liftIO$ avformat_alloc_context
 	if ptr == nullPtr
-		then throwError$
+		then throwM$
 			mkNullPointerError "mkAVFormatContext" "avformat_alloc_context"
 		else mkAVFormatContextFromPtr ptr Nothing
 
 -- | Allocate a new AVFormatContext for output.  At least one of the three
 -- parameters must be Just.
-mkAVFormatOutputContext :: (MonadIO m, MonadError HSFFError m) =>
+mkAVFormatOutputContext :: (MonadIO m, MonadThrow m) =>
 	Maybe AVOutputFormat   -- Output format to allocate the context with
 	-> Maybe String        -- Format name
 	-> Maybe String        -- File name
@@ -310,9 +311,9 @@ mkAVFormatOutputContext oformat formatName filename =
 			r <- avformat_alloc_output_context2 ppctx poformat pformatName pfilename
 			pctx <- peek ppctx
 			return (pctx, r)
-		when (r < 0)$ throwError$
+		when (r < 0)$ throwM$
 			mkError r "mkAVFormatOutputContext" "avformat_alloc_output_context2"
-		when (pctx == nullPtr)$ throwError$ mkNullPointerError
+		when (pctx == nullPtr)$ throwM$ mkNullPointerError
 			"mkAVFormatOutputContext" "avformat_alloc_output_context2"
 		mkAVFormatContextFromPtr pctx Nothing
 
@@ -328,7 +329,7 @@ mkAVFormatContextFromPtr ptr mf = liftIO$ do
 	return$ AVFormatContext fp
 
 -- | Create a new stream and add it to a format context
-newStream :: (MonadIO m, MonadError HSFFError m) =>
+newStream :: (MonadIO m, MonadThrow m) =>
 	AVFormatContext -> Maybe AVCodec -> m StreamIndex
 newStream ctx mcd = do
 	r <- liftIO.withThis ctx$ \pctx ->
@@ -336,7 +337,7 @@ newStream ctx mcd = do
 			Just cd -> withThis cd (avformat_new_stream pctx)
 			Nothing -> avformat_new_stream pctx nullPtr
 
-	if r == nullPtr then throwError$
+	if r == nullPtr then throwM$
 		mkNullPointerError "newStream" "avformat_new_stream"
 	else liftIO$ StreamIndex <$> #{peek AVStream, index} r
 
@@ -391,12 +392,11 @@ streamGetSideData pkt = liftIO.withThis pkt$ \ptr -> do
 		return.Just$ AVPacketSideData v
 
 -- | Create a new program with the given id in an AVFormatContext
-newProgram :: (MonadIO m, MonadError HSFFError m) => AVFormatContext -> Int -> m ()
+newProgram :: (MonadIO m, MonadThrow m) => AVFormatContext -> Int -> m ()
 newProgram ctx pid = do
 	r <- liftIO.withThis ctx$ \pctx -> av_new_program pctx (fromIntegral pid)
 
-	when (r == nullPtr)$ throwError$
-		mkNullPointerError "newProgram" "av_new_program"
+	when (r == nullPtr)$ throwM$ mkNullPointerError "newProgram" "av_new_program"
 
 foreign import ccall "avformat_get_riff_video_tags" avformat_get_riff_video_tags :: IO (Ptr ())
 foreign import ccall "avformat_get_riff_audio_tags" avformat_get_riff_audio_tags :: IO (Ptr ())

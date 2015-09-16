@@ -45,7 +45,8 @@ module Media.FFMpeg.Util (
 ) where
 
 import Control.Applicative
-import Control.Monad.Except
+import Control.Monad.Catch
+import Control.Monad.IO.Class
 import Data.Int
 import Data.Ratio
 import Data.Word
@@ -89,19 +90,19 @@ newtype StreamIndex = StreamIndex CInt deriving (Eq, Ord, Show, Enum, Storable)
 newtype ProgramID = ProgramID CInt deriving (Eq, Ord, Show)
 
 -- | Safely allocate a ForeignPtr with av_malloc
-avMalloc :: (MonadIO m, MonadError HSFFError m) => Word -> m (ForeignPtr b)
+avMalloc :: (MonadIO m, MonadThrow m) => Word -> m (ForeignPtr b)
 avMalloc size = do
 	ptr <- liftIO$ av_malloc (fromIntegral size)
 	if (ptr == nullPtr)
-		then throwError$ mkNullPointerError "avMalloc" "av_malloc"
+		then throwM$ mkNullPointerError "avMalloc" "av_malloc"
 		else liftIO$ newForeignPtr pav_free (castPtr ptr)
 
 -- | Safely allocate a ForeignPtr with av_mallocz
-avMallocz :: (MonadIO m, MonadError HSFFError m) => Word -> m (ForeignPtr b)
+avMallocz :: (MonadIO m, MonadThrow m) => Word -> m (ForeignPtr b)
 avMallocz size = do
 	ptr <- liftIO$ av_mallocz (fromIntegral size)
 	if (ptr == nullPtr)
-		then throwError$ mkNullPointerError "avMallocz" "av_mallocz"
+		then throwM$ mkNullPointerError "avMallocz" "av_mallocz"
 		else liftIO$ newForeignPtr pav_free (castPtr ptr)
 
 foreign import ccall "memset" memset :: Ptr a -> CInt -> CSize -> IO (Ptr a)

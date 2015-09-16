@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE PatternSynonyms #-}
@@ -55,12 +56,13 @@ module Media.FFMpeg.Util.Error (
 	errorToString,
 	HSFFError(..),
 	mkError,
-	mkNullPointerError,
-	formatError
+	mkNullPointerError
 ) where
 
 #include "ffmpeg.h"
 
+import Control.Monad.Catch
+import Data.Typeable
 import Foreign.C.String
 import Foreign.C.Types
 import Foreign.Marshal.Alloc
@@ -129,7 +131,26 @@ errorToString e = unsafePerformIO$
 	where av_error_max_string_size = #{const AV_ERROR_MAX_STRING_SIZE}
 
 -- | Rich error type for hs-ffmpeg
-data HSFFError = HSFFError AVERROR String String
+data HSFFError = HSFFError AVERROR String String deriving (Typeable)
+instance Show HSFFError where
+	show (HSFFError HSFFErrorNullPointer location cause) =
+		location ++ ": " ++ cause ++ " returned a null pointer"
+	show (HSFFError HSFFErrorBadPacketTimebase location _) =
+		location ++ ": packet time base invalid"
+	show (HSFFError HSFFErrorInvalidStreamIndex location cause) =
+		location ++ ": " ++ " Invalid stream index " ++ cause
+	show (HSFFError HSFFErrorOptionNotSupported location cause) =
+		location ++ ": " ++ " Option not supported \"" ++ cause ++ "\""
+	show (HSFFError HSFFErrorBug location cause) =
+		location ++ ": " ++ cause
+	show (HSFFError HSFFErrorStrTooLong location cause) =
+		location ++ ": " ++ cause ++ "\""
+	show (HSFFError HSFFErrorUser location cause) =
+		location ++ ": " ++ cause ++ "\""
+	show (HSFFError code location cause) =
+		location ++ ": " ++ cause ++ " failed with error code " ++ (errorToString code)
+
+instance Exception HSFFError
 
 -- | Construct an error (for internal use only)
 mkError :: CInt -> String -> String -> HSFFError
@@ -138,23 +159,4 @@ mkError code location cause = HSFFError (AVERROR code) location cause
 -- | Construct a null pointer error
 mkNullPointerError :: String -> String -> HSFFError
 mkNullPointerError location cause = HSFFError HSFFErrorNullPointer location cause
-
--- | Format an error
-formatError :: HSFFError -> String
-formatError (HSFFError HSFFErrorNullPointer location cause) =
-	location ++ ": " ++ cause ++ " returned a null pointer"
-formatError (HSFFError HSFFErrorBadPacketTimebase location _) =
-	location ++ ": packet time base invalid"
-formatError (HSFFError HSFFErrorInvalidStreamIndex location cause) =
-	location ++ ": " ++ " Invalid stream index " ++ cause
-formatError (HSFFError HSFFErrorOptionNotSupported location cause) =
-	location ++ ": " ++ " Option not supported \"" ++ cause ++ "\""
-formatError (HSFFError HSFFErrorBug location cause) =
-	location ++ ": " ++ cause
-formatError (HSFFError HSFFErrorStrTooLong location cause) =
-	location ++ ": " ++ cause ++ "\""
-formatError (HSFFError HSFFErrorUser location cause) =
-	location ++ ": " ++ cause ++ "\""
-formatError (HSFFError code location cause) =
-	location ++ ": " ++ cause ++ " failed with error code " ++ (errorToString code)
 

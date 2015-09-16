@@ -26,7 +26,8 @@ module Media.FFMpeg.Codec.AVPicture (
 
 import Control.Applicative
 import Control.Monad
-import Control.Monad.Except
+import Control.Monad.Catch
+import Control.Monad.IO.Class
 import Data.Ratio
 import Data.Word
 import Foreign.C.Types
@@ -63,10 +64,10 @@ makePlanarColor cs = do
 	return.PlanarColor$ fp
 
 -- | Get the size of the buffer required to back an AVPicture
-pictureGetSize :: MonadError HSFFError m => AVPixelFormat -> Int -> Int -> m Int
+pictureGetSize :: MonadThrow m => AVPixelFormat -> Int -> Int -> m Int
 pictureGetSize pf width height = do
 	let r = avpicture_get_size (fromCEnum pf) (fromIntegral width) (fromIntegral height)
-	if r < 0 then throwError$ mkError r "pictureGetSize" "avpicture_get_size"
+	if r < 0 then throwM$ mkError r "pictureGetSize" "avpicture_get_size"
 	else return.fromIntegral$ r
 
 -- | AVPicture struct
@@ -78,7 +79,7 @@ instance ExternalPointer AVPicture where
 -- | A class that represents the AVPicture struct
 class ExternalPointer p => HasAVPicture p where
 	-- | Make a new AVPicture
-	mkPicture :: (MonadIO m, MonadError HSFFError m) => m p
+	mkPicture :: (MonadIO m, MonadThrow m) => m p
 
 	-- | Get a pointer to the AVPicture struct
 	withAVPicturePtr :: MonadIO m => p -> (Ptr (UnderlyingType p) -> m b) -> m b
@@ -95,7 +96,7 @@ class ExternalPointer p => HasAVPicture p where
 	-- | Allocate a buffer for a picture and execute a monadic action with that
 	-- buffer.  The buffer is freed when the action returns, so the action must
 	-- not return any references that depend on the buffer.
-	pictureAlloc :: (MonadIO m, MonadError HSFFError m) =>
+	pictureAlloc :: (MonadIO m, MonadThrow m) =>
 		p                -- ^ The picture to allocate the buffer for
 		-> AVPixelFormat -- ^ The pixel format for the buffer
 		-> Int           -- ^ width
@@ -105,7 +106,7 @@ class ExternalPointer p => HasAVPicture p where
 	pictureAlloc picture format width height action = do
 		r <- withAVPicturePtr picture$ \ptr -> liftIO$ avpicture_alloc (castPtr ptr)
 			(fromCEnum format) (fromIntegral width) (fromIntegral height)
-		if r /= 0 then throwError$ mkError r "pictureAlloc" "avpicture_alloc"
+		if r /= 0 then throwM$ mkError r "pictureAlloc" "avpicture_alloc"
 		else do
 			r <- action picture
 			withAVPicturePtr picture$ \ptr -> liftIO$ avpicture_free (castPtr ptr)
@@ -113,7 +114,7 @@ class ExternalPointer p => HasAVPicture p where
 
 	-- | Connect an AVPicture to an external buffer.  The buffer is not managed
 	-- by libav or hs-ffmeg.
-	pictureFill :: (MonadIO m, MonadError HSFFError m) =>
+	pictureFill :: (MonadIO m, MonadThrow m) =>
 		p                -- ^ The AVPicture
 		-> Ptr b         -- ^ Pointer to a buffer
 		-> AVPixelFormat -- ^ The pixel format of the buffer
@@ -124,11 +125,11 @@ class ExternalPointer p => HasAVPicture p where
 		r <- withAVPicturePtr picture$ \ptr -> liftIO$
 			avpicture_fill (castPtr ptr) (castPtr pbuff)
 				(fromCEnum format) (fromIntegral width) (fromIntegral height)
-		when (r < 0) $ throwError$ mkError r "pictureFill" "avpicture_fill"
+		when (r < 0) $ throwM$ mkError r "pictureFill" "avpicture_fill"
 
 	-- | Copy an AVPicture into an external buffer.  The buffer is not managed by
 	-- libav or hs-ffmpeg.
-	pictureLayout :: (MonadIO m, MonadError HSFFError m) =>
+	pictureLayout :: (MonadIO m, MonadThrow m) =>
 		p                -- ^ The AVPicture
 		-> AVPixelFormat -- ^ The pixel format of the buffer
 		-> Int           -- ^ width in pixels
@@ -141,7 +142,7 @@ class ExternalPointer p => HasAVPicture p where
 			liftIO$ avpicture_layout (castPtr ptr) (fromCEnum format)
 				(fromIntegral width) (fromIntegral height)
 				(castPtr pbuff) (fromIntegral buffSize)
-		if r < 0 then throwError$ mkError r "pictureLayout" "avpicture_layout"
+		if r < 0 then throwM$ mkError r "pictureLayout" "avpicture_layout"
 		else return.fromIntegral$ r
 
 	-- | Copy image data.  Both the source and the destination must have

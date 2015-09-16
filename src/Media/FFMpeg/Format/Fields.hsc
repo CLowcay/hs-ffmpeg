@@ -1,5 +1,4 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
 
 {- |
  
@@ -75,7 +74,8 @@ module Media.FFMpeg.Format.Fields (
 
 import Control.Applicative
 import Control.Monad
-import Control.Monad.Except
+import Control.Monad.Catch
+import Control.Monad.IO.Class
 import Data.Int
 import Foreign.C.String
 import Foreign.C.Types
@@ -158,7 +158,7 @@ formatGetFilename ctx = withThis ctx$ \pctx ->
 	liftIO.peekCString$ pctx `plusPtr` #{offset AVFormatContext, filename}
 
 -- | Set the filename to use for this AVFormatContext (call before writeHeader)
-formatSetFilename :: (MonadIO m, MonadError HSFFError m) =>
+formatSetFilename :: (MonadIO m, MonadThrow m) =>
 	AVFormatContext -> String -> m ()
 formatSetFilename ctx s =
 	withThis ctx$ \pctx -> do
@@ -169,7 +169,7 @@ formatSetFilename ctx s =
 			poke (pf `plusPtr` len) (castCharToCChar '\0')
 		return len
 
-	when (len >= 1024)$ throwError$
+	when (len >= 1024)$ throwM$
 		HSFFError HSFFErrorStrTooLong "formatSetFilename"$
 			"String is too long, max length is 1023, actual length was " ++ (show len)
 

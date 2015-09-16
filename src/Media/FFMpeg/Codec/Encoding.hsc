@@ -26,7 +26,8 @@ module Media.FFMpeg.Codec.Encoding (
 
 import Control.Applicative
 import Control.Monad
-import Control.Monad.Except
+import Control.Monad.Catch
+import Control.Monad.IO.Class
 import Data.Ratio
 import Data.Word
 import Foreign.C.String
@@ -64,7 +65,7 @@ findEncoderByName s = liftIO.withCString s$ \ps -> do
 -- | Encode an audio frame.  If the AVPacket contains any data, it will be
 -- freed.  If the encoder produces output, a new buffer will be allocated in
 -- the AVPacket.
-encodeAudio :: (MonadIO m, MonadError HSFFError m) =>
+encodeAudio :: (MonadIO m, MonadThrow m) =>
 	AVCodecContext   -- ^ The codec context
 	-> AVPacket      -- ^ The packet that will contain the output buffer
 	-> AVFrame       -- ^ The frame to encode
@@ -81,13 +82,13 @@ encodeAudio ctx pkt frame = do
 			g <- peek pGotFrame
 			return (r, g)
 
-	when (r /= 0)$ throwError$ mkError r "encodeAudio" "avcodec_encode_audio2"
+	when (r /= 0)$ throwM$ mkError r "encodeAudio" "avcodec_encode_audio2"
 
 	return (g == 1)
 
 -- | Flush a delayed audio codec.  This function should be called repeatedly
 -- until it returns False.
-flushAudioEnc :: (MonadIO m, MonadError HSFFError m) =>
+flushAudioEnc :: (MonadIO m, MonadThrow m) =>
 	AVCodecContext -> AVPacket -> m Bool
 flushAudioEnc ctx pkt = do
 	packetFree pkt
@@ -100,14 +101,14 @@ flushAudioEnc ctx pkt = do
 			g <- peek pGotFrame
 			return (r, g)
 
-	when (r /= 0)$ throwError$ mkError r "flushAudioEnc" "avcodec_encode_audio2"
+	when (r /= 0)$ throwM$ mkError r "flushAudioEnc" "avcodec_encode_audio2"
 
 	return$ g == 1
 
 -- | Encode a video frame.  If the AVPacket contains any data, it will be
 -- freed.  If the encoder produces output, a new buffer will be allocated in
 -- the AVPacket.
-encodeVideo :: (MonadIO m, MonadError HSFFError m) =>
+encodeVideo :: (MonadIO m, MonadThrow m) =>
 	AVCodecContext -> AVPacket -> AVFrame -> m Bool
 encodeVideo ctx pkt frame = do
 	packetFree pkt
@@ -121,13 +122,13 @@ encodeVideo ctx pkt frame = do
 			g <- peek pGotFrame
 			return (r, g)
 
-	when (r /= 0)$ throwError$ mkError r "encodeVideo" "avcodec_encode_video2"
+	when (r /= 0)$ throwM$ mkError r "encodeVideo" "avcodec_encode_video2"
 
 	return (g == 1)
 
 -- | Flush a delayed video codec.  This function should be called repeatedly
 -- until it returns False.
-flushVideoEnc :: (MonadIO m, MonadError HSFFError m) =>
+flushVideoEnc :: (MonadIO m, MonadThrow m) =>
 	AVCodecContext -> AVPacket -> m Bool
 flushVideoEnc ctx pkt = do
 	packetFree pkt
@@ -140,14 +141,14 @@ flushVideoEnc ctx pkt = do
 			g <- peek pGotFrame
 			return (r, g)
 
-	when (r /= 0)$ throwError$ mkError r "flushVideoEnc" "avcodec_encode_video2"
+	when (r /= 0)$ throwM$ mkError r "flushVideoEnc" "avcodec_encode_video2"
 
 	return$ g == 1
 
 -- | Encode a subtitle.  This function takes two AVPackets because some
 -- subtitles encode into more than one packet.  The return value contains the
 -- number of packets used (which will be 0, 1, or 2).
-encodeSubtitle :: (MonadIO m, MonadError HSFFError m) =>
+encodeSubtitle :: (MonadIO m, MonadThrow m) =>
 	AVCodecContext -> AVPacket -> AVPacket -> AVSubtitle -> m Int
 encodeSubtitle ctx pkt1 pkt2 subtitle = do
 	-- This procedure is based on "do_subtitle_out()" from "ffmpeg.c" (link:
@@ -160,8 +161,7 @@ encodeSubtitle ctx pkt1 pkt2 subtitle = do
 	mpktTimebase <- codecGetPktTimebase ctx
 	pktTimebase <- case mpktTimebase of
 		Just x -> return x
-		Nothing -> throwError$
-			HSFFError HSFFErrorBadPacketTimebase "encodeSubtitle" ""
+		Nothing -> throwM$ HSFFError HSFFErrorBadPacketTimebase "encodeSubtitle" ""
 
 	codecID <- (return.avCodecDescriptor_id) =<< codecGetCodecDescriptor ctx
 
@@ -184,7 +184,7 @@ encodeSubtitle ctx pkt1 pkt2 subtitle = do
 		when (r /= 0)$ do
 			liftIO$ avsubtitle_free (castPtr psub)
 			liftIO$ with pavbuff av_buffer_unref
-			throwError$ mkError r "encodeSubtitle" "1st avcodec_encode_subtitle"
+			throwM$ mkError r "encodeSubtitle" "1st avcodec_encode_subtitle"
 
 		newPacketFromBuffer pkt1 pavbuff
 		setField packet_pts pkt1$ rescaleTSQ newPts avTimeBaseQ pktTimebase
@@ -205,7 +205,7 @@ encodeSubtitle ctx pkt1 pkt2 subtitle = do
 				liftIO$ avsubtitle_free (castPtr psub)
 				liftIO$ with pavbuff av_buffer_unref
 				packetFree pkt1
-				throwError$ mkError r "encodeSubtitle" "2nd avcodec_encode_subtitle"
+				throwM$ mkError r "encodeSubtitle" "2nd avcodec_encode_subtitle"
 
 			newPacketFromBuffer pkt2 pavbuff
 			setField packet_pts pkt2$

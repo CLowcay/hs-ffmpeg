@@ -1,4 +1,3 @@
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -56,7 +55,9 @@ module Media.FFMpeg.SWScale.Core (
 ) where
 
 import Control.Applicative
-import Control.Monad.Except
+import Control.Monad
+import Control.Monad.Catch
+import Control.Monad.IO.Class
 import Data.Bits
 import Data.ByteString.Unsafe
 import Data.Monoid
@@ -165,7 +166,7 @@ swsVectorFromList l = liftIO$ do
 	pv <- castPtr <$> av_malloc #{size SwsVector}
 	pdata <- castPtr <$> av_malloc (#{size double} * (fromIntegral len))
 
-	forM (l `zip` [0..])$ \(c, i) -> pokeElemOff pdata i c
+	forM_ (l `zip` [0..])$ \(c, i) -> pokeElemOff pdata i c
 	#{poke SwsVector, coeff} pv pdata
 	#{poke SwsVector, length} pv (fromIntegral len :: CInt)
 
@@ -238,14 +239,14 @@ getCoefficients cs = unsafePerformIO$ do
 	else tableFromList <$> peekArray 4 p
 
 -- | Allocate a new SwsContext with the given source and destination filters
-newSwsContext :: (MonadIO m, MonadError HSFFError m) =>
+newSwsContext :: (MonadIO m, MonadThrow m) =>
 	SwsFilter        -- ^ source filter
 	-> SwsFilter     -- ^ destination filter
 	-> m SwsContext
 newSwsContext srcFilter dstFilter = do
 	pctx <- liftIO$ sws_alloc_context
 
-	when (pctx == nullPtr)$ throwError$
+	when (pctx == nullPtr)$ throwM$
 		mkNullPointerError "newSwsContext" "sws_alloc_context"
 
 	withThis srcFilter$ \psrc ->
@@ -255,7 +256,7 @@ newSwsContext srcFilter dstFilter = do
 	liftIO$ SwsContext <$> newForeignPtr psws_freeContext pctx
 
 -- | Initialise a new SwsContext with the given options
-getSwsContext :: (MonadIO m, MonadError HSFFError m) =>
+getSwsContext :: (MonadIO m, MonadThrow m) =>
 	(Int, Int, AVPixelFormat)        -- ^ Source (width, height, format)
 	-> (Int, Int, AVPixelFormat)     -- ^ Destination (width, height, format)
 	-> SwsFlags                      -- ^ Use encodeSwsFlags to produce this value
@@ -274,7 +275,7 @@ getSwsContext
 				(fromIntegral dstW) (fromIntegral dstH) (fromCEnum dstPF)
 				(fromCEnum flags) psrcFilter pdstFilter pparams
 
-		if p == nullPtr then throwError$
+		if p == nullPtr then throwM$
 			mkNullPointerError "getSwsContext" "sws_getContext"
 		else liftIO$ SwsContext <$> newForeignPtr psws_freeContext p
 
@@ -348,7 +349,7 @@ tableToList :: (CInt, CInt, CInt, CInt) -> [CInt]
 tableToList (a, b, c, d) = [a, b, c, d]
 
 -- | Set SwsContext fields relating to the colorspace
-setColorSpaceDetails :: (MonadIO m, MonadError HSFFError m) =>
+setColorSpaceDetails :: (MonadIO m, MonadThrow m) =>
 	SwsContext -> ColorSpaceDetails -> m ()
 setColorSpaceDetails ctx csd =
 	withThis ctx$ \pctx -> do
@@ -358,11 +359,11 @@ setColorSpaceDetails ctx csd =
 				sws_setColorspaceDetails pctx
 					pinv (csd_srcRange csd) ptab (csd_dstRange csd)
 					(csd_brightness csd) (csd_contrast csd) (csd_saturation csd)
-		when (r == -1)$ throwError$
+		when (r == -1)$ throwM$
 			mkError r "setColorSpaceDetails" "sws_setColorspaceDetails"
 
 -- | Get SwsContext fields relating to the color space
-getColorSpaceDetails :: (MonadIO m, MonadError HSFFError m) =>
+getColorSpaceDetails :: (MonadIO m, MonadThrow m) =>
 	SwsContext -> m ColorSpaceDetails
 getColorSpaceDetails ctx = do
 	x <- withThis ctx$ \pctx -> liftIO$
@@ -392,7 +393,7 @@ getColorSpaceDetails ctx = do
 					_brightness _contrast _saturation
 
 	case x of
-		Left e -> throwError$
+		Left e -> throwM$
 			mkError e "getColorSpaceDetails" "sws_getColorspaceDetails"
 		Right r -> return r
 
@@ -455,7 +456,7 @@ cloneVector :: MonadIO m => SwsVector -> m SwsVector
 cloneVector v = swsVectorFromPtr =<< withThis v (liftIO.sws_cloneVec)
 
 -- | Construct a filter with the given characteristics
-getDefaultFilter :: (MonadIO m, MonadError HSFFError m) =>
+getDefaultFilter :: (MonadIO m, MonadThrow m) =>
 	Float      -- ^ lumaGBlur
 	-> Float   -- ^ chromaGBlur
 	-> Float   -- ^ lumaSharpen
@@ -468,7 +469,7 @@ getDefaultFilter lumaGBlur chromaGBlur lumaSharpen chromaSharpen chromaHShift ch
 		lumaGBlur chromaGBlur lumaSharpen
 		chromaSharpen chromaHShift chromaVShift 0
 	
-	if pf == nullPtr then throwError$
+	if pf == nullPtr then throwM$
 		mkNullPointerError "getDefaultFilter" "sws_getDefaultFilter"
 	else do
 		lumH <- swsVectorFromPtr =<< (liftIO$ #{peek SwsFilter, lumH} pf)

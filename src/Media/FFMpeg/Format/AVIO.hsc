@@ -49,7 +49,8 @@ module Media.FFMpeg.Format.AVIO (
 
 import Control.Applicative
 import Control.Monad
-import Control.Monad.Except
+import Control.Monad.Catch
+import Control.Monad.IO.Class
 import Data.Bits
 import Data.Int
 import Data.Ix
@@ -215,25 +216,25 @@ ioWriteL :: (MonadIO m, AVIOWritable t) => AVIOContext -> t -> m ()
 ioWriteL ctx v = withThis ctx$ \pctx -> liftIO$ avio_store_l pctx v
 
 -- | Seek an AVIO stream
-ioSeek :: (MonadIO m, MonadError HSFFError m) =>
+ioSeek :: (MonadIO m, MonadThrow m) =>
 	AVIOContext -> Int64 -> AVIOSeek -> m Int64
 ioSeek ctx i whence = withThis ctx$ \pctx -> do
 	r <- liftIO$ avio_seek pctx i (fromCEnum whence)
-	when (r < 0)$ throwError$ mkError (fromIntegral r) "ioSeek" "avio_seek"
+	when (r < 0)$ throwM$ mkError (fromIntegral r) "ioSeek" "avio_seek"
 	return r
 
 -- | Skip bytes in an AVIO stream
-ioSkip :: (MonadIO m, MonadError HSFFError m) => AVIOContext -> Int64 -> m Int64
+ioSkip :: (MonadIO m, MonadThrow m) => AVIOContext -> Int64 -> m Int64
 ioSkip ctx i = withThis ctx$ \pctx -> do
 	r <- liftIO$ avio_skip pctx i
-	when (r < 0)$ throwError$ mkError (fromIntegral r) "ioSkip" "avio_skip"
+	when (r < 0)$ throwM$ mkError (fromIntegral r) "ioSkip" "avio_skip"
 	return r
 
 -- | Get the filesize of an AVIO stream
-ioSize :: (MonadIO m, MonadError HSFFError m) => AVIOContext -> m Int64
+ioSize :: (MonadIO m, MonadThrow m) => AVIOContext -> m Int64
 ioSize ctx = withThis ctx$ \pctx -> do
 	r <- liftIO$ avio_size pctx
-	when (r < 0)$ throwError$ mkError (fromIntegral r) "ioSize" "avio_size"
+	when (r < 0)$ throwM$ mkError (fromIntegral r) "ioSize" "avio_size"
 	return r
 
 -- | Determine if we are at the end of the file
@@ -245,14 +246,14 @@ ioFlush :: MonadIO m => AVIOContext -> m ()
 ioFlush ctx = liftIO.withThis ctx$ \pctx -> avio_flush pctx
 
 -- | Read from an AVIO stream
-ioRead :: (MonadIO m, MonadError HSFFError m) =>
+ioRead :: (MonadIO m, MonadThrow m) =>
 	AVIOContext -> Int -> m B.ByteString
 ioRead ctx len = withThis ctx$ \pctx -> do
 	(r, s) <- liftIO.allocaBytes len$ \pbuffer -> do
 		r <- avio_read pctx pbuffer (fromIntegral len)
 		s <- B.packCStringLen (pbuffer, if r < 0 then 0 else fromIntegral r)
 		return (r, s)
-	when (r < 0)$ throwError$ mkError r "ioRead" "avio_read"
+	when (r < 0)$ throwM$ mkError r "ioRead" "avio_read"
 	return s
 
 -- | Types that can be read directly from an AVIO stream
@@ -289,55 +290,50 @@ ioReadB :: (MonadIO m, AVIOReadable t) => AVIOContext -> m t
 ioReadB ctx = liftIO$ withThis ctx avio_read_b
 
 -- | Execute an action with a newly opened AVIOContext
-ioWithURL :: (MonadIO m, MonadError HSFFError m) =>
+ioWithURL :: (MonadIO m, MonadMask m) =>
 	Maybe AVFormatContext -> URL -> AVIOOpenFlag -> (AVIOContext -> m b) -> m b
 ioWithURL mf url flags action = 
 	withppCtx mf$ \ppctx ->
 	withThis url$ \purl -> do
 		r1 <- liftIO$ avio_open ppctx purl (fromCEnum flags)
-		when (r1 < 0)$ throwError$ mkError r1 "ioWithURL" "avio_open"
+		when (r1 < 0)$ throwM$ mkError r1 "ioWithURL" "avio_open"
 		pctx <- liftIO$ peek ppctx
 		ret <- action$ AVIOContext pctx
 		r2 <- liftIO$ avio_close pctx
-		when (r2 < 0)$ throwError$ mkError r2 "ioWithURL" "avio_closep"
+		when (r2 < 0)$ throwM$ mkError r2 "ioWithURL" "avio_closep"
 		return ret
 
 -- | Open the AVIOContext in an AVFormatContext.  It will be closed when the
 -- format context is finalized.
-formatIOOpen :: (MonadIO m, MonadError HSFFError m) =>
+formatIOOpen :: (MonadIO m, MonadMask m) =>
 	AVFormatContext -> URL -> AVIOOpenFlag -> m ()
 formatIOOpen ctx url flags =
 	withppCtx (Just ctx)$ \ppctx ->
 	withThis url$ \purl -> do
 		r1 <- liftIO$ avio_open ppctx purl (fromCEnum flags)
-		when (r1 < 0)$ throwError$ mkError r1 "formatIOOpen" "avio_open"
+		when (r1 < 0)$ throwM$ mkError r1 "formatIOOpen" "avio_open"
 		addAVFormatContextFinalizer ctx close_format_context
 
 -- | Perform an action with a pointer to a pointer to an AVIOContext
-withppCtx :: (MonadIO m, MonadError HSFFError m) =>
+withppCtx :: (MonadIO m, MonadMask m) =>
 	Maybe AVFormatContext -> (Ptr (Ptr AVIOContext) -> m b) -> m b
 withppCtx mf = case mf of
 	Nothing -> \action -> do
 		p <- liftIO$ malloc
-		r <- action p `catchError` (\e -> do
-			liftIO$ free p
-			throwError e)
-		liftIO$ free p
-		return r
+		finally (action p) (liftIO$ free p)
 	Just ctx -> \action ->
 		withThis ctx (action.(`plusPtr` #{offset AVFormatContext, pb}))
 
 -- | Execute an action with an in memory AVIOContext
-ioWithDynamicBuffer :: (MonadIO m, MonadError HSFFError m) =>
+ioWithDynamicBuffer :: (MonadIO m, MonadMask m) =>
 	Maybe AVFormatContext -> (AVIOContext -> m b) -> m (b, B.ByteString)
 ioWithDynamicBuffer mf action =
 	withppCtx mf$ \ppctx -> do
 		r <- liftIO$ avio_open_dyn_buf ppctx
-		when (r /= 0)$ throwError$
-			mkError r "ioWithDynamicBuffer" "avio_open_dyn_buf"
+		when (r /= 0)$ throwM$ mkError r "ioWithDynamicBuffer" "avio_open_dyn_buf"
 
 		pctx <- liftIO$ peek ppctx
-		when (pctx == nullPtr)$ throwError$
+		when (pctx == nullPtr)$ throwM$
 			mkNullPointerError "ioWithDynamicBuffer" "avio_open_dyn_buf"
 
 		ret <- action$ AVIOContext pctx
@@ -383,12 +379,12 @@ ioResume ctx = do
 	return ()
 
 -- | Seek a network stream
-ioSeekTime :: (MonadIO m, MonadError HSFFError m) =>
+ioSeekTime :: (MonadIO m, MonadThrow m) =>
 	AVIOContext -> Maybe StreamIndex -> AVTimestamp -> AVSeekFlag -> m ()
 ioSeekTime ctx msi (AVTimestamp ts) flags =
 	withThis ctx$ \pctx -> do
 		r <- liftIO$ avio_seek_time pctx si ts (fromCEnum flags)
-		when (r < 0)$ throwError$
+		when (r < 0)$ throwM$
 			mkError (fromIntegral r) "ioSeekTime" "avio_seek_time"
 
 	where si = case msi of

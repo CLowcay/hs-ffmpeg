@@ -62,7 +62,8 @@ module Media.FFMpeg.Util.AVFrame (
 
 import Control.Applicative
 import Control.Monad
-import Control.Monad.Except
+import Control.Monad.Catch
+import Control.Monad.IO.Class
 import Data.Int
 import Data.Monoid
 import Data.Word
@@ -249,18 +250,18 @@ getPictureTypeChar t = castCCharToChar$ av_get_picture_type_char (fromCEnum t)
 
 -- | Allocate a new AVFrame.  The AVFrame is uninitialised and no buffers are
 -- allocated.
-frameAlloc :: (MonadIO m, MonadError HSFFError m) => m AVFrame
+frameAlloc :: (MonadIO m, MonadThrow m) => m AVFrame
 frameAlloc = do
 	pFrame <- liftIO$ av_frame_alloc
 	if (pFrame == nullPtr) then do
-		throwError$ mkNullPointerError "allocAVFrame" "av_frame_alloc"
+		throwM$ mkNullPointerError "allocAVFrame" "av_frame_alloc"
 	else liftIO$
 		(AVFrame . castForeignPtr) <$> newForeignPtr pav_frame_free pFrame
 
 -- | Copy the data from one AVFrame to another.  If the frame is reference
 -- counted, then a new reference is created, otherwise the data is actually
 -- copied
-frameRef :: (MonadIO m, MonadError HSFFError m) =>
+frameRef :: (MonadIO m, MonadThrow m) =>
 	AVFrame          -- ^ destination frame
 	-> AVFrame       -- ^ source frame
 	-> m ()
@@ -268,16 +269,16 @@ frameRef dst src = do
 	r <-
 		withThis dst$ \pd ->
 		withThis src$ \ps -> liftIO$ av_frame_ref pd ps
-	when (r /= 0)$ throwError$ mkError r "frameRef" "av_frame_ref"
+	when (r /= 0)$ throwM$ mkError r "frameRef" "av_frame_ref"
 
 -- | Create a new copy of an AVFrame .  If the frame is reference counted, then
 -- the new frame references the same data as the old one, otherwise the buffers
 -- are copied into the new frame.
-frameClone :: (MonadIO m, MonadError HSFFError m) => AVFrame -> m AVFrame
+frameClone :: (MonadIO m, MonadThrow m) => AVFrame -> m AVFrame
 frameClone src = do
 	r <- liftIO.withThis src$ \ptr -> av_frame_clone ptr
 	if r == nullPtr then
-		throwError$ mkNullPointerError "frameClone" "av_frame_clone"
+		throwM$ mkNullPointerError "frameClone" "av_frame_clone"
 	else liftIO$
 		(AVFrame . castForeignPtr) <$> newForeignPtr pav_frame_free r
 
@@ -296,24 +297,23 @@ frameMoveRef dst src = liftIO$
 	withThis src$ \ps -> av_frame_move_ref pd ps
 
 -- | Allocate a buffer for an AVFrame
-frameGetBuffer :: (MonadIO m, MonadError HSFFError m) =>
+frameGetBuffer :: (MonadIO m, MonadThrow m) =>
 	AVFrame          -- ^ the AVFrame
 	-> Int           -- ^ alignment for the buffer
 	-> m ()
 frameGetBuffer frame align = do
 	r <- liftIO.withThis frame$ \ptr -> av_frame_get_buffer ptr (fromIntegral align)
-	when (r /= 0)$ throwError$ mkError r "frameGetBuffer" "av_frame_get_buffer"
+	when (r /= 0)$ throwM$ mkError r "frameGetBuffer" "av_frame_get_buffer"
 
 -- | Determine if a frame is writeable
 frameIsWritable :: MonadIO m => AVFrame -> m Bool
 frameIsWritable frame = liftIO.withThis frame$ \ptr -> (> 0) <$> av_frame_is_writable ptr
 
 -- | Ensure that the frame is writeable by copying the buffers if necessary.
-frameMakeWritable :: (MonadIO m, MonadError HSFFError m) => AVFrame -> m ()
+frameMakeWritable :: (MonadIO m, MonadThrow m) => AVFrame -> m ()
 frameMakeWritable frame = do
 	r <- liftIO.withThis frame$ \ptr -> av_frame_make_writable ptr
-	when (r /= 0)$ throwError$
-		mkError r "frameMakeWritable" "av_frame_make_writable"
+	when (r /= 0)$ throwM$ mkError r "frameMakeWritable" "av_frame_make_writable"
 
 -- | Copy the metadata from one AVFrame to another.  Does not copy or reference
 -- the buffers or the buffer layout fields.
@@ -408,7 +408,7 @@ instance AVFrameSideDataPayload AVFrameDataSkipSamples where
 	pokePayload = poke
 
 -- | Set side data for an AVFrame
-frameSetSideData :: (MonadIO m, MonadError HSFFError m, AVFrameSideDataPayload a) =>
+frameSetSideData :: (MonadIO m, MonadThrow m, AVFrameSideDataPayload a) =>
 	AVFrame                -- ^ The frame to modify
 	-> AVFrameSideData a   -- ^ The new side data.  If there is already side data
 	                       --   of this type, then the old data will be replaced
@@ -422,15 +422,15 @@ frameSetSideData frame sd = do
 
 	psd <- liftIO.withThis frame$ \ptr ->
 		av_frame_new_side_data ptr (fromCEnum sdType) (fromIntegral sdSize)
-	when (psd == nullPtr)$ throwError$
+	when (psd == nullPtr)$ throwM$
 		mkNullPointerError "frameSetSideData" "av_frame_new_side_data"
 
 	pdata <- liftIO (#{peek AVFrameSideData, data} psd :: IO (Ptr a))
 	dsize <- liftIO (#{peek AVFrameSideData, size} psd :: IO (CInt))
 
-	when (pdata == nullPtr)$ throwError$
+	when (pdata == nullPtr)$ throwM$
 		mkNullPointerError "frameSetSideData" "av_frame_new_side_data"
-	when ((fromIntegral dsize) /= sdSize)$ throwError$
+	when ((fromIntegral dsize) /= sdSize)$ throwM$
 		HSFFError HSFFErrorBug "frameSetSideData"$
 			"av_frame_new_side_data allocated a buffer of size " ++
 				(show dsize) ++ " but we require " ++ (show sdSize) ++ " bytes"
