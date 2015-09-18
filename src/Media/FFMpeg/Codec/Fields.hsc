@@ -198,7 +198,7 @@ packet_stream_index = Field #{offset AVPacket, stream_index} []
 packet_flags :: Field AVPacket AVPacketFlag ReadWrite
 packet_flags = Field #{offset AVPacket, flags} []
 
-packet_duration :: Field AVPacket Int ReadWrite
+packet_duration :: Field AVPacket CInt ReadWrite
 packet_duration = Field #{offset AVPacket, duration} []
 
 packet_pos :: Field AVPacket Int64 ReadWrite
