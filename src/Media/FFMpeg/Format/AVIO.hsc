@@ -320,7 +320,7 @@ withppCtx :: (MonadIO m, MonadMask m) =>
 withppCtx mf = case mf of
 	Nothing -> \action -> do
 		p <- liftIO$ malloc
-		finally (action p) (liftIO$ free p)
+		(action p) `finally` (liftIO$ free p)
 	Just ctx -> \action ->
 		withThis ctx (action.(`plusPtr` #{offset AVFormatContext, pb}))
 
